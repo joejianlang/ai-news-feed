@@ -1,65 +1,263 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import type { NewsItem } from '@/types';
+import Navbar from '@/components/Navbar';
+import FollowButton from '@/components/FollowButton';
+import CommentSection from '@/components/comments/CommentSection';
 
 export default function Home() {
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadNews();
+
+    // 自动刷新（每30秒）
+    if (autoRefresh) {
+      const interval = setInterval(loadNews, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [autoRefresh]);
+
+  const loadNews = async () => {
+    try {
+      const response = await fetch('/api/news');
+      const data = await response.json();
+      setNewsItems(data);
+    } catch (error) {
+      console.error('Failed to load news:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsLoading(true);
+    await loadNews();
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days}天前`;
+    if (hours > 0) return `${hours}小时前`;
+    if (minutes > 0) return `${minutes}分钟前`;
+    return '刚刚';
+  };
+
+  const extractYouTubeVideoId = (url: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
+      /youtube\.com\/embed\/([^?&\s]+)/,
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    return null;
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="min-h-screen bg-gray-50">
+      {/* 顶部导航 */}
+      <Navbar />
+
+      {/* 副导航栏 */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-2xl mx-auto px-4 py-2 flex justify-end items-center gap-4">
+          <button
+            onClick={handleRefresh}
+            className="text-blue-500 hover:text-blue-600 font-medium text-sm"
+            disabled={isLoading}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+            {isLoading ? '刷新中...' : '🔄 刷新'}
+          </button>
+          <label className="flex items-center gap-2 text-sm text-gray-600">
+            <input
+              type="checkbox"
+              checked={autoRefresh}
+              onChange={e => setAutoRefresh(e.target.checked)}
+              className="rounded"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            自动刷新
+          </label>
         </div>
+      </div>
+
+      {/* 时间线 */}
+      <main className="max-w-2xl mx-auto">
+        {isLoading && newsItems.length === 0 ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="text-gray-500">加载中...</div>
+          </div>
+        ) : newsItems.length === 0 ? (
+          <div className="flex flex-col justify-center items-center py-20 text-center">
+            <div className="text-gray-500 mb-4">暂无新闻</div>
+            <Link
+              href="/sources"
+              className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600"
+            >
+              添加新闻源
+            </Link>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-200">
+            {newsItems.map(item => (
+              <article key={item.id} className="bg-white p-4 sm:p-6 hover:bg-gray-50 transition-colors">
+                {/* 头部信息 */}
+                <div className="flex items-center gap-2 sm:gap-3 mb-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
+                    {item.source?.name.charAt(0) || 'N'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                      <span className="font-bold text-gray-900 text-sm sm:text-base truncate">{item.source?.name || '未知来源'}</span>
+                      <span className="text-gray-500 text-xs sm:text-sm">·</span>
+                      <span className="text-gray-500 text-xs sm:text-sm">{formatTime(item.created_at)}</span>
+                    </div>
+                    {item.source?.commentary_style && (
+                      <span className="text-xs text-gray-500">{item.source.commentary_style}风格</span>
+                    )}
+                  </div>
+                  {item.source && (
+                    <FollowButton
+                      sourceId={item.source_id}
+                      sourceName={item.source.name}
+                    />
+                  )}
+                </div>
+
+                {/* 标题 */}
+                <h2 className="text-lg sm:text-xl font-bold mb-3 text-gray-900 leading-tight">{item.title}</h2>
+
+                {/* 文章配图 */}
+                {item.content_type === 'article' && item.image_url && (
+                  <div className="mb-4 rounded-lg overflow-hidden">
+                    <img
+                      src={item.image_url}
+                      alt={item.title}
+                      className="w-full h-auto object-cover"
+                      onError={(e) => {
+                        // 如果图片加载失败，隐藏图片
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* YouTube 视频播放器 */}
+                {item.content_type === 'video' && (() => {
+                  // 优先使用数据库中的 video_id，如果没有则从 URL 提取
+                  const videoId = item.video_id || extractYouTubeVideoId(item.original_url);
+                  if (!videoId) return null;
+
+                  const isPlaying = playingVideoId === videoId;
+
+                  return (
+                    <div className="mb-4 rounded-lg overflow-hidden shadow-lg">
+                      <div className="relative" style={{ paddingBottom: '56.25%' }}>
+                        {isPlaying ? (
+                          <iframe
+                            className="absolute top-0 left-0 w-full h-full"
+                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`}
+                            title={item.title}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <div
+                            className="absolute top-0 left-0 w-full h-full cursor-pointer group"
+                            onClick={() => setPlayingVideoId(videoId)}
+                          >
+                            {/* 缩略图 - 底层 */}
+                            <img
+                              src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                              alt={item.title}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                // 如果最高清缩略图失败，尝试高清缩略图
+                                const target = e.currentTarget;
+                                if (target.src.includes('maxresdefault')) {
+                                  target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                } else if (target.src.includes('hqdefault')) {
+                                  // 如果高清也失败，尝试标准缩略图
+                                  target.src = `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
+                                }
+                              }}
+                            />
+                            {/* 播放按钮覆盖层 - 上层 */}
+                            <div className="absolute inset-0 flex items-center justify-center group-hover:bg-black group-hover:bg-opacity-30 transition-all">
+                              <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                                <svg className="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M8 5v14l11-7z"/>
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* 内容摘要（视频不显示） */}
+                {item.ai_summary && item.content_type === 'article' && (
+                  <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                    <div className="text-xs font-semibold text-blue-700 mb-1">📝 内容摘要</div>
+                    <p className="text-gray-700 text-xs sm:text-sm leading-relaxed">{item.ai_summary}</p>
+                  </div>
+                )}
+
+                {/* 专业解读 */}
+                {item.ai_commentary && (
+                  <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-purple-50 rounded-lg border-l-4 border-purple-400">
+                    <div className="text-xs font-semibold text-purple-700 mb-1">💬 专业解读</div>
+                    <p className="text-gray-700 text-xs sm:text-sm leading-relaxed">{item.ai_commentary}</p>
+                  </div>
+                )}
+
+                {/* 底部链接 */}
+                <div className="flex gap-3 sm:gap-4 text-gray-500 text-xs sm:text-sm">
+                  <a
+                    href={item.original_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-blue-500 transition-colors"
+                  >
+                    🔗 查看原文
+                  </a>
+                  <span>
+                    {item.content_type === 'video' ? '🎥 视频' : '📄 文章'}
+                  </span>
+                </div>
+
+                {/* 评论区 */}
+                <CommentSection
+                  newsItemId={item.id}
+                  initialCommentCount={item.comment_count || 0}
+                />
+              </article>
+            ))}
+          </div>
+        )}
       </main>
+
+      {/* 底部提示 */}
+      {newsItems.length > 0 && (
+        <div className="text-center py-8 text-gray-400 text-sm">
+          已显示 {newsItems.length} 条新闻
+        </div>
+      )}
     </div>
   );
 }
