@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import * as fs from 'fs';
 import * as path from 'path';
+import { CURRENT_AI_CONFIG, estimateCost } from './config';
 
 // 手动读取 .env.local 文件
 function loadEnvFile() {
@@ -53,34 +54,36 @@ export async function analyzeContent(
   title: string,
   commentaryStyle: string
 ): Promise<AnalysisResult> {
-  const prompt = `请分析以下新闻内容，并提供三部分输出：
+  // 如果 AI 被禁用，返回基础信息
+  if (!CURRENT_AI_CONFIG.enableAI) {
+    return {
+      summary: '（AI 分析已禁用）' + content.substring(0, 100),
+      commentary: '（AI 评论已禁用）',
+      translatedTitle: title,
+    };
+  }
+
+  // 限制内容长度以减少 token 消耗
+  const maxLen = CURRENT_AI_CONFIG.maxContentLength;
+  const truncatedContent = content.length > maxLen ? content.substring(0, maxLen) + '...' : content;
+
+  // 优化后的简洁 Prompt
+  const prompt = `分析新闻并输出三部分：
 
 标题：${title}
+内容：${truncatedContent}
 
-内容：
-${content}
+输出格式：
+【翻译标题】${title.match(/[a-zA-Z]/) ? '（翻译成中文）' : '（保持原样）'}
+【摘要】（80-150字，概括核心内容、关键要素、影响）
+【评论】（${commentaryStyle}风格，300-500字，幽默犀利，有深度有趣味）`;
 
-请按以下格式输出：
-
-【翻译标题】
-（如果标题是英文，请翻译成中文；如果标题已经是中文，请保持原样输出原标题）
-
-【摘要】
-（用2-3句话概括文章的核心内容）
-
-【评论】
-（用"${commentaryStyle}"风格对这篇文章进行评论，评论应该有见地、有态度）
-
-注意：
-- 标题翻译要准确、自然
-- 摘要要客观、简洁
-- 评论要符合指定的风格特点
-- 评论长度控制在100-200字`;
 
   try {
+    // 使用配置中的模型和参数
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 1024,
+      model: CURRENT_AI_CONFIG.model,
+      max_tokens: CURRENT_AI_CONFIG.maxOutputTokens,
       messages: [
         {
           role: 'user',
@@ -90,6 +93,16 @@ ${content}
     });
 
     const response = message.content[0].type === 'text' ? message.content[0].text : '';
+
+    // 计算并记录成本
+    const cost = estimateCost(
+      CURRENT_AI_CONFIG,
+      message.usage.input_tokens,
+      message.usage.output_tokens
+    );
+    console.log(`[AI] Model: ${CURRENT_AI_CONFIG.model}`);
+    console.log(`[AI] Tokens - Input: ${message.usage.input_tokens}, Output: ${message.usage.output_tokens}`);
+    console.log(`[AI] Estimated cost: $${cost.toFixed(6)}`);
 
     // 解析响应
     const titleMatch = response.match(/【翻译标题】\s*([\s\S]*?)\s*【摘要】/);

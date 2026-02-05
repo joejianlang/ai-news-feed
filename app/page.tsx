@@ -7,11 +7,17 @@ import Navbar from '@/components/Navbar';
 import FollowButton from '@/components/FollowButton';
 import CommentSection from '@/components/comments/CommentSection';
 
+interface NewsBatch {
+  batchTime: string;
+  items: NewsItem[];
+}
+
 export default function Home() {
-  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [newsBatches, setNewsBatches] = useState<NewsBatch[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
+  const [expandedCommentary, setExpandedCommentary] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadNews();
@@ -27,7 +33,7 @@ export default function Home() {
     try {
       const response = await fetch('/api/news');
       const data = await response.json();
-      setNewsItems(data);
+      setNewsBatches(data);
     } catch (error) {
       console.error('Failed to load news:', error);
     } finally {
@@ -54,6 +60,21 @@ export default function Home() {
     return '刚刚';
   };
 
+  const formatBatchTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getTotalNewsCount = () => {
+    return newsBatches.reduce((total, batch) => total + batch.items.length, 0);
+  };
+
   const extractYouTubeVideoId = (url: string): string | null => {
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/,
@@ -65,6 +86,18 @@ export default function Home() {
       if (match) return match[1];
     }
     return null;
+  };
+
+  const toggleCommentary = (itemId: string) => {
+    setExpandedCommentary(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
   };
 
   return (
@@ -96,11 +129,11 @@ export default function Home() {
 
       {/* 时间线 */}
       <main className="max-w-2xl mx-auto">
-        {isLoading && newsItems.length === 0 ? (
+        {isLoading && newsBatches.length === 0 ? (
           <div className="flex justify-center items-center py-20">
             <div className="text-gray-500">加载中...</div>
           </div>
-        ) : newsItems.length === 0 ? (
+        ) : newsBatches.length === 0 ? (
           <div className="flex flex-col justify-center items-center py-20 text-center">
             <div className="text-gray-500 mb-4">暂无新闻</div>
             <Link
@@ -111,8 +144,25 @@ export default function Home() {
             </Link>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
-            {newsItems.map(item => (
+          <div className="space-y-6">
+            {newsBatches.map((batch, batchIndex) => (
+              <div key={batch.batchTime} className="bg-white rounded-lg shadow-sm overflow-hidden">
+                {/* 批次标题 */}
+                <div className="bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-white">
+                      <span className="text-lg font-bold">📰</span>
+                      <span className="font-semibold">更新时间: {formatBatchTime(batch.batchTime)}</span>
+                    </div>
+                    <span className="bg-white bg-opacity-20 text-white px-3 py-1 rounded-full text-sm font-medium">
+                      {batch.items.length} 条新闻
+                    </span>
+                  </div>
+                </div>
+
+                {/* 批次内的新闻列表 */}
+                <div className="divide-y divide-gray-200">
+                  {batch.items.map(item => (
               <article key={item.id} className="bg-white p-4 sm:p-6 hover:bg-gray-50 transition-colors">
                 {/* 头部信息 */}
                 <div className="flex items-center gap-2 sm:gap-3 mb-3">
@@ -222,7 +272,29 @@ export default function Home() {
                 {item.ai_commentary && (
                   <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-purple-50 rounded-lg border-l-4 border-purple-400">
                     <div className="text-xs font-semibold text-purple-700 mb-1">💬 专业解读</div>
-                    <p className="text-gray-700 text-xs sm:text-sm leading-relaxed">{item.ai_commentary}</p>
+                    {(() => {
+                      const isExpanded = expandedCommentary.has(item.id);
+                      const shouldTruncate = item.ai_commentary.length > 100;
+                      const displayText = isExpanded || !shouldTruncate
+                        ? item.ai_commentary
+                        : item.ai_commentary.substring(0, 100) + '...';
+
+                      return (
+                        <>
+                          <p className="text-gray-700 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
+                            {displayText}
+                          </p>
+                          {shouldTruncate && (
+                            <button
+                              onClick={() => toggleCommentary(item.id)}
+                              className="mt-2 text-purple-600 hover:text-purple-800 text-xs font-medium transition-colors"
+                            >
+                              {isExpanded ? '收起 ▲' : '展开 ▼'}
+                            </button>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
 
@@ -247,15 +319,18 @@ export default function Home() {
                   initialCommentCount={item.comment_count || 0}
                 />
               </article>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}
       </main>
 
       {/* 底部提示 */}
-      {newsItems.length > 0 && (
+      {newsBatches.length > 0 && (
         <div className="text-center py-8 text-gray-400 text-sm">
-          已显示 {newsItems.length} 条新闻
+          共 {newsBatches.length} 批更新，累计 {getTotalNewsCount()} 条新闻
         </div>
       )}
     </div>

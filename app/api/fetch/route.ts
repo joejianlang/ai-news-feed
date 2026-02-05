@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getActiveNewsSources, createNewsItem, updateLastFetchedTime, checkNewsItemExists } from '@/lib/supabase/queries';
+import { getActiveNewsSources, createNewsItem, updateLastFetchedTime, checkNewsItemExists, checkSimilarNewsItem } from '@/lib/supabase/queries';
 import { scrapeContent } from '@/lib/scrapers';
 import { analyzeContent } from '@/lib/ai/claude';
 import { verifyAdmin } from '@/lib/auth/adminAuth';
@@ -35,15 +35,31 @@ export async function POST(request: Request) {
 
         let newItemsCount = 0;
         let skippedItemsCount = 0;
+        let consecutiveSkips = 0;
+        const MAX_CONSECUTIVE_SKIPS = 3; // 连续3次遇到旧新闻就停止抓取该源
 
         for (const item of scrapedItems) {
-          // 检查是否已存在（视频用video_id检查，文章用URL检查）
-          const exists = await checkNewsItemExists(item.url, item.videoId);
+          // 检查是否已存在或标题相似（智能去重）
+          const exists = await checkSimilarNewsItem(item.title, item.url);
+
           if (exists) {
             skippedItemsCount++;
-            console.log(`Skipping existing item: ${item.title}`);
+            consecutiveSkips++;
+            console.log(`Skipping existing/similar item: ${item.title}`);
+
+            // 如果连续多次遇到旧新闻，且不是YouTube频道（防止置顶视频干扰），则停止
+            // 注意：RSS通常是按时间倒序的，所以这个策略有效。
+            // YouTube频道置顶视频可能始终在最前，所以要小心。
+            // 这里简单策略：如果是RSS或Web，且连续跳过，则break。
+            if (consecutiveSkips >= MAX_CONSECUTIVE_SKIPS && source.source_type !== 'youtube_channel') {
+              console.log(`Hit ${MAX_CONSECUTIVE_SKIPS} consecutive existing items, stopping fetch for ${source.name}`);
+              break;
+            }
             continue;
           }
+
+          // 重置连续跳过计数
+          consecutiveSkips = 0;
 
           // AI分析
           const analysis = await analyzeContent(

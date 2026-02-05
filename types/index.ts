@@ -88,6 +88,9 @@ export interface NewsItem {
   video_id?: string;
   image_url?: string;
   comment_count?: number;
+  fetch_batch_id?: string; // 抓取批次ID
+  is_published?: boolean; // 是否已发布（false为草稿状态）
+  batch_completed_at?: string; // 批次完成时间（用于显示"更新时间"）
   created_at: string;
   updated_at: string;
   source?: NewsSource;

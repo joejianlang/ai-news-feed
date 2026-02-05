@@ -73,6 +73,11 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const { id, ...updates } = body;
 
+    // 验证 ID 是否提供
+    if (!id) {
+      return NextResponse.json({ error: 'Source ID is required' }, { status: 400 });
+    }
+
     // 如果更新的是YouTube频道，也需要提取并保存频道ID
     if (updates.source_type === 'youtube_channel' && updates.url) {
       console.log('Updating YouTube channel source, URL:', updates.url);
@@ -96,8 +101,16 @@ export async function PUT(request: Request) {
 
     const source = await updateNewsSource(id, updates);
     return NextResponse.json(source);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating source:', error);
+
+    // 特殊处理找不到记录的错误
+    if (error.code === 'PGRST116') {
+      return NextResponse.json({
+        error: 'Source not found. The news source may have been deleted or does not exist.'
+      }, { status: 404 });
+    }
+
     return NextResponse.json({ error: 'Failed to update source' }, { status: 500 });
   }
 }

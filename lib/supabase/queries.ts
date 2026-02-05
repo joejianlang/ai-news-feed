@@ -54,7 +54,7 @@ export async function deleteNewsSource(id: string) {
   if (error) throw error;
 }
 
-// 新闻条目相关查询（按发布时间混合排序）
+// 新闻条目相关查询（按发布时间混合排序，只返回已发布的）
 export async function getNewsItems(limit = 50) {
   const { data, error } = await supabase
     .from('news_items')
@@ -62,8 +62,41 @@ export async function getNewsItems(limit = 50) {
       *,
       source:news_sources(*)
     `)
+    .eq('is_published', true) // 只返回已发布的新闻
     .order('published_at', { ascending: false, nullsFirst: false })
     .limit(limit);
+
+  if (error) throw error;
+  return data as NewsItem[];
+}
+
+// 按批次分组获取新闻（用于前端按"更新时间"分组显示）
+export async function getNewsItemsByBatch(limit = 50) {
+  const { data, error } = await supabase
+    .from('news_items')
+    .select(`
+      *,
+      source:news_sources(*)
+    `)
+    .eq('is_published', true)
+    .order('batch_completed_at', { ascending: false, nullsFirst: false })
+    .order('published_at', { ascending: false, nullsFirst: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return data as NewsItem[];
+}
+
+// 批量发布某个批次的新闻
+export async function publishBatch(batchId: string, completedAt: string) {
+  const { data, error } = await supabase
+    .from('news_items')
+    .update({
+      is_published: true,
+      batch_completed_at: completedAt
+    })
+    .eq('fetch_batch_id', batchId)
+    .select();
 
   if (error) throw error;
   return data as NewsItem[];
@@ -110,6 +143,24 @@ export async function updateLastFetchedTime(sourceId: string) {
     .eq('id', sourceId);
 
   if (error) throw error;
+}
+
+
+export async function checkSimilarNewsItem(title: string, url: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('find_similar_news', {
+    check_title: title,
+    check_url: url,
+    time_window_hours: 24,
+    similarity_threshold: 0.6
+  });
+
+  if (error) {
+    console.error('Error checking similarity:', error);
+    // If RPC fails (e.g. migration not run), fall back to exact URL check
+    return checkNewsItemExists(url);
+  }
+
+  return data && data.length > 0;
 }
 
 // 分类相关查询

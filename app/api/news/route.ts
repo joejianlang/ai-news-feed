@@ -1,14 +1,43 @@
 import { NextResponse } from 'next/server';
-import { getNewsItems } from '@/lib/supabase/queries';
+import { getNewsItemsByBatch } from '@/lib/supabase/queries';
+import type { NewsItem } from '@/types';
 
-// GET - 获取新闻列表
+// 按批次分组新闻
+function groupNewsByBatch(news: NewsItem[]) {
+  const batches = new Map<string, NewsItem[]>();
+
+  news.forEach(item => {
+    const batchKey = item.batch_completed_at || item.created_at;
+    if (!batches.has(batchKey)) {
+      batches.set(batchKey, []);
+    }
+    batches.get(batchKey)!.push(item);
+  });
+
+  // 转换为数组并按批次时间降序排序
+  return Array.from(batches.entries())
+    .map(([batchTime, items]) => ({
+      batchTime,
+      items: items.sort((a, b) => {
+        // 每个批次内按新闻发布时间降序排序（混合排序）
+        const timeA = a.published_at || a.created_at;
+        const timeB = b.published_at || b.created_at;
+        return new Date(timeB).getTime() - new Date(timeA).getTime();
+      })
+    }))
+    .sort((a, b) => new Date(b.batchTime).getTime() - new Date(a.batchTime).getTime());
+}
+
+// GET - 获取新闻列表（按批次分组）
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const limit = parseInt(searchParams.get('limit') || '100');
 
-    const news = await getNewsItems(limit);
-    return NextResponse.json(news);
+    const news = await getNewsItemsByBatch(limit);
+    const groupedNews = groupNewsByBatch(news);
+
+    return NextResponse.json(groupedNews);
   } catch (error) {
     console.error('Error fetching news:', error);
     return NextResponse.json({ error: 'Failed to fetch news' }, { status: 500 });

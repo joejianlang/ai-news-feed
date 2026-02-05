@@ -9,6 +9,7 @@ const supabase = createClient(
 // GET - 获取当前抓取状态
 export async function GET() {
   try {
+    console.log('[Status API] 📡 收到状态查询请求');
     const { data, error } = await supabase
       .from('system_settings')
       .select('value, updated_at')
@@ -16,6 +17,7 @@ export async function GET() {
       .single();
 
     if (error) {
+      console.log('[Status API] ⚠️ 查询失败或无数据:', error.message);
       // 如果表不存在或没有数据，返回默认状态
       return NextResponse.json({
         is_running: false,
@@ -25,12 +27,13 @@ export async function GET() {
       });
     }
 
+    console.log('[Status API] ✅ 返回状态:', data.value);
     return NextResponse.json({
       ...data.value,
       updated_at: data.updated_at,
     });
   } catch (error) {
-    console.error('Failed to get fetch status:', error);
+    console.error('[Status API] ❌ 异常:', error);
     return NextResponse.json({
       is_running: false,
       error: 'Failed to get status',
