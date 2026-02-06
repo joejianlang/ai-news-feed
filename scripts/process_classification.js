@@ -138,7 +138,7 @@ async function main() {
         .select('id, title, content, ai_summary, ai_commentary')
         .is('category_id', null)
         .order('created_at', { ascending: false })
-        .limit(50); // 每次处理50条
+        .limit(500); // 每次处理500条
 
     if (error) {
         console.error('获取新闻失败:', error);
