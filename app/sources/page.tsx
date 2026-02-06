@@ -283,14 +283,25 @@ export default function SourcesPage() {
     }
   };
 
+  // ... inside component ...
+  const [confirmFetchAll, setConfirmFetchAll] = useState(false);
+
+  // ...
   const handleFetchAll = async () => {
-    // 使用定时抓取接口，这样可以显示进度
-    if (fetchStatus.is_running) {
-      alert('已有抓取任务正在运行中');
+    // 第一次点击，进入确认状态
+    if (!confirmFetchAll) {
+      setConfirmFetchAll(true);
+      // 3秒后如果没有确认，自动恢复
+      setTimeout(() => setConfirmFetchAll(false), 3000);
       return;
     }
 
-    if (!confirm('确定要抓取所有活跃新闻源的最新内容吗？这可能需要几分钟时间。')) {
+
+    // 第二次点击，执行抓取
+    setConfirmFetchAll(false);
+
+    if (fetchStatus.is_running) {
+      alert('已有抓取任务正在运行中');
       return;
     }
 
@@ -411,10 +422,10 @@ export default function SourcesPage() {
                 onClick={handleStartCronFetch}
                 disabled={isStartingCron}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${fetchStatus.is_running
-                    ? 'bg-indigo-600'
-                    : isStartingCron
-                      ? 'bg-gray-300 cursor-not-allowed'
-                      : 'bg-gray-200 hover:bg-gray-300'
+                  ? 'bg-indigo-600'
+                  : isStartingCron
+                    ? 'bg-gray-300 cursor-not-allowed'
+                    : 'bg-gray-200 hover:bg-gray-300'
                   }`}
               >
                 <span
@@ -435,12 +446,16 @@ export default function SourcesPage() {
             <button
               onClick={handleFetchAll}
               disabled={fetchStatus.is_running || isStartingCron}
-              className={`px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base ${fetchStatus.is_running || isStartingCron
+              className={`px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-all duration-200 ${fetchStatus.is_running || isStartingCron
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-green-500 text-white hover:bg-green-600'
+                  : confirmFetchAll
+                    ? 'bg-orange-500 text-white hover:bg-orange-600 animate-pulse'
+                    : 'bg-green-500 text-white hover:bg-green-600'
                 }`}
             >
-              {fetchStatus.is_running ? '⏳ 抓取中...' : '🔄 全部抓取'}
+              {fetchStatus.is_running ? '⏳ 抓取中...' :
+                isStartingCron ? '🚀 启动中...' :
+                  confirmFetchAll ? '⚠️ 确认开始？' : '🔄 全部抓取'}
             </button>
             <button
               onClick={() => showForm ? handleCancelEdit() : setShowForm(true)}
@@ -460,8 +475,8 @@ export default function SourcesPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-600">Gemini:</span>
                   <span className={`text-xs px-2 py-1 rounded ${aiHealth.services?.gemini?.status === 'healthy'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-red-100 text-red-700'
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-red-100 text-red-700'
                     }`}>
                     {aiHealth.services?.gemini?.status === 'healthy' ? '✅ 正常' : '❌ 异常'}
                   </span>
@@ -469,8 +484,8 @@ export default function SourcesPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-600">Claude:</span>
                   <span className={`text-xs px-2 py-1 rounded ${aiHealth.services?.claude?.status === 'healthy'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-red-100 text-red-700'
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-red-100 text-red-700'
                     }`}>
                     {aiHealth.services?.claude?.status === 'healthy' ? '✅ 正常' : '❌ 异常'}
                   </span>
@@ -664,10 +679,10 @@ export default function SourcesPage() {
                     <span>间隔: {source.fetch_interval}秒</span>
                     {/* 测试状态标签 */}
                     <span className={`px-2 py-1 rounded text-xs font-medium ${source.test_status === 'passed'
-                        ? 'bg-green-100 text-green-700'
-                        : source.test_status === 'failed'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-gray-100 text-gray-600'
+                      ? 'bg-green-100 text-green-700'
+                      : source.test_status === 'failed'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-gray-100 text-gray-600'
                       }`}>
                       {source.test_status === 'passed' ? '✅ 已通过' :
                         source.test_status === 'failed' ? '❌ 测试未通过' :
@@ -689,8 +704,8 @@ export default function SourcesPage() {
                     onClick={() => handleTest(source)}
                     disabled={testingIds.has(source.id)}
                     className={`px-4 py-2 rounded text-sm ${testingIds.has(source.id)
-                        ? 'bg-purple-300 text-white cursor-not-allowed'
-                        : 'bg-purple-500 text-white hover:bg-purple-600'
+                      ? 'bg-purple-300 text-white cursor-not-allowed'
+                      : 'bg-purple-500 text-white hover:bg-purple-600'
                       }`}
                   >
                     {testingIds.has(source.id) ? '测试中...' : '🧪 测试'}
@@ -705,8 +720,8 @@ export default function SourcesPage() {
                     onClick={() => handleFetchNow(source.id)}
                     disabled={source.test_status === 'failed'}
                     className={`px-4 py-2 rounded text-sm ${source.test_status === 'failed'
-                        ? 'bg-blue-300 text-white cursor-not-allowed'
-                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                      ? 'bg-blue-300 text-white cursor-not-allowed'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
                       }`}
                     title={source.test_status === 'failed' ? '测试未通过，无法抓取' : '立即抓取'}
                   >
@@ -715,10 +730,10 @@ export default function SourcesPage() {
                   <button
                     onClick={() => handleToggle(source)}
                     className={`px-4 py-2 rounded text-sm ${source.test_status === 'failed'
-                        ? 'bg-orange-500 text-white hover:bg-orange-600'
-                        : source.is_active
-                          ? 'bg-green-500 text-white hover:bg-green-600'
-                          : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                      ? 'bg-orange-500 text-white hover:bg-orange-600'
+                      : source.is_active
+                        ? 'bg-green-500 text-white hover:bg-green-600'
+                        : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
                       }`}
                   >
                     {source.test_status === 'failed' ? '⚠️ 待修复' :
