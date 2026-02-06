@@ -22,26 +22,26 @@ export default function CommentSection({
   const [commentCount, setCommentCount] = useState(initialCommentCount);
 
   useEffect(() => {
+    const loadComments = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/comments?newsItemId=${newsItemId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setComments(data.comments);
+          setCommentCount(countComments(data.comments));
+        }
+      } catch (error) {
+        console.error('Failed to load comments:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     if (isExpanded) {
       loadComments();
     }
   }, [isExpanded, newsItemId]);
-
-  const loadComments = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`/api/comments?newsItemId=${newsItemId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setComments(data.comments);
-        setCommentCount(countComments(data.comments));
-      }
-    } catch (error) {
-      console.error('Failed to load comments:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleCommentAdded = (newComment: CommentWithReplies) => {
     setComments(prev => [...prev, newComment]);

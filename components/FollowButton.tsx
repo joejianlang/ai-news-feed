@@ -9,30 +9,30 @@ interface FollowButtonProps {
   sourceName: string;
 }
 
-export default function FollowButton({ sourceId, sourceName }: FollowButtonProps) {
+export default function FollowButton({ sourceId }: { sourceId: string }) {
   const { user } = useUser();
   const router = useRouter();
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    const checkFollowStatus = async () => {
+      try {
+        const response = await fetch('/api/follows');
+        if (response.ok) {
+          const data = await response.json();
+          const following = data.follows.some((f: any) => f.source_id === sourceId);
+          setIsFollowing(following);
+        }
+      } catch (error) {
+        console.error('Failed to check follow status:', error);
+      }
+    };
+
     if (user) {
       checkFollowStatus();
     }
   }, [user, sourceId]);
-
-  const checkFollowStatus = async () => {
-    try {
-      const response = await fetch('/api/follows');
-      if (response.ok) {
-        const data = await response.json();
-        const following = data.follows.some((f: any) => f.source_id === sourceId);
-        setIsFollowing(following);
-      }
-    } catch (error) {
-      console.error('Failed to check follow status:', error);
-    }
-  };
 
   const handleFollow = async () => {
     if (!user) {
@@ -78,11 +78,10 @@ export default function FollowButton({ sourceId, sourceName }: FollowButtonProps
     <button
       onClick={handleFollow}
       disabled={isLoading}
-      className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${
-        isFollowing
+      className={`px-4 py-1 rounded-full text-sm font-medium transition-colors ${isFollowing
           ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           : 'bg-blue-500 text-white hover:bg-blue-600'
-      } disabled:opacity-50 disabled:cursor-not-allowed`}
+        } disabled:opacity-50 disabled:cursor-not-allowed`}
     >
       {isLoading ? '...' : isFollowing ? '已关注' : '+ 关注'}
     </button>
