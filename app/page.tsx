@@ -156,8 +156,8 @@ export default function Home() {
             <button
               onClick={() => setSelectedCategory(null)}
               className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${selectedCategory === null
-                  ? 'text-blue-600 border-blue-600'
-                  : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                ? 'text-blue-600 border-blue-600'
+                : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
                 }`}
             >
               全部
@@ -170,8 +170,8 @@ export default function Home() {
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
                   className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${selectedCategory === category.id
-                      ? 'text-blue-600 border-blue-600'
-                      : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                    ? 'text-blue-600 border-blue-600'
+                    : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
                     }`}
                 >
                   {category.name}
@@ -258,7 +258,6 @@ export default function Home() {
                         {item.source && (
                           <FollowButton
                             sourceId={item.source_id}
-                            sourceName={item.source.name}
                           />
                         )}
                       </div>
