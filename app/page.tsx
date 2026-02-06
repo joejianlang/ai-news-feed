@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import type { NewsItem } from '@/types';
+import type { NewsItem, Category } from '@/types';
 import Navbar from '@/components/Navbar';
 import FollowButton from '@/components/FollowButton';
 import CommentSection from '@/components/comments/CommentSection';
@@ -12,27 +12,34 @@ interface NewsBatch {
   items: NewsItem[];
 }
 
-// 分类列表
-const CATEGORIES = [
-  { id: 'all', name: '全部' },
-  { id: 'local', name: '本地' },
-  { id: 'trending', name: '热点' },
-  { id: 'politics', name: '政治' },
-  { id: 'tech', name: '科技' },
-  { id: 'finance', name: '财经' },
-  { id: 'entertainment', name: '文化娱乐' },
-  { id: 'sports', name: '体育' },
-  { id: 'indepth', name: '深度' },
-];
+// 分类映射（中文名称 -> 显示名称）
+const CATEGORY_DISPLAY = {
+  '全部': '全部',
+  '本地': '本地',
+  '热点': '热点',
+  '政治': '政治',
+  '科技': '科技',
+  '财经': '财经',
+  '文化娱乐': '文化娱乐',
+  '体育': '体育',
+  '深度': '深度',
+};
 
 export default function Home() {
   const [newsBatches, setNewsBatches] = useState<NewsBatch[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const [expandedCommentary, setExpandedCommentary] = useState<Set<string>>(new Set());
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // null = 全部
 
+  // 加载分类列表
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  // 加载新闻（当分类改变时重新加载）
   useEffect(() => {
     loadNews();
 
@@ -41,11 +48,26 @@ export default function Home() {
       const interval = setInterval(loadNews, 30000);
       return () => clearInterval(interval);
     }
-  }, [autoRefresh]);
+  }, [autoRefresh, selectedCategory]);
+
+  const loadCategories = async () => {
+    try {
+      const response = await fetch('/api/categories');
+      const data = await response.json();
+      if (data.categories) {
+        setCategories(data.categories);
+      }
+    } catch (error) {
+      console.error('Failed to load categories:', error);
+    }
+  };
 
   const loadNews = async () => {
     try {
-      const response = await fetch('/api/news');
+      const url = selectedCategory
+        ? `/api/news?categoryId=${selectedCategory}`
+        : '/api/news';
+      const response = await fetch(url);
       const data = await response.json();
       // Ensure data is an array before setting state
       if (Array.isArray(data)) {
@@ -130,7 +152,18 @@ export default function Home() {
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto">
           <div className="flex overflow-x-auto scrollbar-hide">
-            {CATEGORIES.map(category => (
+            {/* 全部 选项 */}
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${selectedCategory === null
+                  ? 'text-blue-600 border-blue-600'
+                  : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                }`}
+            >
+              全部
+            </button>
+            {/* 动态分类 */}
+            {categories.map((category: Category) => (
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}

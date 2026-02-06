@@ -71,14 +71,21 @@ export async function getNewsItems(limit = 50) {
 }
 
 // 按批次分组获取新闻（用于前端按"更新时间"分组显示）
-export async function getNewsItemsByBatch(limit = 50) {
-  const { data, error } = await supabase
+export async function getNewsItemsByBatch(limit = 50, categoryId?: string) {
+  let query = supabase
     .from('news_items')
     .select(`
       *,
       source:news_sources(*)
     `)
-    .eq('is_published', true)
+    .eq('is_published', true);
+
+  // 如果指定了分类，添加分类过滤
+  if (categoryId) {
+    query = query.eq('category_id', categoryId);
+  }
+
+  const { data, error } = await query
     .order('batch_completed_at', { ascending: false, nullsFirst: false })
     .order('published_at', { ascending: false, nullsFirst: false })
     .limit(limit);
