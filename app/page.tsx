@@ -12,12 +12,26 @@ interface NewsBatch {
   items: NewsItem[];
 }
 
+// 分类列表
+const CATEGORIES = [
+  { id: 'all', name: '全部' },
+  { id: 'local', name: '本地' },
+  { id: 'trending', name: '热点' },
+  { id: 'politics', name: '政治' },
+  { id: 'tech', name: '科技' },
+  { id: 'finance', name: '财经' },
+  { id: 'entertainment', name: '文化娱乐' },
+  { id: 'sports', name: '体育' },
+  { id: 'indepth', name: '深度' },
+];
+
 export default function Home() {
   const [newsBatches, setNewsBatches] = useState<NewsBatch[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const [expandedCommentary, setExpandedCommentary] = useState<Set<string>>(new Set());
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
     loadNews();
@@ -111,6 +125,26 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       {/* 顶部导航 */}
       <Navbar />
+
+      {/* 分类标签栏 */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex overflow-x-auto scrollbar-hide">
+            {CATEGORIES.map(category => (
+              <button
+                key={category.id}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${selectedCategory === category.id
+                    ? 'text-blue-600 border-blue-600'
+                    : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                  }`}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {/* 副导航栏 */}
       <div className="bg-white border-b border-gray-200">
