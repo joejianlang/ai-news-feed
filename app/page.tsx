@@ -33,9 +33,16 @@ export default function Home() {
     try {
       const response = await fetch('/api/news');
       const data = await response.json();
-      setNewsBatches(data);
+      // Ensure data is an array before setting state
+      if (Array.isArray(data)) {
+        setNewsBatches(data);
+      } else {
+        console.error('API returned non-array:', data);
+        setNewsBatches([]);
+      }
     } catch (error) {
       console.error('Failed to load news:', error);
+      setNewsBatches([]);
     } finally {
       setIsLoading(false);
     }
@@ -163,162 +170,162 @@ export default function Home() {
                 {/* 批次内的新闻列表 */}
                 <div className="divide-y divide-gray-200">
                   {batch.items.map(item => (
-              <article key={item.id} className="bg-white p-4 sm:p-6 hover:bg-gray-50 transition-colors">
-                {/* 头部信息 */}
-                <div className="flex items-center gap-2 sm:gap-3 mb-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
-                    {item.source?.name.charAt(0) || 'N'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                      <span className="font-bold text-gray-900 text-sm sm:text-base truncate">{item.source?.name || '未知来源'}</span>
-                      <span className="text-gray-500 text-xs sm:text-sm">·</span>
-                      <span className="text-gray-500 text-xs sm:text-sm">{formatTime(item.created_at)}</span>
-                    </div>
-                    {item.source?.commentary_style && (
-                      <span className="text-xs text-gray-500">{item.source.commentary_style}风格</span>
-                    )}
-                  </div>
-                  {item.source && (
-                    <FollowButton
-                      sourceId={item.source_id}
-                      sourceName={item.source.name}
-                    />
-                  )}
-                </div>
-
-                {/* 标题 */}
-                <h2 className="text-lg sm:text-xl font-bold mb-3 text-gray-900 leading-tight">{item.title}</h2>
-
-                {/* 文章配图 */}
-                {item.content_type === 'article' && item.image_url && (
-                  <div className="mb-4 rounded-lg overflow-hidden">
-                    <img
-                      src={item.image_url}
-                      alt={item.title}
-                      className="w-full h-auto object-cover"
-                      onError={(e) => {
-                        // 如果图片加载失败，隐藏图片
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
-
-                {/* YouTube 视频播放器 */}
-                {item.content_type === 'video' && (() => {
-                  // 优先使用数据库中的 video_id，如果没有则从 URL 提取
-                  const videoId = item.video_id || extractYouTubeVideoId(item.original_url);
-                  if (!videoId) return null;
-
-                  const isPlaying = playingVideoId === videoId;
-
-                  return (
-                    <div className="mb-4 rounded-lg overflow-hidden shadow-lg">
-                      <div className="relative" style={{ paddingBottom: '56.25%' }}>
-                        {isPlaying ? (
-                          <iframe
-                            className="absolute top-0 left-0 w-full h-full"
-                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`}
-                            title={item.title}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
-                        ) : (
-                          <div
-                            className="absolute top-0 left-0 w-full h-full cursor-pointer group"
-                            onClick={() => setPlayingVideoId(videoId)}
-                          >
-                            {/* 缩略图 - 底层 */}
-                            <img
-                              src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
-                              alt={item.title}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                // 如果最高清缩略图失败，尝试高清缩略图
-                                const target = e.currentTarget;
-                                if (target.src.includes('maxresdefault')) {
-                                  target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                                } else if (target.src.includes('hqdefault')) {
-                                  // 如果高清也失败，尝试标准缩略图
-                                  target.src = `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
-                                }
-                              }}
-                            />
-                            {/* 播放按钮覆盖层 - 上层 */}
-                            <div className="absolute inset-0 flex items-center justify-center group-hover:bg-black group-hover:bg-opacity-30 transition-all">
-                              <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                                <svg className="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M8 5v14l11-7z"/>
-                                </svg>
-                              </div>
-                            </div>
+                    <article key={item.id} className="bg-white p-4 sm:p-6 hover:bg-gray-50 transition-colors">
+                      {/* 头部信息 */}
+                      <div className="flex items-center gap-2 sm:gap-3 mb-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
+                          {item.source?.name.charAt(0) || 'N'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                            <span className="font-bold text-gray-900 text-sm sm:text-base truncate">{item.source?.name || '未知来源'}</span>
+                            <span className="text-gray-500 text-xs sm:text-sm">·</span>
+                            <span className="text-gray-500 text-xs sm:text-sm">{formatTime(item.created_at)}</span>
                           </div>
+                          {item.source?.commentary_style && (
+                            <span className="text-xs text-gray-500">{item.source.commentary_style}风格</span>
+                          )}
+                        </div>
+                        {item.source && (
+                          <FollowButton
+                            sourceId={item.source_id}
+                            sourceName={item.source.name}
+                          />
                         )}
                       </div>
-                    </div>
-                  );
-                })()}
 
-                {/* 内容摘要（视频不显示） */}
-                {item.ai_summary && item.content_type === 'article' && (
-                  <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                    <div className="text-xs font-semibold text-blue-700 mb-1">📝 内容摘要</div>
-                    <p className="text-gray-700 text-xs sm:text-sm leading-relaxed">{item.ai_summary}</p>
-                  </div>
-                )}
+                      {/* 标题 */}
+                      <h2 className="text-lg sm:text-xl font-bold mb-3 text-gray-900 leading-tight">{item.title}</h2>
 
-                {/* 专业解读 */}
-                {item.ai_commentary && (
-                  <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-purple-50 rounded-lg border-l-4 border-purple-400">
-                    <div className="text-xs font-semibold text-purple-700 mb-1">💬 专业解读</div>
-                    {(() => {
-                      const isExpanded = expandedCommentary.has(item.id);
-                      const shouldTruncate = item.ai_commentary.length > 100;
-                      const displayText = isExpanded || !shouldTruncate
-                        ? item.ai_commentary
-                        : item.ai_commentary.substring(0, 100) + '...';
+                      {/* 文章配图 */}
+                      {item.content_type === 'article' && item.image_url && (
+                        <div className="mb-4 rounded-lg overflow-hidden">
+                          <img
+                            src={item.image_url}
+                            alt={item.title}
+                            className="w-full h-auto object-cover"
+                            onError={(e) => {
+                              // 如果图片加载失败，隐藏图片
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
 
-                      return (
-                        <>
-                          <p className="text-gray-700 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
-                            {displayText}
-                          </p>
-                          {shouldTruncate && (
-                            <button
-                              onClick={() => toggleCommentary(item.id)}
-                              className="mt-2 text-purple-600 hover:text-purple-800 text-xs font-medium transition-colors"
-                            >
-                              {isExpanded ? '收起 ▲' : '展开 ▼'}
-                            </button>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
-                )}
+                      {/* YouTube 视频播放器 */}
+                      {item.content_type === 'video' && (() => {
+                        // 优先使用数据库中的 video_id，如果没有则从 URL 提取
+                        const videoId = item.video_id || extractYouTubeVideoId(item.original_url);
+                        if (!videoId) return null;
 
-                {/* 底部链接 */}
-                <div className="flex gap-3 sm:gap-4 text-gray-500 text-xs sm:text-sm">
-                  <a
-                    href={item.original_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-blue-500 transition-colors"
-                  >
-                    🔗 查看原文
-                  </a>
-                  <span>
-                    {item.content_type === 'video' ? '🎥 视频' : '📄 文章'}
-                  </span>
-                </div>
+                        const isPlaying = playingVideoId === videoId;
 
-                {/* 评论区 */}
-                <CommentSection
-                  newsItemId={item.id}
-                  initialCommentCount={item.comment_count || 0}
-                />
-              </article>
+                        return (
+                          <div className="mb-4 rounded-lg overflow-hidden shadow-lg">
+                            <div className="relative" style={{ paddingBottom: '56.25%' }}>
+                              {isPlaying ? (
+                                <iframe
+                                  className="absolute top-0 left-0 w-full h-full"
+                                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`}
+                                  title={item.title}
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                />
+                              ) : (
+                                <div
+                                  className="absolute top-0 left-0 w-full h-full cursor-pointer group"
+                                  onClick={() => setPlayingVideoId(videoId)}
+                                >
+                                  {/* 缩略图 - 底层 */}
+                                  <img
+                                    src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                                    alt={item.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      // 如果最高清缩略图失败，尝试高清缩略图
+                                      const target = e.currentTarget;
+                                      if (target.src.includes('maxresdefault')) {
+                                        target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                      } else if (target.src.includes('hqdefault')) {
+                                        // 如果高清也失败，尝试标准缩略图
+                                        target.src = `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
+                                      }
+                                    }}
+                                  />
+                                  {/* 播放按钮覆盖层 - 上层 */}
+                                  <div className="absolute inset-0 flex items-center justify-center group-hover:bg-black group-hover:bg-opacity-30 transition-all">
+                                    <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                                      <svg className="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z" />
+                                      </svg>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* 内容摘要（视频不显示） */}
+                      {item.ai_summary && item.content_type === 'article' && (
+                        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                          <div className="text-xs font-semibold text-blue-700 mb-1">📝 内容摘要</div>
+                          <p className="text-gray-700 text-xs sm:text-sm leading-relaxed">{item.ai_summary}</p>
+                        </div>
+                      )}
+
+                      {/* 专业解读 */}
+                      {item.ai_commentary && (
+                        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-purple-50 rounded-lg border-l-4 border-purple-400">
+                          <div className="text-xs font-semibold text-purple-700 mb-1">💬 专业解读</div>
+                          {(() => {
+                            const isExpanded = expandedCommentary.has(item.id);
+                            const shouldTruncate = item.ai_commentary.length > 100;
+                            const displayText = isExpanded || !shouldTruncate
+                              ? item.ai_commentary
+                              : item.ai_commentary.substring(0, 100) + '...';
+
+                            return (
+                              <>
+                                <p className="text-gray-700 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
+                                  {displayText}
+                                </p>
+                                {shouldTruncate && (
+                                  <button
+                                    onClick={() => toggleCommentary(item.id)}
+                                    className="mt-2 text-purple-600 hover:text-purple-800 text-xs font-medium transition-colors"
+                                  >
+                                    {isExpanded ? '收起 ▲' : '展开 ▼'}
+                                  </button>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      )}
+
+                      {/* 底部链接 */}
+                      <div className="flex gap-3 sm:gap-4 text-gray-500 text-xs sm:text-sm">
+                        <a
+                          href={item.original_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-blue-500 transition-colors"
+                        >
+                          🔗 查看原文
+                        </a>
+                        <span>
+                          {item.content_type === 'video' ? '🎥 视频' : '📄 文章'}
+                        </span>
+                      </div>
+
+                      {/* 评论区 */}
+                      <CommentSection
+                        newsItemId={item.id}
+                        initialCommentCount={item.comment_count || 0}
+                      />
+                    </article>
                   ))}
                 </div>
               </div>
