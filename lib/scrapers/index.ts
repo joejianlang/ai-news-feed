@@ -31,8 +31,8 @@ async function fetchOgImage(articleUrl: string): Promise<string | undefined> {
 
     // 尝试获取 og:image
     const ogImage = $('meta[property="og:image"]').attr('content') ||
-                    $('meta[property="og:image:secure_url"]').attr('content') ||
-                    $('meta[name="twitter:image"]').attr('content');
+      $('meta[property="og:image:secure_url"]').attr('content') ||
+      $('meta[name="twitter:image"]').attr('content');
 
     return ogImage || undefined;
   } catch (error) {
@@ -110,8 +110,8 @@ export async function scrapeRSS(url: string): Promise<ScrapedContent[]> {
       }
 
       // 4. 从description中提取图片
-      if (!imageUrl && item.description) {
-        const $ = cheerio.load(item.description);
+      if (!imageUrl && (item as any).description) {
+        const $ = cheerio.load((item as any).description);
         const img = $('img').first();
         imageUrl = img.attr('src');
       }
@@ -258,9 +258,9 @@ export async function scrapeWebPage(url: string): Promise<ScrapedContent | null>
 
     // 提取标题
     const title = $('meta[property="og:title"]').attr('content') ||
-                  $('meta[name="twitter:title"]').attr('content') ||
-                  $('title').text() ||
-                  'Untitled';
+      $('meta[name="twitter:title"]').attr('content') ||
+      $('title').text() ||
+      'Untitled';
 
     // 提取主图片
     const imageUrl = extractImageFromHTML(html, url);

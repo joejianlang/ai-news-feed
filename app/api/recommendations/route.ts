@@ -17,7 +17,7 @@ export async function GET() {
         category:categories(*)
       `)
       .eq('status', 'pending')
-      .order('popularity_score', { ascending: false, nullsLast: true })
+      .order('popularity_score', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false });
 
     if (error) throw error;

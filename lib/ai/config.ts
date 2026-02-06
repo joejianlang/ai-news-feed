@@ -119,6 +119,18 @@ export const MODEL_PRICING = {
     input: 3.0,
     output: 15.0,
   },
+  'gemini-1.5-flash-8b': {
+    input: 0.0375,
+    output: 0.15,
+  },
+  'gemini-1.5-flash': {
+    input: 0.075,
+    output: 0.3,
+  },
+  'gemini-1.5-pro': {
+    input: 1.25,
+    output: 5.0,
+  },
 };
 
 // 估算单条新闻的成本
