@@ -148,8 +148,8 @@ export default function Home() {
       {/* 顶部导航 */}
       <Navbar />
 
-      {/* 分类标签栏 */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      {/* 分类标签栏 - 与 Navbar 一起固定 */}
+      <div className="bg-white border-b border-gray-200 sticky top-[57px] z-10">
         <div className="max-w-2xl mx-auto">
           <div className="flex overflow-x-auto scrollbar-hide">
             {/* 全部 选项 */}
@@ -162,19 +162,21 @@ export default function Home() {
             >
               全部
             </button>
-            {/* 动态分类 */}
-            {categories.map((category: Category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${selectedCategory === category.id
-                    ? 'text-blue-600 border-blue-600'
-                    : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
-                  }`}
-              >
-                {category.name}
-              </button>
-            ))}
+            {/* 动态分类 - 过滤掉旧分类 */}
+            {categories
+              .filter((cat: Category) => !['传统新闻媒体', 'YouTube网红', '网络专业媒体'].includes(cat.name))
+              .map((category: Category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${selectedCategory === category.id
+                      ? 'text-blue-600 border-blue-600'
+                      : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                    }`}
+                >
+                  {category.name}
+                </button>
+              ))}
           </div>
         </div>
       </div>
