@@ -596,21 +596,7 @@ export default function SourcesPage() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">分类</label>
-                <select
-                  value={formData.category_id}
-                  onChange={e => setFormData({ ...formData, category_id: e.target.value })}
-                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                >
-                  <option value="">无分类</option>
-                  {categories.map(category => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* 分类选择已移除 - 由 AI 自动分类 */}
 
               {formData.source_type === 'youtube_channel' && (
                 <div className="md:col-span-2">
