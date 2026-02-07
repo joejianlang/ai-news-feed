@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/lib/contexts/UserContext';
 import Navbar from '@/components/Navbar';
@@ -70,6 +70,8 @@ function renderMarkdown(content: string): string {
 export default function PublishPage() {
     const router = useRouter();
     const { user, isLoading: userLoading } = useUser();
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [cursorPosition, setCursorPosition] = useState(0);
 
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
@@ -91,10 +93,35 @@ export default function PublishPage() {
         }
     }, [user, userLoading, router]);
 
+    // 记录光标位置
+    const handleTextareaSelect = () => {
+        if (textareaRef.current) {
+            setCursorPosition(textareaRef.current.selectionStart);
+        }
+    };
+
+    // 在光标位置插入内容
+    const insertAtCursor = (textToInsert: string) => {
+        const before = content.substring(0, cursorPosition);
+        const after = content.substring(cursorPosition);
+        const newContent = before + textToInsert + after;
+        setContent(newContent);
+        // 更新光标位置到插入内容之后
+        const newPosition = cursorPosition + textToInsert.length;
+        setCursorPosition(newPosition);
+        // 聚焦回 textarea 并设置光标位置
+        setTimeout(() => {
+            if (textareaRef.current) {
+                textareaRef.current.focus();
+                textareaRef.current.setSelectionRange(newPosition, newPosition);
+            }
+        }, 0);
+    };
+
     const insertImage = () => {
         if (!imageUrl) return;
         const markdown = `\n![图片](${imageUrl})\n`;
-        setContent(prev => prev + markdown);
+        insertAtCursor(markdown);
         setImageUrl('');
     };
 
@@ -107,7 +134,7 @@ export default function PublishPage() {
         }
         // 直接插入 YouTube URL，渲染时会自动转换
         const markdown = `\n${youtubeUrl}\n`;
-        setContent(prev => prev + markdown);
+        insertAtCursor(markdown);
         setYoutubeUrl('');
     };
 
@@ -269,8 +296,12 @@ export default function PublishPage() {
                                 文章内容 <span className="text-red-500">*</span>
                             </label>
                             <textarea
+                                ref={textareaRef}
                                 value={content}
                                 onChange={e => setContent(e.target.value)}
+                                onSelect={handleTextareaSelect}
+                                onClick={handleTextareaSelect}
+                                onKeyUp={handleTextareaSelect}
                                 placeholder="在这里撰写您的文章内容...
 
 支持 Markdown 语法：
@@ -282,7 +313,7 @@ export default function PublishPage() {
 > 引用
 `代码`
 
-直接粘贴 YouTube 链接会自动嵌入视频"
+💡 先点击编辑区确定光标位置，再插入图片或视频"
                                 className="w-full min-h-[400px] px-4 py-3 border-2 border-gray-300 rounded-lg font-mono text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none resize-y"
                             />
                         </div>
