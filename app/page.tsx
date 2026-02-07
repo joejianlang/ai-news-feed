@@ -302,9 +302,7 @@ export default function Home() {
                             <span className="text-gray-500 text-xs sm:text-sm">·</span>
                             <span className="text-gray-500 text-xs sm:text-sm">{formatTime(item.created_at)}</span>
                           </div>
-                          {item.source?.commentary_style && (
-                            <span className="text-xs text-gray-500">{item.source.commentary_style}风格</span>
-                          )}
+                          {/* 已移除评论风格显示 */}
                         </div>
                         {item.source && (
                           <FollowButton

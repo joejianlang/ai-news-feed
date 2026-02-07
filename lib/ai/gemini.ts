@@ -34,15 +34,15 @@ export async function analyzeContentWithGemini(
   const lengthRequirement = getCommentaryLength(contentType, isDeepDive);
 
   // 简洁的 Prompt
-  const prompt = `分析新闻并输出三部分：
+  const prompt = `分析新闻并输出三部分（全部使用中文简体，禁止出现任何英文）：
 
 标题：${title}
 内容：${truncatedContent}
 
 输出格式：
-【翻译标题】${title.match(/[a-zA-Z]/) ? '（翻译成中文）' : '（保持原样）'}
-【摘要】（80-150字，概括核心内容、关键要素、影响）
-【评论】（${commentaryStyle}风格，${lengthRequirement}，幽默犀利，有深度有趣味）`;
+【翻译标题】${title.match(/[a-zA-Z]/) ? '（翻译成中文简体）' : '（保持原样）'}
+【摘要】（80-150字，概括核心内容、关键要素、影响，全部中文）
+【评论】（${commentaryStyle}风格，${lengthRequirement}，幽默犀利，有深度有趣味，全部使用中文简体，不要出现任何英文词汇或缩写）`;
 
   try {
     // 使用 Gemini 2.5 Flash（最新免费模型，速度快成本低）

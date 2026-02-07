@@ -85,15 +85,15 @@ export async function analyzeContent(
   const lengthRequirement = getCommentaryLength(contentType, isDeepDive);
 
   // 优化后的简洁 Prompt
-  const prompt = `分析新闻并输出三部分：
+  const prompt = `分析新闻并输出三部分（全部使用中文简体，禁止出现任何英文）：
 
 标题：${title}
 内容：${truncatedContent}
 
 输出格式：
-【翻译标题】${title.match(/[a-zA-Z]/) ? '（翻译成中文）' : '（保持原样）'}
-【摘要】（80-150字，概括核心内容、关键要素、影响）
-【评论】（${commentaryStyle}风格，${lengthRequirement}，幽默犀利，有深度有趣味）`;
+【翻译标题】${title.match(/[a-zA-Z]/) ? '（翻译成中文简体）' : '（保持原样）'}
+【摘要】（80-150字，概括核心内容、关键要素、影响，全部中文）
+【评论】（${commentaryStyle}风格，${lengthRequirement}，幽默犀利，有深度有趣味，全部使用中文简体，不要出现任何英文词汇或缩写）`;
 
 
   try {
@@ -117,10 +117,10 @@ export async function analyzeContent(
       message.usage.input_tokens,
       message.usage.output_tokens
     );
-    console.log(`[AI] Model: ${CURRENT_AI_CONFIG.model}`);
-    console.log(`[AI] Content Type: ${contentType}, Deep Dive: ${isDeepDive}`);
-    console.log(`[AI] Tokens - Input: ${message.usage.input_tokens}, Output: ${message.usage.output_tokens}`);
-    console.log(`[AI] Estimated cost: $${cost.toFixed(6)}`);
+    console.log(`[AI] Model: ${CURRENT_AI_CONFIG.model} `);
+    console.log(`[AI] Content Type: ${contentType}, Deep Dive: ${isDeepDive} `);
+    console.log(`[AI] Tokens - Input: ${message.usage.input_tokens}, Output: ${message.usage.output_tokens} `);
+    console.log(`[AI] Estimated cost: $${cost.toFixed(6)} `);
 
     // 解析响应
     const titleMatch = response.match(/【翻译标题】\s*([\s\S]*?)\s*【摘要】/);
