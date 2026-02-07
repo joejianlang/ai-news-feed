@@ -49,10 +49,24 @@ export interface AnalysisResult {
   translatedTitle?: string;
 }
 
+// 根据内容类型获取评论字数要求
+function getCommentaryLength(contentType: string, isDeepDive: boolean): string {
+  if (isDeepDive) {
+    return '800-1000字，请分为三个部分：【背景】历史与来龙去脉、【分析】核心观点与深层解读、【影响】未来趋势与建议';
+  }
+  if (contentType === 'video') {
+    return '150-250字，简洁精炼';
+  }
+  // 默认文章类型
+  return '300-500字';
+}
+
 export async function analyzeContent(
   content: string,
   title: string,
-  commentaryStyle: string
+  commentaryStyle: string,
+  contentType: string = 'article',
+  isDeepDive: boolean = false
 ): Promise<AnalysisResult> {
   // 如果 AI 被禁用，返回基础信息
   if (!CURRENT_AI_CONFIG.enableAI) {
@@ -67,6 +81,9 @@ export async function analyzeContent(
   const maxLen = CURRENT_AI_CONFIG.maxContentLength;
   const truncatedContent = content.length > maxLen ? content.substring(0, maxLen) + '...' : content;
 
+  // 获取字数要求
+  const lengthRequirement = getCommentaryLength(contentType, isDeepDive);
+
   // 优化后的简洁 Prompt
   const prompt = `分析新闻并输出三部分：
 
@@ -76,7 +93,7 @@ export async function analyzeContent(
 输出格式：
 【翻译标题】${title.match(/[a-zA-Z]/) ? '（翻译成中文）' : '（保持原样）'}
 【摘要】（80-150字，概括核心内容、关键要素、影响）
-【评论】（${commentaryStyle}风格，300-500字，幽默犀利，有深度有趣味）`;
+【评论】（${commentaryStyle}风格，${lengthRequirement}，幽默犀利，有深度有趣味）`;
 
 
   try {
@@ -101,6 +118,7 @@ export async function analyzeContent(
       message.usage.output_tokens
     );
     console.log(`[AI] Model: ${CURRENT_AI_CONFIG.model}`);
+    console.log(`[AI] Content Type: ${contentType}, Deep Dive: ${isDeepDive}`);
     console.log(`[AI] Tokens - Input: ${message.usage.input_tokens}, Output: ${message.usage.output_tokens}`);
     console.log(`[AI] Estimated cost: $${cost.toFixed(6)}`);
 
@@ -119,3 +137,4 @@ export async function analyzeContent(
     throw error;
   }
 }
+

@@ -6,15 +6,32 @@ export interface AnalysisResult {
   translatedTitle?: string;
 }
 
+// 根据内容类型获取评论字数要求
+function getCommentaryLength(contentType: string, isDeepDive: boolean): string {
+  if (isDeepDive) {
+    return '800-1000字，请分为三个部分：【背景】历史与来龙去脉、【分析】核心观点与深层解读、【影响】未来趋势与建议';
+  }
+  if (contentType === 'video') {
+    return '150-250字，简洁精炼';
+  }
+  // 默认文章类型
+  return '300-500字';
+}
+
 export async function analyzeContentWithGemini(
   content: string,
   title: string,
-  commentaryStyle: string
+  commentaryStyle: string,
+  contentType: string = 'article',
+  isDeepDive: boolean = false
 ): Promise<AnalysisResult> {
   // 动态初始化 Gemini，确保环境变量已加载
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
   // 限制内容长度
   const truncatedContent = content.length > 3000 ? content.substring(0, 3000) + '...' : content;
+
+  // 获取字数要求
+  const lengthRequirement = getCommentaryLength(contentType, isDeepDive);
 
   // 简洁的 Prompt
   const prompt = `分析新闻并输出三部分：
@@ -25,7 +42,7 @@ export async function analyzeContentWithGemini(
 输出格式：
 【翻译标题】${title.match(/[a-zA-Z]/) ? '（翻译成中文）' : '（保持原样）'}
 【摘要】（80-150字，概括核心内容、关键要素、影响）
-【评论】（${commentaryStyle}风格，300-500字，幽默犀利，有深度有趣味）`;
+【评论】（${commentaryStyle}风格，${lengthRequirement}，幽默犀利，有深度有趣味）`;
 
   try {
     // 使用 Gemini 2.5 Flash（最新免费模型，速度快成本低）
@@ -65,9 +82,10 @@ export async function analyzeContentWithGemini(
     const estimatedInputTokens = Math.ceil(prompt.length / 4);
     const estimatedOutputTokens = Math.ceil(response.length / 4);
     const cost = (estimatedInputTokens / 1_000_000) * 0.0375 +
-                 (estimatedOutputTokens / 1_000_000) * 0.15;
+      (estimatedOutputTokens / 1_000_000) * 0.15;
 
     console.log(`[Gemini] Model: gemini-2.5-flash`);
+    console.log(`[Gemini] Content Type: ${contentType}, Deep Dive: ${isDeepDive}`);
     console.log(`[Gemini] Duration: ${duration}ms`);
     console.log(`[Gemini] Estimated tokens - Input: ${estimatedInputTokens}, Output: ${estimatedOutputTokens}`);
     console.log(`[Gemini] Estimated cost: $${cost.toFixed(7)}`);
@@ -87,3 +105,4 @@ export async function analyzeContentWithGemini(
     throw error;
   }
 }
+

@@ -15,7 +15,9 @@ export { getFailoverStatus, resetFailoverStatus };
 export async function analyzeContent(
   content: string,
   title: string,
-  commentaryStyle: string
+  commentaryStyle: string,
+  contentType: string = 'article',
+  isDeepDive: boolean = false
 ): Promise<AnalysisResult> {
   // 如果 AI 被禁用
   if (!CURRENT_AI_CONFIG.enableAI) {
@@ -27,5 +29,6 @@ export async function analyzeContent(
   }
 
   // 使用带故障转移的 AI 分析
-  return analyzeContentWithFailover(content, title, commentaryStyle);
+  return analyzeContentWithFailover(content, title, commentaryStyle, contentType, isDeepDive);
 }
+

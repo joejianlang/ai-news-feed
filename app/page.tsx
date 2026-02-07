@@ -400,10 +400,15 @@ export default function Home() {
                           <div className="text-sm font-bold text-purple-700 mb-2">💬 专业解读</div>
                           {(() => {
                             const isExpanded = expandedCommentary.has(item.id);
-                            const shouldTruncate = item.ai_commentary.length > 100;
+                            // 判断当前是否在查看深度分类
+                            const currentCategory = categories.find(c => c.id === selectedCategory);
+                            const isDeepDiveCategory = currentCategory?.name === '深度';
+                            // 深度分类默认显示 300 字，其他分类显示 100 字
+                            const truncateLength = isDeepDiveCategory ? 300 : 100;
+                            const shouldTruncate = item.ai_commentary.length > truncateLength;
                             const displayText = isExpanded || !shouldTruncate
                               ? item.ai_commentary
-                              : item.ai_commentary.substring(0, 100) + '...';
+                              : item.ai_commentary.substring(0, truncateLength) + '...';
 
                             return (
                               <>
@@ -415,7 +420,7 @@ export default function Home() {
                                     onClick={() => toggleCommentary(item.id)}
                                     className="mt-2 text-purple-600 hover:text-purple-800 text-xs font-medium transition-colors"
                                   >
-                                    {isExpanded ? '收起 ▲' : '展开 ▼'}
+                                    {isExpanded ? '收起 ▲' : '展开阅读更多 ▼'}
                                   </button>
                                 )}
                               </>

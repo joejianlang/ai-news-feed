@@ -59,7 +59,9 @@ async function sendAlert(provider: string, error: Error) {
 export async function analyzeContentWithFailover(
   content: string,
   title: string,
-  commentaryStyle: string
+  commentaryStyle: string,
+  contentType: string = 'article',
+  isDeepDive: boolean = false
 ): Promise<AnalysisResult> {
   const primaryProvider = CURRENT_AI_CONFIG.provider;
   const backupProvider = primaryProvider === 'gemini' ? 'claude' : 'gemini';
@@ -70,9 +72,9 @@ export async function analyzeContentWithFailover(
 
     let result: AnalysisResult;
     if (primaryProvider === 'gemini') {
-      result = await analyzeContentWithGemini(content, title, commentaryStyle);
+      result = await analyzeContentWithGemini(content, title, commentaryStyle, contentType, isDeepDive);
     } else {
-      result = await analyzeWithClaude(content, title, commentaryStyle);
+      result = await analyzeWithClaude(content, title, commentaryStyle, contentType, isDeepDive);
     }
 
     // 成功，重置失败计数
@@ -100,9 +102,9 @@ export async function analyzeContentWithFailover(
 
       let result: AnalysisResult;
       if (backupProvider === 'gemini') {
-        result = await analyzeContentWithGemini(content, title, commentaryStyle);
+        result = await analyzeContentWithGemini(content, title, commentaryStyle, contentType, isDeepDive);
       } else {
-        result = await analyzeWithClaude(content, title, commentaryStyle);
+        result = await analyzeWithClaude(content, title, commentaryStyle, contentType, isDeepDive);
       }
 
       console.log(`[Failover] ✅ ${backupProvider} 成功`);
