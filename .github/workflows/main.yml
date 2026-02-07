@@ -26,8 +26,10 @@ jobs:
 
       - name: Run Pipeline
         env:
+          # 两套变量名都设置，确保所有代码路径都能找到
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        # 显式指向当前目录下的脚本
         run: npx tsx ./scripts/run_pipeline.ts
