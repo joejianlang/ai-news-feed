@@ -1,15 +1,14 @@
-
 name: AI News Pipeline
 
 on:
   schedule:
-    - cron: '0 */2 * * *' # Every 2 hours
-  workflow_dispatch: # Allow manual trigger
+    - cron: '0 */2 * * *' # 每 2 小时运行一次
+  workflow_dispatch: # 允许手动触发
 
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
-    timeout-minutes: 360 # 6 hours max
+    timeout-minutes: 360
 
     steps:
       - name: Checkout code
@@ -22,11 +21,13 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        # 使用 install 确保即便没有 lock 文件也能正常安装
+        run: npm install 
 
       - name: Run Pipeline
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: npx tsx scripts/run_pipeline.ts
+        # 显式指向当前目录下的脚本
+        run: npx tsx ./scripts/run_pipeline.ts
