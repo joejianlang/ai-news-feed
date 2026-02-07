@@ -474,6 +474,12 @@ export default function SourcesPage() {
             >
               {showForm ? '取消' : '添加新闻源'}
             </button>
+            <button
+              onClick={() => router.push('/publish')}
+              className="bg-indigo-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-indigo-700 text-sm sm:text-base font-semibold"
+            >
+              📝 发布文章
+            </button>
           </div>
         </div>
 
