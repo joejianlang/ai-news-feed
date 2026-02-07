@@ -71,7 +71,7 @@ export async function getNewsItems(limit = 50) {
 }
 
 // 按批次分组获取新闻（用于前端按"更新时间"分组显示）
-export async function getNewsItemsByBatch(limit = 50, categoryId?: string) {
+export async function getNewsItemsByBatch(limit = 50, categoryId?: string, cityTag?: string) {
   let query = supabase
     .from('news_items')
     .select(`
@@ -83,6 +83,12 @@ export async function getNewsItemsByBatch(limit = 50, categoryId?: string) {
   // 如果指定了分类，添加分类过滤
   if (categoryId) {
     query = query.eq('category_id', categoryId);
+  }
+
+  // 如果指定了城市标签，添加标签过滤
+  if (cityTag) {
+    // 使用 Postgres 的数组包含操作符
+    query = query.contains('tags', [cityTag]);
   }
 
   const { data, error } = await query

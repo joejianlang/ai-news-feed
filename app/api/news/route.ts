@@ -34,8 +34,9 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '100');
     const categoryId = searchParams.get('categoryId') || undefined;
+    const cityTag = searchParams.get('city') || undefined;
 
-    const news = await getNewsItemsByBatch(limit, categoryId);
+    const news = await getNewsItemsByBatch(limit, categoryId, cityTag);
     const groupedNews = groupNewsByBatch(news);
 
     return NextResponse.json(groupedNews);

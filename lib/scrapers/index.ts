@@ -44,7 +44,9 @@ async function fetchOgImage(articleUrl: string): Promise<string | undefined> {
 // RSS抓取
 export async function scrapeRSS(url: string): Promise<ScrapedContent[]> {
   try {
+    console.log(`[RSS] Parsing URL: ${url}`);
     const feed = await rssParser.parseURL(url);
+    console.log(`[RSS] Feed parsed, items: ${feed.items.length}`);
 
     const items = feed.items.slice(0, 5).map(item => {
       // 尝试从RSS item中提取图片

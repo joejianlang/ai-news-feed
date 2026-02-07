@@ -220,14 +220,25 @@ export default function SourcesPage() {
     });
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('确定要删除这个新闻源吗？')) return;
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const handleDelete = async (id: string) => {
+    // 如果是第一次点击，进入确认状态
+    if (deletingId !== id) {
+      setDeletingId(id);
+      // 3秒后自动取消
+      setTimeout(() => setDeletingId(null), 3000);
+      return;
+    }
+
+    // 第二次点击，执行删除
     try {
       await fetch(`/api/sources?id=${id}`, { method: 'DELETE' });
       await loadSources();
+      setDeletingId(null);
     } catch (error) {
       console.error('Failed to delete source:', error);
+      alert('删除失败');
     }
   };
 
@@ -447,10 +458,10 @@ export default function SourcesPage() {
               onClick={handleFetchAll}
               disabled={fetchStatus.is_running || isStartingCron}
               className={`px-4 sm:px-6 py-2 rounded-lg font-semibold text-sm sm:text-base transition-all duration-200 ${fetchStatus.is_running || isStartingCron
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : confirmFetchAll
-                    ? 'bg-orange-500 text-white hover:bg-orange-600 animate-pulse'
-                    : 'bg-green-500 text-white hover:bg-green-600'
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : confirmFetchAll
+                  ? 'bg-orange-500 text-white hover:bg-orange-600 animate-pulse'
+                  : 'bg-green-500 text-white hover:bg-green-600'
                 }`}
             >
               {fetchStatus.is_running ? '⏳ 抓取中...' :
@@ -741,9 +752,12 @@ export default function SourcesPage() {
                   </button>
                   <button
                     onClick={() => handleDelete(source.id)}
-                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 text-sm"
+                    className={`px-4 py-2 rounded text-sm text-white transition-all duration-200 ${deletingId === source.id
+                      ? 'bg-red-700 hover:bg-red-800 font-bold animate-pulse'
+                      : 'bg-red-500 hover:bg-red-600'
+                      }`}
                   >
-                    删除
+                    {deletingId === source.id ? '⚠️ 确认删除？' : '删除'}
                   </button>
                 </div>
               </div>

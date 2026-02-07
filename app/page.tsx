@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { NewsItem, Category } from '@/types';
+import { useUser } from '@/lib/contexts/UserContext';
+import { useLocation, POPULAR_CITIES } from '@/lib/contexts/LocationContext';
 import Navbar from '@/components/Navbar';
 import FollowButton from '@/components/FollowButton';
 import CommentSection from '@/components/comments/CommentSection';
@@ -26,6 +28,8 @@ const CATEGORY_DISPLAY = {
 };
 
 export default function Home() {
+  const { user } = useUser();
+  const { city, cityTag, isLocating, error: locationError, detectLocation, setManualCity } = useLocation();
   const [newsBatches, setNewsBatches] = useState<NewsBatch[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,7 +52,7 @@ export default function Home() {
       const interval = setInterval(loadNews, 30000);
       return () => clearInterval(interval);
     }
-  }, [autoRefresh, selectedCategory]);
+  }, [autoRefresh, selectedCategory, cityTag]); // 添加 cityTag 依赖
 
   const loadCategories = async () => {
     try {
@@ -64,10 +68,17 @@ export default function Home() {
 
   const loadNews = async () => {
     try {
-      const url = selectedCategory
-        ? `/api/news?categoryId=${selectedCategory}`
-        : '/api/news';
-      const response = await fetch(url);
+      // 检查当前是否选中了"本地"分类
+      const currentCategory = categories.find(c => c.id === selectedCategory);
+      const isLocalCategory = currentCategory?.name === '本地' || currentCategory?.name === 'Local';
+
+      // 构建 URL Params
+      const params = new URLSearchParams();
+      if (selectedCategory) params.append('categoryId', selectedCategory);
+      // 只有在"本地"分类下，且有 cityTag 时才传 city
+      if (isLocalCategory && cityTag) params.append('city', cityTag);
+
+      const response = await fetch(`/api/news?${params.toString()}`);
       const data = await response.json();
       // Ensure data is an array before setting state
       if (Array.isArray(data)) {
@@ -203,6 +214,44 @@ export default function Home() {
         </div>
       </div>
 
+      {/* 地理位置栏 - 仅在"本地"分类显示 */}
+      {categories.find(c => c.id === selectedCategory)?.name === '本地' && (
+        <div className="bg-blue-50 border-b border-blue-100">
+          <div className="max-w-2xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-blue-800">
+              <span>📍 当前定位:</span>
+              {isLocating ? (
+                <span className="animate-pulse">正在定位...</span>
+              ) : (
+                <span className="font-bold text-lg">{city || '全部本地新闻'}</span>
+              )}
+              {locationError && <span className="text-red-500 text-xs">({locationError})</span>}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={detectLocation}
+                disabled={isLocating}
+                className="text-xs bg-white text-blue-600 border border-blue-200 px-3 py-1 rounded-full hover:bg-blue-100 transition-colors"
+              >
+                📡 重新定位
+              </button>
+
+              <select
+                className="text-xs bg-white text-gray-700 border border-gray-300 px-2 py-1 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500"
+                value={cityTag || ''}
+                onChange={(e) => setManualCity(e.target.value)}
+              >
+                <option value="">全部城市</option>
+                {POPULAR_CITIES.map(c => (
+                  <option key={c.tag} value={c.tag}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 时间线 */}
       <main className="max-w-2xl mx-auto">
         {isLoading && newsBatches.length === 0 ? (
@@ -212,12 +261,14 @@ export default function Home() {
         ) : newsBatches.length === 0 ? (
           <div className="flex flex-col justify-center items-center py-20 text-center">
             <div className="text-gray-500 mb-4">暂无新闻</div>
-            <Link
-              href="/sources"
-              className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600"
-            >
-              添加新闻源
-            </Link>
+            {user?.role === 'admin' && (
+              <Link
+                href="/sources"
+                className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600"
+              >
+                添加新闻源
+              </Link>
+            )}
           </div>
         ) : (
           <div className="space-y-6">

@@ -2,15 +2,15 @@
   "crons": [
     {
       "path": "/api/fetch",
-      "schedule": "0 */2 * * *"
+      "schedule": "0 8 * * *"
     },
     {
       "path": "/api/cron/classify",
-      "schedule": "10 */2 * * *"
+      "schedule": "0 10 * * *"
     },
     {
       "path": "/api/cron/deep-dive",
-      "schedule": "20 */2 * * *"
+      "schedule": "0 12 * * *"
     }
   ]
 }
