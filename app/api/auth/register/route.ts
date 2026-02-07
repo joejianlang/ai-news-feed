@@ -5,12 +5,22 @@ import { generateToken } from '@/lib/auth/jwt';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, username, password } = await request.json();
+    const { email, username, password, code } = await request.json();
 
     // 验证输入
-    if (!email || !username || !password) {
+    if (!email || !username || !password || !code) {
       return NextResponse.json(
-        { error: '请提供邮箱、用户名和密码' },
+        { error: '请提供邮箱、用户名、密码和验证码' },
+        { status: 400 }
+      );
+    }
+
+    // 校验验证码
+    const { verifyRegistrationCode } = await import('@/lib/supabase/queries');
+    const isValidCode = await verifyRegistrationCode(email, code);
+    if (!isValidCode) {
+      return NextResponse.json(
+        { error: '验证码无效或已过期' },
         { status: 400 }
       );
     }

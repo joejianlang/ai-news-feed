@@ -468,3 +468,44 @@ export async function unlikeComment(commentId: string, userId: string): Promise<
 
   if (error) throw error;
 }
+// ============================================
+// 验证码相关查询
+// ============================================
+
+export async function saveVerificationCode(email: string, code: string) {
+  const expiresAt = new Date();
+  expiresAt.setMinutes(expiresAt.getMinutes() + 10); // 10分钟有效期
+
+  const { data, error } = await supabase
+    .from('verification_codes')
+    .insert([{ email, code, expires_at: expiresAt.toISOString() }])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function verifyRegistrationCode(email: string, code: string) {
+  const { data, error } = await supabase
+    .from('verification_codes')
+    .select('*')
+    .eq('email', email)
+    .eq('code', code)
+    .is('used_at', null)
+    .gt('expires_at', new Date().toISOString())
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return false;
+
+  // 标记为已使用
+  await supabase
+    .from('verification_codes')
+    .update({ used_at: new Date().toISOString() })
+    .eq('id', data.id);
+
+  return true;
+}

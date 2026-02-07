@@ -386,16 +386,16 @@ export default function Home() {
 
                       {/* 内容摘要（视频不显示） */}
                       {item.ai_summary && item.content_type === 'article' && (
-                        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                          <div className="text-sm font-bold text-blue-700 mb-2">📝 内容摘要</div>
+                        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-teal-50 rounded-lg border-l-4 border-teal-400">
+                          <div className="text-sm font-bold text-teal-700 mb-2">📝 内容摘要</div>
                           <p className="text-gray-800 text-base leading-normal">{item.ai_summary}</p>
                         </div>
                       )}
 
                       {/* 专业解读 */}
                       {item.ai_commentary && (
-                        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-purple-50 rounded-lg border-l-4 border-purple-400">
-                          <div className="text-sm font-bold text-purple-700 mb-2">💬 专业解读</div>
+                        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-cyan-50 rounded-lg border-l-4 border-cyan-400">
+                          <div className="text-sm font-bold text-cyan-700 mb-2">💬 专业解读</div>
                           {(() => {
                             const isExpanded = expandedCommentary.has(item.id);
                             // 判断当前是否在查看深度分类

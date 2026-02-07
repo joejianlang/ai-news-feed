@@ -219,7 +219,7 @@ export default function PublishPage() {
                             value={title}
                             onChange={e => setTitle(e.target.value)}
                             placeholder="输入文章标题..."
-                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-lg font-medium text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
                         />
                     </div>
 
@@ -233,7 +233,7 @@ export default function PublishPage() {
                             value={summary}
                             onChange={e => setSummary(e.target.value)}
                             placeholder="简短描述文章内容..."
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none"
                         />
                     </div>
 
@@ -247,7 +247,7 @@ export default function PublishPage() {
                                     value={imageUrl}
                                     onChange={e => setImageUrl(e.target.value)}
                                     placeholder="图片 URL..."
-                                    className="px-3 py-1.5 border border-gray-300 rounded text-sm w-48"
+                                    className="px-3 py-1.5 border border-gray-300 rounded text-sm w-48 text-gray-900 placeholder-gray-400"
                                 />
                                 <button
                                     onClick={insertImage}
@@ -314,7 +314,7 @@ export default function PublishPage() {
 `代码`
 
 💡 先点击编辑区确定光标位置，再插入图片或视频"
-                                className="w-full min-h-[400px] px-4 py-3 border-2 border-gray-300 rounded-lg font-mono text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none resize-y"
+                                className="w-full min-h-[400px] px-4 py-3 border-2 border-gray-300 rounded-lg font-mono text-sm text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none resize-y"
                             />
                         </div>
                     )}
@@ -330,7 +330,7 @@ export default function PublishPage() {
                         <button
                             onClick={handleSubmit}
                             disabled={isSubmitting || !title.trim() || !content.trim()}
-                            className="px-8 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                            className="px-8 py-3 rounded-lg bg-teal-600 text-white font-semibold hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors shadow-md"
                         >
                             {isSubmitting ? '发布中...' : '🚀 发布到深度'}
                         </button>
