@@ -16,12 +16,17 @@ export default function Navbar() {
     return null;
   }
 
-  const handleLogout = () => {
-    document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    router.push('/login');
-    router.refresh();
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    // 强制刷新页面以清除所有状态
+    window.location.href = '/';
     setIsMenuOpen(false);
   };
+
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
