@@ -154,6 +154,33 @@ export default function Home() {
     });
   };
 
+  const handleShare = async (item: NewsItem) => {
+    const shareData = {
+      title: item.title,
+      text: item.ai_summary || item.title,
+      url: window.location.origin + `?item=${item.id}`, // 或者直接分享原文链接，看需求
+    };
+
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(`${shareData.title}\n${item.original_url}`);
+        alert('链接已复制到剪贴板');
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      // Fallback: Copy to clipboard if sharing fails
+      try {
+        await navigator.clipboard.writeText(`${item.title}\n${item.original_url}`);
+        alert('链接已复制到剪贴板');
+      } catch (copyError) {
+        console.error('Copy failed:', copyError);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 顶部导航 */}
@@ -414,19 +441,22 @@ export default function Home() {
                         </div>
                       )}
 
-                      {/* 底部链接 */}
-                      <div className="flex gap-3 sm:gap-4 text-gray-500 text-xs sm:text-sm">
+                      {/* 底部链接与分享 */}
+                      <div className="flex items-center gap-3 mb-4">
                         <a
                           href={item.original_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="hover:text-blue-500 transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 text-teal-700 rounded-full text-sm font-medium hover:bg-teal-100 transition-colors border border-teal-200"
                         >
-                          🔗 查看原文
+                          <span>🔗 查看原文</span>
                         </a>
-                        <span>
-                          {item.content_type === 'video' ? '🎥 视频' : '📄 文章'}
-                        </span>
+                        <button
+                          onClick={() => handleShare(item)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-100 transition-colors border border-gray-200"
+                        >
+                          <span>📤 分享</span>
+                        </button>
                       </div>
 
                       {/* 评论区 */}
