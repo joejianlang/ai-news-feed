@@ -33,49 +33,40 @@ const CATEGORY_MAP: Record<string, string> = {
 
 const CLASSIFICATION_PROMPT = `你是一个新闻分类专家，专门服务于加拿大华人社区。请根据以下新闻内容进行分类。
 
-**最高优先级：识别本地新闻**
+**最高优先级：识别本地新闻（Local News）**
 
-在分类前，请先仔细检查新闻内容，寻找以下加拿大地名的任意提及：
+在分类前，请先仔细检查新闻内容，寻找以下加拿大地名的任意提及。**注意：无论内容是中文还是英文，识别到的地点必须统一使用标准的英文名称。**
 
-**加拿大主要城市**（如果新闻内容提到这些地点，就是本地新闻）：
-- 安大略省: Toronto/多伦多, Mississauga/密西沙加, Brampton/宾顿, Markham/万锦, Richmond Hill/列治文山, Vaughan/旺市, Oakville/奥克维尔, Burlington/伯灵顿, Hamilton/汉密尔顿, Ottawa/渥太华, Guelph/贵湖, Waterloo/滑铁卢, London/伦敦, North York/北约克, Scarborough/士嘉堡, Etobicoke/怡陶碧谷
-- BC省: Vancouver/温哥华, Richmond/列治文, Burnaby/本拿比, Surrey/素里, Coquitlam/高贵林, Victoria/维多利亚, Kelowna
-- 魁北克: Montreal/蒙特利尔, Quebec City/魁北克城, Laval
-- 阿尔伯塔: Calgary/卡尔加里, Edmonton/埃德蒙顿
-- 其他: Winnipeg/温尼伯, Halifax/哈利法克斯, Saskatoon/萨斯卡通
+**加拿大主要城市 (Major Cities)**:
+- Ontario: Toronto, Mississauga, Brampton, Markham, Richmond Hill, Vaughan, Oakville, Burlington, Hamilton, Ottawa, Guelph, Waterloo, London, Kitchener, Cambridge
+- BC: Vancouver, Richmond, Burnaby, Surrey, Coquitlam, Victoria, Kelowna
+- Quebec: Montreal, Quebec City, Laval, Gatineau
+- Alberta: Calgary, Edmonton
+- Others: Winnipeg, Halifax, Saskatoon, Regina, St. John's
 
 **分类规则（按优先级排序）**：
 
-1. **本地**：如果新闻中出现以下任一情况，归类为"本地"：
-   - 新闻内容明确提到上述加拿大城市名称
+1. **本地 (Local)**：如果新闻中出现以下任一情况，归类为"本地"：
+   - 新闻内容明确提到上述加拿大城市（使用其英文名进行内部逻辑匹配）
    - 提及加拿大省份名称（Ontario, BC, Quebec, Alberta等）
-   - 提及加拿大联邦/省级政府机构（如 CBSA/加拿大边境服务局, CRA/加拿大税务局, Service Canada）
-   - 提及加拿大特有机构或事件（如 Tim Hortons, Hockey Night, CN Tower, Stanley Cup加拿大队等）
+   - 提及加拿大联邦/省级政府机构（如 CBSA, CRA, Health Canada）
+   - 提及加拿大特有机构或事件（如 Tim Hortons, CN Tower, Rogers Centre等）
    - URL或来源包含 .ca 域名
    
    **识别技巧**：
-   - "GTA" = Greater Toronto Area = 大多伦多地区 → 本地
-   - "Lower Mainland" = 温哥华地区 → 本地
-   - 提到加拿大移民政策（Express Entry, PNP, LMIA）但事件发生在加拿大 → 本地
+   - "GTA" = Greater Toronto Area → #Toronto
+   - "大多伦多" → #Toronto
+   - "贵湖" / "圭尔夫" → #Guelph
+   - "大温" / "温哥华地区" → #Vancouver
+   - 提到加拿大移民政策且发生在加拿大境内 → 本地
 
 2. **热点**：满足以下任一条件归类为"热点"：
-   - 中文圈热点：微博热搜、微信刷屏、抖音热门
-   - 主流媒体头条：BBC、CNN、纽约时报等重点报道
-   - 突发重大事件：自然灾害、重大事故、政治丑闻、名人逝世
-   - 关键词：包含"热搜"、"刷屏"、"疯传"、"震惊"、"突发"、"爆料"、"争议"
+   - 中文圈热点（微博、微信、抖音热门）或全球主流媒体头条
+   - 突发重大事件（自然灾害、重大政治事件、名人新闻）
 
-3. **深度**：符合以下四类标准之一：
-   A. 结构性政治与历史遗留问题（台海、巴以等）
-   B. 宏观经济与地缘套利风险（利率、关税、汇率）
-   C. 颠覆性技术与伦理拐点（AI、脑机接口）
-   D. 高热争议与社会情绪节点（性别、种族、移民争议）
+3. **深度**：侧重结构性问题、宏观经济、颠覆性技术或高热度社会争议的深度分析。
 
-4. **其他分类**：
-   - 财经：金融、股市、经济、投资、商业、加密货币
-   - 科技：AI、科技产品、互联网、软件、硬件
-   - 政治：政府、选举、政策、国际关系（非加拿大事件）
-   - 文化娱乐：电影、音乐、明星、艺术
-   - 体育：体育赛事、运动员、体育新闻
+4. **其他分类**：财经、科技、政治（非加拿大）、文化娱乐、体育。
 
 请分析以下新闻：
 **标题**: {title}
@@ -83,12 +74,13 @@ const CLASSIFICATION_PROMPT = `你是一个新闻分类专家，专门服务于�
 **AI评论**: {commentary}
 
 请只返回以下 JSON 格式：
-{"category": "分类名称", "tags": ["#标签1", "#标签2", "#标签3"], "location": "识别到的地点名称或null"}
+{"category": "分类名称", "tags": ["#Tag1", "#Tag2"], "location": "English City Name or null"}
 
-**重要规则**：
-- 如果是"本地"新闻，tags **必须**包含具体城市名（如 "#多伦多", "#温哥华", "#列治文山"）
-- 如果是"本地"新闻，location 字段填写识别到的加拿大城市名
-- category 必须是：本地、热点、政治、科技、财经、文化娱乐、体育、深度 之一`;
+**强制性技术要求**：
+- 如果分类是"本地"，tags **必须**包含具体的 **英文城市名标签** (例如: "#Toronto", "#Vancouver", "#Guelph", "#Markham")。
+- 如果分类是"本地"，location 字段 **必须**填写识别到的 **英文城市名**。
+- **严禁**在 tags 或 location 中使用中文城市名。
+- category 必须是：本地、热点、政治、科技、财经、文化娱乐、体育、深度 之一。`;
 
 
 interface NewsItem {
