@@ -47,6 +47,7 @@ export interface AnalysisResult {
   summary: string;
   commentary: string;
   translatedTitle?: string;
+  shouldSkip?: boolean;
 }
 
 // 根据内容类型获取评论字数要求
@@ -84,13 +85,24 @@ export async function analyzeContent(
   // 获取字数要求
   const lengthRequirement = getCommentaryLength(contentType, isDeepDive);
 
-  // 优化后的简洁 Prompt
-  const prompt = `分析新闻并输出三部分（全部使用中文简体，禁止出现任何英文）：
+  // 优化后的 Prompt，包含内容质量过滤
+  const prompt = `分析新闻并输出以下部分（全部使用中文简体，禁止出现任何英文）：
 
 标题：${title}
 内容：${truncatedContent}
 
-输出格式：
+**首先判断**：这是否是以下类型的"服务类/概括性内容"？
+- 日程安排/节目表（如电视播放时间、直播安排）
+- 活动预告/观赛指南/购票指南
+- 周期性总结（如"本周回顾"、"今日要闻"、"每日简报"等汇总帖）
+- 纯粹的广告或促销内容
+- 天气预报、体育比分列表等纯信息罗列
+
+**如果是上述类型**，只需输出：
+【跳过】是
+
+**如果是真正的新闻报道**，输出：
+【跳过】否
 【翻译标题】${title.match(/[a-zA-Z]/) ? '（翻译成中文简体）' : '（保持原样）'}
 【摘要】（80-150字，概括核心内容、关键要素、影响，全部中文）
 【评论】（${commentaryStyle}风格，${lengthRequirement}，幽默犀利，有深度有趣味，全部使用中文简体，不要出现任何英文词汇或缩写）`;
@@ -122,7 +134,17 @@ export async function analyzeContent(
     console.log(`[AI] Tokens - Input: ${message.usage.input_tokens}, Output: ${message.usage.output_tokens} `);
     console.log(`[AI] Estimated cost: $${cost.toFixed(6)} `);
 
-    // 解析响应
+    // 解析响应 - 首先检查是否应该跳过
+    const skipMatch = response.match(/【跳过】\s*(是|否)/);
+    if (skipMatch && skipMatch[1] === '是') {
+      console.log(`[AI] Content marked as service-type, skipping: ${title}`);
+      return {
+        summary: '',
+        commentary: '',
+        shouldSkip: true,
+      };
+    }
+
     const titleMatch = response.match(/【翻译标题】\s*([\s\S]*?)\s*【摘要】/);
     const summaryMatch = response.match(/【摘要】\s*([\s\S]*?)\s*【评论】/);
     const commentaryMatch = response.match(/【评论】\s*([\s\S]*)/);
@@ -131,7 +153,9 @@ export async function analyzeContent(
       summary: summaryMatch ? summaryMatch[1].trim() : response.slice(0, 200),
       commentary: commentaryMatch ? commentaryMatch[1].trim() : '暂无评论',
       translatedTitle: titleMatch ? titleMatch[1].trim() : undefined,
+      shouldSkip: false,
     };
+
   } catch (error) {
     console.error('AI analysis failed:', error);
     throw error;

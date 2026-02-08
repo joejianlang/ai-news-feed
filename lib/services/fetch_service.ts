@@ -155,9 +155,16 @@ export async function runFetchPipeline(specificSourceId?: string) {
                                     item.content,
                                     item.title,
                                     source.commentary_style,
-                                    item.contentType,  // 传递内容类型：video 或 article
-                                    false  // isDeepDive: 在抓取时不知道分类，深度增强由 deep_dive.ts 处理
+                                    item.contentType,
+                                    false
                                 );
+
+                                // 检查 AI 是否标记为应跳过的服务类内容
+                                if (analysis.shouldSkip) {
+                                    skippedItemsCount++;
+                                    console.log(`[${source.name}] AI filtered out service-type content: ${item.title}`);
+                                    return 'CONTINUE';
+                                }
 
                                 const finalTitle = analysis.translatedTitle || item.title;
 
