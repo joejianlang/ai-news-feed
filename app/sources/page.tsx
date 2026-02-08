@@ -35,7 +35,7 @@ export default function SourcesPage() {
     commentary_style: string;
     is_active: boolean;
     youtube_channel_id: string;
-    category_id: string;
+    category_id: string | undefined;
   }>({
     name: '',
     url: '',
@@ -44,7 +44,7 @@ export default function SourcesPage() {
     commentary_style: '专业分析',
     is_active: true,
     youtube_channel_id: '',
-    category_id: '',
+    category_id: undefined,
   });
 
   // 权限检查
@@ -176,13 +176,13 @@ export default function SourcesPage() {
           commentary_style: '专业分析',
           is_active: true,
           youtube_channel_id: '',
-          category_id: '',
+          category_id: undefined,
         });
         alert(isEditing ? '✅ 更新成功！' : '✅ 创建成功！');
       } else {
         const errorData = await response.json();
         console.error('Server error:', errorData);
-        alert(`❌ 保存失败: ${errorData.error || '未知错误'}`);
+        alert(`❌ 保存失败: ${errorData.detail || errorData.error || '未知错误'}`);
       }
     } catch (error) {
       console.error('Failed to save source:', error);
@@ -199,7 +199,7 @@ export default function SourcesPage() {
       commentary_style: source.commentary_style,
       is_active: source.is_active,
       youtube_channel_id: source.youtube_channel_id || '',
-      category_id: source.category_id || '',
+      category_id: source.category_id || undefined,
     });
     setEditingId(source.id);
     setShowForm(true);
@@ -216,7 +216,7 @@ export default function SourcesPage() {
       commentary_style: '专业分析',
       is_active: true,
       youtube_channel_id: '',
-      category_id: '',
+      category_id: undefined,
     });
   };
 

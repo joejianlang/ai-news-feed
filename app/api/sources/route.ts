@@ -30,6 +30,13 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
+    // 数据清洗：如果 category_id 为空字符串，则设置为 null，防止数据库 UUID 校验失败
+    if (body.category_id === '') {
+      body.category_id = null;
+    }
+    // 删除所有值为 undefined 的属性，确保传递给 supabase 的是干净的对象
+    Object.keys(body).forEach(key => body[key] === undefined && delete body[key]);
+
     // 如果是YouTube频道，自动提取并保存频道ID
     if (body.source_type === 'youtube_channel') {
       console.log('Creating YouTube channel source, URL:', body.url);
@@ -55,9 +62,13 @@ export async function POST(request: Request) {
 
     const source = await createNewsSource(body);
     return NextResponse.json(source);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating source:', error);
-    return NextResponse.json({ error: 'Failed to create source' }, { status: 500 });
+    return NextResponse.json({
+      error: 'Failed to create source',
+      detail: error.message || 'Unknown error',
+      code: error.code
+    }, { status: 500 });
   }
 }
 
@@ -72,6 +83,13 @@ export async function PUT(request: Request) {
   try {
     const body = await request.json();
     const { id, ...updates } = body;
+
+    // 数据清洗：如果 category_id 为空字符串，则设置为 null，防止数据库 UUID 校验失败
+    if (updates.category_id === '') {
+      updates.category_id = null;
+    }
+    // 删除所有值为 undefined 的属性
+    Object.keys(updates).forEach(key => updates[key] === undefined && delete updates[key]);
 
     // 验证 ID 是否提供
     if (!id) {
@@ -111,7 +129,11 @@ export async function PUT(request: Request) {
       }, { status: 404 });
     }
 
-    return NextResponse.json({ error: 'Failed to update source' }, { status: 500 });
+    return NextResponse.json({
+      error: 'Failed to update source',
+      detail: error.message || 'Unknown error',
+      code: error.code
+    }, { status: 500 });
   }
 }
 
