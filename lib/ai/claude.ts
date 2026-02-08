@@ -1,7 +1,53 @@
 import Anthropic from '@anthropic-ai/sdk';
 import * as fs from 'fs';
 import * as path from 'path';
+import { createClient } from '@supabase/supabase-js';
 import { CURRENT_AI_CONFIG, estimateCost } from './config';
+
+// 创建 Supabase 客户端用于读取配置
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+);
+
+// 缓存配置，避免每次都查询数据库
+let configCache: Record<string, string> | null = null;
+let configCacheTime: number = 0;
+const CONFIG_CACHE_TTL = 5 * 60 * 1000; // 5 分钟缓存
+
+// 从数据库获取 AI 配置
+async function getAIConfigFromDB(): Promise<Record<string, string>> {
+  // 检查缓存
+  if (configCache && Date.now() - configCacheTime < CONFIG_CACHE_TTL) {
+    return configCache;
+  }
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('ai_config')
+      .select('config_key, config_value');
+
+    if (error) {
+      console.error('Error fetching AI config from DB:', error);
+      return {}; // 返回空对象，使用硬编码默认值
+    }
+
+    const config: Record<string, string> = {};
+    for (const item of data || []) {
+      config[item.config_key] = item.config_value;
+    }
+
+    // 更新缓存
+    configCache = config;
+    configCacheTime = Date.now();
+    console.log('[AI] Loaded config from database');
+
+    return config;
+  } catch (error) {
+    console.error('Error fetching AI config:', error);
+    return {};
+  }
+}
 
 // 手动读取 .env.local 文件
 function loadEnvFile() {
@@ -50,16 +96,16 @@ export interface AnalysisResult {
   shouldSkip?: boolean;
 }
 
-// 根据内容类型获取评论字数要求
-function getCommentaryLength(contentType: string, isDeepDive: boolean): string {
+// 根据内容类型获取评论字数要求（使用数据库配置）
+async function getCommentaryLength(contentType: string, isDeepDive: boolean, dbConfig: Record<string, string>): Promise<string> {
   if (isDeepDive) {
-    return '800-1000字，请分为三个部分：【背景】历史与来龙去脉、【分析】核心观点与深层解读、【影响】未来趋势与建议';
+    return dbConfig['commentary_length_deep_dive'] || '800-1000字，请分为三个部分：【背景】历史与来龙去脉、【分析】核心观点与深层解读、【影响】未来趋势与建议';
   }
   if (contentType === 'video') {
-    return '150-250字，简洁精炼';
+    return dbConfig['commentary_length_video'] || '150-250字，简洁精炼';
   }
   // 默认文章类型
-  return '300-500字';
+  return dbConfig['commentary_length_article'] || '300-500字';
 }
 
 export async function analyzeContent(
@@ -78,25 +124,40 @@ export async function analyzeContent(
     };
   }
 
+  // 从数据库获取配置
+  const dbConfig = await getAIConfigFromDB();
+
   // 限制内容长度以减少 token 消耗
   const maxLen = CURRENT_AI_CONFIG.maxContentLength;
   const truncatedContent = content.length > maxLen ? content.substring(0, maxLen) + '...' : content;
 
   // 获取字数要求
-  const lengthRequirement = getCommentaryLength(contentType, isDeepDive);
+  const lengthRequirement = await getCommentaryLength(contentType, isDeepDive, dbConfig);
 
-  // 优化后的 Prompt，包含内容质量过滤
+  // 获取过滤规则（从数据库或使用默认值）
+  const filterRules = dbConfig['filter_rules'] || `日程安排/节目表（如电视播放时间、直播安排）
+活动预告/观赛指南/购票指南
+周期性总结（如"本周回顾"、"今日要闻"、"每日简报"等汇总帖）
+纯粹的广告或促销内容
+天气预报、体育比分列表等纯信息罗列`;
+
+  // 获取摘要要求
+  const summaryReq = dbConfig['summary_requirements'] || '80-150字，概括核心内容、关键要素、影响，全部中文';
+
+  // 获取评论要求
+  const commentaryReq = dbConfig['commentary_requirements'] || '幽默犀利，有深度有趣味，全部使用中文简体，不要出现任何英文词汇或缩写';
+
+  // 将过滤规则格式化为列表
+  const filterRulesList = filterRules.split('\n').filter(r => r.trim()).map(r => `- ${r.trim()}`).join('\n');
+
+  // 动态生成 Prompt
   const prompt = `分析新闻并输出以下部分（全部使用中文简体，禁止出现任何英文）：
 
 标题：${title}
 内容：${truncatedContent}
 
 **首先判断**：这是否是以下类型的"服务类/概括性内容"？
-- 日程安排/节目表（如电视播放时间、直播安排）
-- 活动预告/观赛指南/购票指南
-- 周期性总结（如"本周回顾"、"今日要闻"、"每日简报"等汇总帖）
-- 纯粹的广告或促销内容
-- 天气预报、体育比分列表等纯信息罗列
+${filterRulesList}
 
 **如果是上述类型**，只需输出：
 【跳过】是
@@ -104,8 +165,8 @@ export async function analyzeContent(
 **如果是真正的新闻报道**，输出：
 【跳过】否
 【翻译标题】${title.match(/[a-zA-Z]/) ? '（翻译成中文简体）' : '（保持原样）'}
-【摘要】（80-150字，概括核心内容、关键要素、影响，全部中文）
-【评论】（${commentaryStyle}风格，${lengthRequirement}，幽默犀利，有深度有趣味，全部使用中文简体，不要出现任何英文词汇或缩写）`;
+【摘要】（${summaryReq}）
+【评论】（${commentaryStyle}风格，${lengthRequirement}，${commentaryReq}）`;
 
 
   try {
