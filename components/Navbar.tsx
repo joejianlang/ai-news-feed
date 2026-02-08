@@ -37,18 +37,8 @@ export default function Navbar() {
       <div className="max-w-2xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="relative w-8 h-8 sm:w-10 sm:h-10 overflow-hidden">
-              <Image
-                src="/logo.png"
-                alt="AI News Feed Logo"
-                fill
-                className="object-contain group-hover:scale-105 transition-transform"
-              />
-            </div>
-            <span className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-teal-600 tracking-wide hidden xs:block">
-              AI News
-            </span>
+          <Link href="/" className="text-2xl sm:text-3xl font-bold text-gray-900 hover:text-teal-600 tracking-[0.3em] flex-shrink-0 transition-colors">
+            知&nbsp;流
           </Link>
 
           {/* 搜索框 */}

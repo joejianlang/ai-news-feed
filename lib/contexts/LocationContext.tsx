@@ -15,6 +15,22 @@ export const POPULAR_CITIES = [
     { name: 'Guelph', tag: '#Guelph' },
 ];
 
+// Fallback translation mapping for UI consistency
+const CITY_NAME_MAPPING: Record<string, string> = {
+    '多伦多': 'Toronto',
+    '温哥华': 'Vancouver',
+    '蒙特利尔': 'Montreal',
+    '卡尔加里': 'Calgary',
+    '渥太华': 'Ottawa',
+    '埃德蒙顿': 'Edmonton',
+    '列治文': 'Richmond',
+    '万锦': 'Markham',
+    '贵湖': 'Guelph',
+    '圭尔夫': 'Guelph',
+    '密西沙加': 'Mississauga',
+    '滑铁卢': 'Waterloo',
+};
+
 interface LocationContextType {
     city: string | null;           // Current city name (e.g. "多伦多")
     cityTag: string | null;        // Current city tag (e.g. "#多伦多")
@@ -34,14 +50,20 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
     // Load from localStorage on mount
     useEffect(() => {
-        const savedTag = localStorage.getItem('user_city_tag');
-        const savedCity = localStorage.getItem('user_city_name');
+        let savedTag = localStorage.getItem('user_city_tag');
+        let savedCity = localStorage.getItem('user_city_name');
+
+        // Anti-migration: If saved city is Chinese, try to translate it or clear it
+        if (savedCity && CITY_NAME_MAPPING[savedCity]) {
+            savedCity = CITY_NAME_MAPPING[savedCity];
+            savedTag = `#${savedCity}`;
+            localStorage.setItem('user_city_tag', savedTag);
+            localStorage.setItem('user_city_name', savedCity);
+        }
+
         if (savedTag && savedCity) {
             setCityTag(savedTag);
             setCity(savedCity);
-        } else {
-            // Default to Toronto if nothing saved (optional, or leave null for "All Local")
-            // setManualCity('#多伦多'); 
         }
     }, []);
 
@@ -85,19 +107,22 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
                     const detectedCity = address.city || address.town || address.village || address.county;
 
                     if (detectedCity) {
+                        // Normalize detectedCity if it's in our mapping
+                        const normalizedCity = CITY_NAME_MAPPING[detectedCity] || detectedCity;
+
                         // Simple mapping logic (can be expanded)
                         let matchedTag = null;
                         let matchedName = null;
 
                         // 1. Try exact English match from list
-                        const exactMatch = POPULAR_CITIES.find(c => detectedCity.toLowerCase().includes(c.name.toLowerCase()));
+                        const exactMatch = POPULAR_CITIES.find(c => normalizedCity.toLowerCase().includes(c.name.toLowerCase()));
                         if (exactMatch) {
                             matchedTag = exactMatch.tag;
                             matchedName = exactMatch.name;
                         } else {
                             // Default to English names if not in the popular list
-                            matchedName = detectedCity;
-                            matchedTag = `#${detectedCity}`;
+                            matchedName = normalizedCity;
+                            matchedTag = `#${normalizedCity}`;
                         }
 
                         setCity(matchedName);
