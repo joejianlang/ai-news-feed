@@ -1,5 +1,4 @@
-import { createBrowserClient, createServerClient, type CookieOptions } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createBrowserClient } from '@supabase/ssr';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 // 获取环境变量
@@ -18,36 +17,6 @@ export function createSupabaseBrowserClient() {
 }
 
 /**
- * 创建服务器端 Supabase 客户端（用于 API Routes 和 Server Components）
- * 自动从 cookies 读取 PKCE verifier
- */
-export async function createSupabaseServerClient() {
-    const cookieStore = await cookies();
-
-    return createServerClient(
-        supabaseUrl,
-        supabaseAnonKey,
-        {
-            cookies: {
-                getAll() {
-                    return cookieStore.getAll();
-                },
-                setAll(cookiesToSet) {
-                    try {
-                        cookiesToSet.forEach(({ name, value, options }) => {
-                            cookieStore.set(name, value, options);
-                        });
-                    } catch (error) {
-                        // 在 Server Components 中设置 cookie 可能会失败，这是预期行为
-                        // 因为 Server Components 在渲染后无法修改 headers
-                    }
-                },
-            },
-        }
-    );
-}
-
-/**
  * 检查 Supabase 是否已配置
  */
 export function isSupabaseConfigured(): boolean {
@@ -62,7 +31,7 @@ let _legacySupabase: SupabaseClient | null = null;
 
 /**
  * 获取传统的 Supabase 客户端（用于服务器端非 cookie 场景）
- * @deprecated 推荐使用 createSupabaseBrowserClient 或 createSupabaseServerClient
+ * @deprecated 推荐使用 createSupabaseBrowserClient
  */
 export function getSupabaseClient(): SupabaseClient {
     if (!_legacySupabase) {
@@ -88,12 +57,10 @@ export function getSupabaseClient(): SupabaseClient {
 export const supabase = new Proxy({} as SupabaseClient, {
     get(_target, prop) {
         try {
-            // 在浏览器端使用新的 SSR 客户端
             if (typeof window !== 'undefined') {
                 const client = createSupabaseBrowserClient();
                 return (client as any)[prop];
             }
-            // 在服务器端使用传统客户端
             const client = getSupabaseClient();
             return (client as any)[prop];
         } catch (e) {

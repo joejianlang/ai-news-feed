@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabase/client';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { getUserByEmail, createUser } from '@/lib/supabase/queries';
 import { generateToken } from '@/lib/auth/jwt';
 
