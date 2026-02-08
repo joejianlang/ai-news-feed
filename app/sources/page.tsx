@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { NewsSource, Category, SourceType } from '@/types';
 import { useUser } from '@/lib/contexts/UserContext';
 import Navbar from '@/components/Navbar';
+import Toast from '@/components/Toast';
 
 interface FetchStatus {
   is_running: boolean;
@@ -26,6 +27,7 @@ export default function SourcesPage() {
   const [testingIds, setTestingIds] = useState<Set<string>>(new Set());
   const [fetchStatus, setFetchStatus] = useState<FetchStatus>({ is_running: false });
   const [isStartingCron, setIsStartingCron] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [aiHealth, setAiHealth] = useState<any>(null);
   const [formData, setFormData] = useState<{
     name: string;
@@ -55,7 +57,7 @@ export default function SourcesPage() {
         router.push('/login?redirect=/sources');
       } else if (user.role !== 'admin') {
         // 不是管理员，跳转到首页
-        alert('此页面仅管理员可访问');
+        setToast({ message: 'Access denied. Admin only.', type: 'error' });
         router.push('/');
       }
     }
@@ -127,11 +129,11 @@ export default function SourcesPage() {
 
   const handleStartCronFetch = async () => {
     if (fetchStatus.is_running) {
-      alert('已有抓取任务正在运行中');
+      setToast({ message: 'A fetch task is already running', type: 'info' });
       return;
     }
 
-    if (!confirm('确定要开始顺序抓取所有新闻源吗？这可能需要较长时间。')) {
+    if (!confirm('Are you sure you want to start a sequential fetch for all news sources? This may take some time.')) {
       return;
     }
 
@@ -146,7 +148,7 @@ export default function SourcesPage() {
 
     } catch (error) {
       console.error('Failed to start cron fetch:', error);
-      alert('启动抓取失败');
+      setToast({ message: 'Failed to start fetch', type: 'error' });
     } finally {
       setIsStartingCron(false);
     }
@@ -178,15 +180,15 @@ export default function SourcesPage() {
           youtube_channel_id: '',
           category_id: undefined,
         });
-        alert(isEditing ? '✅ 更新成功！' : '✅ 创建成功！');
+        setToast({ message: isEditing ? 'Source updated successfully' : 'Source created successfully', type: 'success' });
       } else {
         const errorData = await response.json();
         console.error('Server error:', errorData);
-        alert(`❌ 保存失败: ${errorData.detail || errorData.error || '未知错误'}`);
+        setToast({ message: `Failed to save: ${errorData.detail || errorData.error || 'Unknown error'}`, type: 'error' });
       }
     } catch (error) {
       console.error('Failed to save source:', error);
-      alert('❌ 保存失败，请检查网络连接');
+      setToast({ message: 'Failed to save, please check your connection', type: 'error' });
     }
   };
 
@@ -238,7 +240,7 @@ export default function SourcesPage() {
       setDeletingId(null);
     } catch (error) {
       console.error('Failed to delete source:', error);
-      alert('删除失败');
+      setToast({ message: 'Delete failed', type: 'error' });
     }
   };
 
@@ -267,30 +269,30 @@ export default function SourcesPage() {
       });
 
       const result = await response.json();
-      alert(`成功抓取 ${result.count} 条新闻`);
+      setToast({ message: `Successfully fetched ${result.count} items`, type: 'success' });
       loadSources(); // 刷新列表
     } catch (error) {
       console.error('Failed to fetch news:', error);
-      alert('抓取失败');
+      setToast({ message: 'Fetch failed', type: 'error' });
     }
   };
 
   const handleResetStatus = async () => {
-    if (!confirm('确定要重置抓取状态吗？如果有任务卡住了，可以使用此功能重置。')) {
+    if (!confirm('Are you sure you want to reset the fetch status? Use this if a task is stuck.')) {
       return;
     }
 
     try {
       const response = await fetch('/api/cron/reset', { method: 'GET' });
       if (response.ok) {
-        alert('✅ 抓取状态已重置');
+        setToast({ message: 'Fetch status reset successfully', type: 'success' });
         await loadFetchStatus();
       } else {
-        alert('❌ 重置失败');
+        setToast({ message: 'Reset failed', type: 'error' });
       }
     } catch (error) {
       console.error('Reset failed:', error);
-      alert('❌ 重置失败');
+      setToast({ message: 'Reset failed', type: 'error' });
     }
   };
 
@@ -312,7 +314,7 @@ export default function SourcesPage() {
     setConfirmFetchAll(false);
 
     if (fetchStatus.is_running) {
-      alert('已有抓取任务正在运行中');
+      setToast({ message: 'A fetch task is already running', type: 'info' });
       return;
     }
 
@@ -335,7 +337,7 @@ export default function SourcesPage() {
       if (!fetchResponse.ok) {
         const errorText = await fetchResponse.text();
         console.error('❌ 抓取API返回错误:', errorText);
-        alert(`启动抓取失败: ${errorText}`);
+        setToast({ message: `Failed to start fetch: ${errorText}`, type: 'error' });
         return;
       }
 
@@ -350,7 +352,7 @@ export default function SourcesPage() {
 
     } catch (error) {
       console.error('❌ 触发抓取异常:', error);
-      alert(`启动抓取失败: ${error instanceof Error ? error.message : '未知错误'}`);
+      setToast({ message: `Failed to start fetch: ${error instanceof Error ? error.message : 'Unknown error'}`, type: 'error' });
     } finally {
       setIsStartingCron(false);
     }
@@ -374,15 +376,16 @@ export default function SourcesPage() {
       const result = await response.json();
 
       if (result.success) {
-        alert(`✅ 测试通过！\n抓取到 ${result.itemCount} 条内容\n耗时: ${result.duration}ms\n\n示例标题:\n${result.sampleTitles?.join('\n') || '无'}`);
+        setToast({ message: `Test passed! Fetched ${result.itemCount} items`, type: 'success' });
+        // Optional: you might want a more detailed view for the sample titles later
       } else {
-        alert(`❌ 测试未通过\n错误: ${result.error}`);
+        setToast({ message: `Test failed: ${result.error}`, type: 'error' });
       }
 
       await loadSources(); // 刷新列表以显示新状态
     } catch (error) {
       console.error('Test failed:', error);
-      alert('测试请求失败');
+      setToast({ message: 'Test request failed', type: 'error' });
     } finally {
       setTestingIds(prev => {
         const next = new Set(prev);
@@ -393,7 +396,7 @@ export default function SourcesPage() {
   };
 
   const handleTestAll = async () => {
-    if (!confirm('确定要测试所有新闻源吗？这可能需要几分钟时间。')) {
+    if (!confirm('Are you sure you want to test all sources? This may take several minutes.')) {
       return;
     }
 
@@ -401,7 +404,7 @@ export default function SourcesPage() {
       await handleTest(source);
     }
 
-    alert('所有新闻源测试完成！');
+    setToast({ message: 'All sources tested successfully', type: 'success' });
   };
 
   // 加载中或权限检查中
@@ -763,6 +766,14 @@ export default function SourcesPage() {
           )}
         </div>
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

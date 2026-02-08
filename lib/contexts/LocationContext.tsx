@@ -4,14 +4,14 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Common Canadian cities for manual selection
 export const POPULAR_CITIES = [
-    { name: '多伦多', tag: '#多伦多' },
-    { name: '温哥华', tag: '#温哥华' },
-    { name: '蒙特利尔', tag: '#蒙特利尔' },
-    { name: '卡尔加里', tag: '#卡尔加里' },
-    { name: '渥太华', tag: '#渥太华' },
-    { name: '埃德蒙顿', tag: '#埃德蒙顿' },
-    { name: '列治文', tag: '#列治文' },
-    { name: '万锦', tag: '#万锦' },
+    { name: 'Toronto', tag: '#Toronto' },
+    { name: 'Vancouver', tag: '#Vancouver' },
+    { name: 'Montreal', tag: '#Montreal' },
+    { name: 'Calgary', tag: '#Calgary' },
+    { name: 'Ottawa', tag: '#Ottawa' },
+    { name: 'Edmonton', tag: '#Edmonton' },
+    { name: 'Richmond', tag: '#Richmond' },
+    { name: 'Markham', tag: '#Markham' },
 ];
 
 interface LocationContextType {
@@ -72,7 +72,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
 
                     // Use OpenStreetMap Nominatim for reverse geocoding
                     const response = await fetch(
-                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&accept-language=zh`
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&accept-language=en`
                     );
 
                     if (!response.ok) throw new Error('Geocoding failed');
@@ -81,36 +81,22 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
                     const address = data.address;
 
                     // Try to match standard cities
-                    // Nominatim returns: city, town, village, county, state, etc.
                     const detectedCity = address.city || address.town || address.village || address.county;
 
                     if (detectedCity) {
                         // Simple mapping logic (can be expanded)
-                        // If detected "Toronto", find "#多伦多" logic
                         let matchedTag = null;
                         let matchedName = null;
 
-                        // 1. Try exact Chinese match from list
-                        const exactMatch = POPULAR_CITIES.find(c => detectedCity.includes(c.name));
+                        // 1. Try exact English match from list
+                        const exactMatch = POPULAR_CITIES.find(c => detectedCity.toLowerCase().includes(c.name.toLowerCase()));
                         if (exactMatch) {
                             matchedTag = exactMatch.tag;
                             matchedName = exactMatch.name;
                         } else {
-                            // 2. If it's English name ("Toronto"), map it
-                            // Since we requested `accept-language=zh`, it should be Chinese ideally.
-                            // But fallback:
-                            if (detectedCity.includes('Toronto')) { matchedTag = '#多伦多'; matchedName = '多伦多'; }
-                            else if (detectedCity.includes('Vancouver')) { matchedTag = '#温哥华'; matchedName = '温哥华'; }
-                            else if (detectedCity.includes('Montreal')) { matchedTag = '#蒙特利尔'; matchedName = '蒙特利尔'; }
-                            else if (detectedCity.includes('Calgary')) { matchedTag = '#卡尔加里'; matchedName = '卡尔加里'; }
-                            else if (detectedCity.includes('Ottawa')) { matchedTag = '#渥太华'; matchedName = '渥太华'; }
-                            else if (detectedCity.includes('Richmond')) { matchedTag = '#列治文'; matchedName = '列治文'; }
-                            else if (detectedCity.includes('Markham')) { matchedTag = '#万锦'; matchedName = '万锦'; }
-                            else {
-                                // If unknown city, just use the name as tag
-                                matchedName = detectedCity;
-                                matchedTag = `#${detectedCity}`;
-                            }
+                            // Default to English names if not in the popular list
+                            matchedName = detectedCity;
+                            matchedTag = `#${detectedCity}`;
                         }
 
                         setCity(matchedName);
@@ -119,18 +105,18 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
                         localStorage.setItem('user_city_tag', matchedTag);
                         localStorage.setItem('user_city_name', matchedName);
                     } else {
-                        setError('无法识别您的城市');
+                        setError('Could not identify your city');
                     }
                 } catch (err) {
                     console.error('Location detection failed:', err);
-                    setError('获取位置名称失败');
+                    setError('Failed to get location name');
                 } finally {
                     setIsLocating(false);
                 }
             },
             (err) => {
                 console.error('Geolocation error:', err);
-                setError('获取位置权限被拒绝或失败');
+                setError('Location permission denied or failed');
                 setIsLocating(false);
             }
         );

@@ -8,6 +8,7 @@ import { useLocation, POPULAR_CITIES } from '@/lib/contexts/LocationContext';
 import Navbar from '@/components/Navbar';
 import FollowButton from '@/components/FollowButton';
 import CommentSection from '@/components/comments/CommentSection';
+import Toast from '@/components/Toast';
 
 interface NewsBatch {
   batchTime: string;
@@ -37,6 +38,7 @@ export default function Home() {
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const [expandedCommentary, setExpandedCommentary] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // null = 全部
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   // 加载分类列表
   useEffect(() => {
@@ -167,14 +169,14 @@ export default function Home() {
       } else {
         // Fallback: Copy to clipboard
         await navigator.clipboard.writeText(`${shareData.title}\n${item.original_url}`);
-        alert('链接已复制到剪贴板');
+        setToast({ message: 'Link copied to clipboard', type: 'success' });
       }
     } catch (error) {
       console.error('Error sharing:', error);
       // Fallback: Copy to clipboard if sharing fails
       try {
         await navigator.clipboard.writeText(`${item.title}\n${item.original_url}`);
-        alert('链接已复制到剪贴板');
+        setToast({ message: 'Link copied to clipboard', type: 'success' });
       } catch (copyError) {
         console.error('Copy failed:', copyError);
       }
@@ -246,11 +248,11 @@ export default function Home() {
         <div className="bg-teal-50 border-b border-teal-100">
           <div className="max-w-2xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-teal-800">
-              <span>📍 当前定位:</span>
+              <span>📍 Current Location:</span>
               {isLocating ? (
-                <span className="animate-pulse">正在定位...</span>
+                <span className="animate-pulse">Locating...</span>
               ) : (
-                <span className="font-bold text-lg">{city || '全部本地新闻'}</span>
+                <span className="font-bold text-lg">{city || 'All Local News'}</span>
               )}
               {locationError && <span className="text-red-500 text-xs">({locationError})</span>}
             </div>
@@ -261,7 +263,7 @@ export default function Home() {
                 disabled={isLocating}
                 className="text-xs bg-white text-teal-600 border border-teal-200 px-3 py-1 rounded-full hover:bg-teal-100 transition-colors"
               >
-                📡 重新定位
+                📡 Relocate
               </button>
 
               <select
@@ -269,7 +271,7 @@ export default function Home() {
                 value={cityTag || ''}
                 onChange={(e) => setManualCity(e.target.value)}
               >
-                <option value="">全部城市</option>
+                <option value="">All Cities</option>
                 {POPULAR_CITIES.map(c => (
                   <option key={c.tag} value={c.tag}>{c.name}</option>
                 ))}
@@ -288,14 +290,6 @@ export default function Home() {
         ) : newsBatches.length === 0 ? (
           <div className="flex flex-col justify-center items-center py-20 text-center">
             <div className="text-gray-500 mb-4">暂无新闻</div>
-            {user?.role === 'admin' && (
-              <Link
-                href="/sources"
-                className="bg-teal-500 text-white px-6 py-2 rounded-full hover:bg-teal-600"
-              >
-                添加新闻源
-              </Link>
-            )}
           </div>
         ) : (
           <div className="space-y-6">
@@ -478,6 +472,14 @@ export default function Home() {
         <div className="text-center py-8 text-gray-400 text-sm">
           共 {newsBatches.length} 批更新，累计 {getTotalNewsCount()} 条新闻
         </div>
+      )}
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );
