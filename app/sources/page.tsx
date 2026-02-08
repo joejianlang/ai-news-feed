@@ -557,11 +557,10 @@ export default function SourcesPage() {
           )}
         </div>
 
-        {showForm && (
+        {/* 添加新闻源表单 (仅在非编辑模式下显示) */}
+        {showForm && !editingId && (
           <form onSubmit={handleSubmit} className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-lg shadow-lg mb-8 border border-blue-200">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">
-              {editingId ? '✏️ 编辑新闻源' : '➕ 添加新闻源'}
-            </h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">➕ 添加新闻源</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700">名称</label>
@@ -598,8 +597,6 @@ export default function SourcesPage() {
                   <option value="web">网页</option>
                 </select>
               </div>
-
-              {/* 分类选择已移除 - 由 AI 自动分类 */}
 
               {formData.source_type === 'youtube_channel' && (
                 <div className="md:col-span-2">
@@ -641,121 +638,201 @@ export default function SourcesPage() {
               </div>
             </div>
 
-            <div className="flex gap-4 mt-4">
+            <div className="flex gap-4 mt-6">
               <button
                 type="submit"
-                className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600"
+                className="bg-blue-600 text-white px-8 py-2.5 rounded-lg hover:bg-blue-700 font-bold shadow-md transition-all active:scale-95"
               >
-                {editingId ? '保存' : '创建'}
+                创建新闻源
               </button>
-              {editingId && (
-                <button
-                  type="button"
-                  onClick={handleCancelEdit}
-                  className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600"
-                >
-                  取消
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="bg-white text-gray-600 border border-gray-300 px-8 py-2.5 rounded-lg hover:bg-gray-50 font-medium transition-all"
+              >
+                取消
+              </button>
             </div>
           </form>
         )}
 
         <div className="space-y-4">
           {sources.map(source => (
-            <div key={source.id} className="bg-white p-6 rounded-lg shadow-md">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold mb-2">{source.name}</h3>
-                  <p className="text-gray-600 text-sm mb-2">{source.url}</p>
-                  <div className="flex gap-4 text-sm text-gray-500 flex-wrap">
-                    <span>
-                      类型: {
-                        source.source_type === 'youtube_channel' ? 'YouTube 频道' :
-                          source.source_type === 'youtube' ? 'YouTube 视频' :
-                            source.source_type === 'rss' ? 'RSS' : '网页'
-                      }
-                    </span>
-                    {source.category_id && (
-                      <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                        {categories.find(c => c.id === source.category_id)?.name || '未知分类'}
-                      </span>
-                    )}
-                    <span>风格: {source.commentary_style}</span>
-                    <span>间隔: {source.fetch_interval}秒</span>
-                    {/* 测试状态标签 */}
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${source.test_status === 'passed'
-                      ? 'bg-green-100 text-green-700'
-                      : source.test_status === 'failed'
-                        ? 'bg-red-100 text-red-700'
-                        : 'bg-gray-100 text-gray-600'
-                      }`}>
-                      {source.test_status === 'passed' ? '✅ 已通过' :
-                        source.test_status === 'failed' ? '❌ 测试未通过' :
-                          '⏳ 待测试'}
-                    </span>
+            <div key={source.id} id={`source-${source.id}`} className="bg-white rounded-lg shadow-md overflow-hidden transition-all border border-gray-200">
+              {editingId === source.id ? (
+                /* 内联编辑表单 */
+                <form onSubmit={handleSubmit} className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-gray-800">✏️ 编辑新闻源: {source.name}</h3>
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 text-sm font-bold shadow-sm"
+                      >
+                        保存修改
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelEdit}
+                        className="bg-white text-gray-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 text-sm font-medium"
+                      >
+                        取消
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex gap-4 text-xs text-gray-400 mt-2">
-                    {source.last_fetched_at && (
-                      <span>最后抓取: {new Date(source.last_fetched_at).toLocaleString('zh-CN')}</span>
-                    )}
-                    {source.tested_at && (
-                      <span>最后测试: {new Date(source.tested_at).toLocaleString('zh-CN')}</span>
-                    )}
-                  </div>
-                </div>
 
-                <div className="flex gap-2 flex-wrap">
-                  <button
-                    onClick={() => handleTest(source)}
-                    disabled={testingIds.has(source.id)}
-                    className={`px-4 py-2 rounded text-sm ${testingIds.has(source.id)
-                      ? 'bg-purple-300 text-white cursor-not-allowed'
-                      : 'bg-purple-500 text-white hover:bg-purple-600'
-                      }`}
-                  >
-                    {testingIds.has(source.id) ? '测试中...' : '🧪 测试'}
-                  </button>
-                  <button
-                    onClick={() => handleEdit(source)}
-                    className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 text-sm"
-                  >
-                    编辑
-                  </button>
-                  <button
-                    onClick={() => handleFetchNow(source.id)}
-                    disabled={source.test_status === 'failed'}
-                    className={`px-4 py-2 rounded text-sm ${source.test_status === 'failed'
-                      ? 'bg-blue-300 text-white cursor-not-allowed'
-                      : 'bg-blue-500 text-white hover:bg-blue-600'
-                      }`}
-                    title={source.test_status === 'failed' ? '测试未通过，无法抓取' : '立即抓取'}
-                  >
-                    立即抓取
-                  </button>
-                  <button
-                    onClick={() => handleToggle(source)}
-                    className={`px-4 py-2 rounded text-sm ${source.test_status === 'failed'
-                      ? 'bg-orange-500 text-white hover:bg-orange-600'
-                      : source.is_active
-                        ? 'bg-green-500 text-white hover:bg-green-600'
-                        : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-                      }`}
-                  >
-                    {source.test_status === 'failed' ? '⚠️ 待修复' :
-                      source.is_active ? '✅ 已启用' : '已禁用'}
-                  </button>
-                  <button
-                    onClick={() => handleDelete(source.id)}
-                    className={`px-4 py-2 rounded text-sm text-white transition-all duration-200 ${deletingId === source.id
-                      ? 'bg-red-700 hover:bg-red-800 font-bold animate-pulse'
-                      : 'bg-red-500 hover:bg-red-600'
-                      }`}
-                  >
-                    {deletingId === source.id ? '⚠️ 确认删除？' : '删除'}
-                  </button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1">名称</label>
+                      <input
+                        type="text"
+                        value={formData.name}
+                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 focus:border-yellow-500 outline-none transition-all"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1">URL</label>
+                      <input
+                        type="url"
+                        value={formData.url}
+                        onChange={e => setFormData({ ...formData, url: e.target.value })}
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 focus:border-yellow-500 outline-none transition-all"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1">类型</label>
+                      <select
+                        value={formData.source_type}
+                        onChange={e => setFormData({ ...formData, source_type: e.target.value as any })}
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 focus:border-yellow-500 outline-none transition-all"
+                      >
+                        <option value="rss">RSS</option>
+                        <option value="youtube">YouTube 单个视频</option>
+                        <option value="youtube_channel">YouTube 频道</option>
+                        <option value="web">网页</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1">抓取间隔（秒）</label>
+                      <input
+                        type="number"
+                        value={formData.fetch_interval}
+                        onChange={e => setFormData({ ...formData, fetch_interval: parseInt(e.target.value) })}
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 focus:border-yellow-500 outline-none transition-all"
+                        min="60"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1">评论风格</label>
+                      <input
+                        type="text"
+                        value={formData.commentary_style}
+                        onChange={e => setFormData({ ...formData, commentary_style: e.target.value })}
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 focus:border-yellow-500 outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                </form>
+              ) : (
+                /* 常规显示卡片 */
+                <div className="p-6">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold mb-2">{source.name}</h3>
+                      <p className="text-gray-600 text-sm mb-2 break-all">{source.url}</p>
+                      <div className="flex gap-4 text-sm text-gray-500 flex-wrap">
+                        <span>
+                          类型: {
+                            source.source_type === 'youtube_channel' ? 'YouTube 频道' :
+                              source.source_type === 'youtube' ? 'YouTube 视频' :
+                                source.source_type === 'rss' ? 'RSS' : '网页'
+                          }
+                        </span>
+                        {source.category_id && (
+                          <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                            {categories.find(c => c.id === source.category_id)?.name || '未知分类'}
+                          </span>
+                        )}
+                        <span>风格: {source.commentary_style}</span>
+                        <span>间隔: {source.fetch_interval}秒</span>
+                        {/* 测试状态标签 */}
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${source.test_status === 'passed'
+                          ? 'bg-green-100 text-green-700'
+                          : source.test_status === 'failed'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-gray-100 text-gray-600'
+                          }`}>
+                          {source.test_status === 'passed' ? '✅ 已通过' :
+                            source.test_status === 'failed' ? '❌ 测试未通过' :
+                              '⏳ 待测试'}
+                        </span>
+                      </div>
+                      <div className="flex gap-4 text-xs text-gray-400 mt-2">
+                        {source.last_fetched_at && (
+                          <span>最后抓取: {new Date(source.last_fetched_at).toLocaleString('zh-CN')}</span>
+                        )}
+                        {source.tested_at && (
+                          <span>最后测试: {new Date(source.tested_at).toLocaleString('zh-CN')}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 flex-wrap ml-4">
+                      <button
+                        onClick={() => handleTest(source)}
+                        disabled={testingIds.has(source.id)}
+                        className={`px-4 py-2 rounded text-sm transition-all ${testingIds.has(source.id)
+                          ? 'bg-purple-300 text-white cursor-not-allowed'
+                          : 'bg-purple-500 text-white hover:bg-purple-600 active:scale-95 shadow-sm'
+                          }`}
+                      >
+                        {testingIds.has(source.id) ? '测试中...' : '🧪 测试'}
+                      </button>
+                      <button
+                        onClick={() => handleEdit(source)}
+                        className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 text-sm active:scale-95 shadow-sm transition-all"
+                      >
+                        编辑
+                      </button>
+                      <button
+                        onClick={() => handleFetchNow(source.id)}
+                        disabled={source.test_status === 'failed'}
+                        className={`px-4 py-2 rounded text-sm transition-all ${source.test_status === 'failed'
+                          ? 'bg-blue-300 text-white cursor-not-allowed'
+                          : 'bg-blue-500 text-white hover:bg-blue-600 active:scale-95 shadow-sm'
+                          }`}
+                        title={source.test_status === 'failed' ? '测试未通过，无法抓取' : '立即抓取'}
+                      >
+                        立即抓取
+                      </button>
+                      <button
+                        onClick={() => handleToggle(source)}
+                        className={`px-4 py-2 rounded text-sm transition-all ${source.test_status === 'failed'
+                          ? 'bg-orange-500 text-white hover:bg-orange-600'
+                          : source.is_active
+                            ? 'bg-green-500 text-white hover:bg-green-600'
+                            : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                          }`}
+                      >
+                        {source.test_status === 'failed' ? '⚠️ 待修复' :
+                          source.is_active ? '✅ 已启用' : '已禁用'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(source.id)}
+                        className={`px-4 py-2 rounded text-sm text-white transition-all duration-200 ${deletingId === source.id
+                          ? 'bg-red-700 hover:bg-red-800 font-bold animate-pulse'
+                          : 'bg-red-500 hover:bg-red-600 active:scale-95 shadow-sm'
+                          }`}
+                      >
+                        {deletingId === source.id ? '⚠️ 确认删除？' : '删除'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ))}
 
