@@ -221,27 +221,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 副导航栏 */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-2xl mx-auto px-4 py-2 flex justify-end items-center gap-4">
-          <button
-            onClick={handleRefresh}
-            className="text-teal-500 hover:text-teal-600 font-medium text-sm"
-            disabled={isLoading}
-          >
-            {isLoading ? '刷新中...' : '🔄 刷新'}
-          </button>
-          <label className="flex items-center gap-2 text-sm text-gray-600">
-            <input
-              type="checkbox"
-              checked={autoRefresh}
-              onChange={e => setAutoRefresh(e.target.checked)}
-              className="rounded"
-            />
-            自动刷新
-          </label>
-        </div>
-      </div>
+
 
       {/* 地理位置栏 - 仅在"本地"分类显示 */}
       {categories.find(c => c.id === selectedCategory)?.name === '本地' && (
@@ -392,46 +372,39 @@ export default function Home() {
                         );
                       })()}
 
-                      {/* 内容摘要（视频不显示） */}
+                      {/* 内容摘要 */}
                       {item.ai_summary && item.content_type === 'article' && (
                         <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-teal-50 rounded-lg border-l-4 border-teal-400">
-                          <div className="text-sm font-bold text-teal-700 mb-2">📝 内容摘要</div>
-                          <p className="text-gray-800 text-base leading-normal">{item.ai_summary}</p>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="text-sm font-bold text-teal-700">📝 内容摘要</div>
+                            <button
+                              onClick={() => toggleCommentary(`${item.id}-summary`)}
+                              className="text-teal-600 hover:text-teal-800 text-xs font-medium"
+                            >
+                              {expandedCommentary.has(`${item.id}-summary`) ? '收起 ▲' : '查看全文 ▼'}
+                            </button>
+                          </div>
+                          <p className={`text-gray-800 text-base leading-normal ${expandedCommentary.has(`${item.id}-summary`) ? '' : 'line-clamp-1'}`}>
+                            {item.ai_summary}
+                          </p>
                         </div>
                       )}
 
                       {/* 专业解读 */}
                       {item.ai_commentary && (
                         <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-cyan-50 rounded-lg border-l-4 border-cyan-400">
-                          <div className="text-sm font-bold text-cyan-700 mb-2">💬 专业解读</div>
-                          {(() => {
-                            const isExpanded = expandedCommentary.has(item.id);
-                            // 判断当前是否在查看深度分类
-                            const currentCategory = categories.find(c => c.id === selectedCategory);
-                            const isDeepDiveCategory = currentCategory?.name === '深度';
-                            // 深度分类默认显示 300 字，其他分类显示 100 字
-                            const truncateLength = isDeepDiveCategory ? 300 : 100;
-                            const shouldTruncate = item.ai_commentary.length > truncateLength;
-                            const displayText = isExpanded || !shouldTruncate
-                              ? item.ai_commentary
-                              : item.ai_commentary.substring(0, truncateLength) + '...';
-
-                            return (
-                              <>
-                                <p className="text-gray-800 text-base leading-normal whitespace-pre-wrap">
-                                  {displayText}
-                                </p>
-                                {shouldTruncate && (
-                                  <button
-                                    onClick={() => toggleCommentary(item.id)}
-                                    className="mt-2 text-purple-600 hover:text-purple-800 text-xs font-medium transition-colors"
-                                  >
-                                    {isExpanded ? '收起 ▲' : '展开阅读更多 ▼'}
-                                  </button>
-                                )}
-                              </>
-                            );
-                          })()}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="text-sm font-bold text-cyan-700">💬 专业解读</div>
+                            <button
+                              onClick={() => toggleCommentary(item.id)}
+                              className="text-cyan-600 hover:text-cyan-800 text-xs font-medium"
+                            >
+                              {expandedCommentary.has(item.id) ? '收起 ▲' : '展开解读 ▼'}
+                            </button>
+                          </div>
+                          <p className={`text-gray-800 text-base leading-normal whitespace-pre-wrap ${expandedCommentary.has(item.id) ? '' : 'line-clamp-1'}`}>
+                            {item.ai_commentary}
+                          </p>
                         </div>
                       )}
 

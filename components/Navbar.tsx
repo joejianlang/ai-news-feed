@@ -33,11 +33,11 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 bg-white border-b border-gray-200 z-20 shadow-sm">
+    <nav className="sticky top-0 bg-teal-600 border-b border-teal-700 z-20 shadow-md">
       <div className="max-w-2xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="text-2xl sm:text-3xl font-bold text-gray-900 hover:text-teal-600 tracking-[0.3em] flex-shrink-0 transition-colors">
+          <Link href="/" className="text-2xl sm:text-3xl font-bold text-white hover:text-teal-100 tracking-[0.3em] flex-shrink-0 transition-colors">
             智&nbsp;流
           </Link>
 
@@ -49,11 +49,11 @@ export default function Navbar() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="搜索新闻..."
-                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-full px-4 py-2 pr-10 bg-teal-700/50 border border-teal-500/50 rounded-full focus:outline-none focus:ring-2 focus:ring-white/30 text-white placeholder-teal-100 text-sm transition-all"
               />
               <button
                 type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-teal-100 hover:text-white"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -67,7 +67,7 @@ export default function Navbar() {
             {user && (
               <Link
                 href="/following"
-                className="text-gray-700 hover:text-blue-600 font-medium"
+                className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
               >
                 我的关注
               </Link>
@@ -76,13 +76,13 @@ export default function Navbar() {
               <>
                 <Link
                   href="/recommendations"
-                  className="text-gray-700 hover:text-blue-600 font-medium"
+                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
                 >
                   推荐源
                 </Link>
                 <Link
                   href="/sources"
-                  className="text-gray-700 hover:text-blue-600 font-medium"
+                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
                 >
                   管理源
                 </Link>
@@ -94,12 +94,12 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-teal-50">
                   欢迎, {user.username}
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="text-sm text-gray-600 hover:text-gray-800"
+                  className="text-sm text-teal-100 hover:text-white transition-colors"
                 >
                   退出
                 </button>
@@ -108,13 +108,13 @@ export default function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className="text-sm text-gray-600 hover:text-gray-800"
+                  className="text-sm text-white hover:text-teal-100 font-medium"
                 >
                   登录
                 </Link>
                 <Link
                   href="/register"
-                  className="text-sm bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors shadow-sm font-medium"
+                  className="text-sm bg-white text-teal-600 px-4 py-2 rounded-lg hover:bg-teal-50 transition-colors shadow-sm font-bold"
                 >
                   注册
                 </Link>
@@ -124,7 +124,7 @@ export default function Navbar() {
 
           {/* 移动端菜单按钮 */}
           <button
-            className="md:hidden p-2 -mr-2 text-gray-600"
+            className="md:hidden p-2 -mr-2 text-white"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="菜单"
           >
@@ -142,7 +142,7 @@ export default function Navbar() {
 
         {/* 移动端下拉菜单 */}
         {isMenuOpen && (
-          <div className="md:hidden mt-3 pt-3 border-t border-gray-100">
+          <div className="md:hidden mt-3 pt-3 border-t border-teal-500">
             {/* 移动端搜索框 */}
             <form onSubmit={handleSearch} className="mb-3">
               <div className="relative">
@@ -151,11 +151,11 @@ export default function Navbar() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="搜索新闻..."
-                  className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
+                  className="w-full px-4 py-2 pr-10 bg-teal-700/50 border border-teal-500/50 rounded-full focus:outline-none focus:ring-2 focus:ring-white/30 text-white placeholder-teal-100 text-sm"
                 />
                 <button
                   type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-teal-600"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-teal-100 hover:text-white"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -168,7 +168,7 @@ export default function Navbar() {
               {user && (
                 <Link
                   href="/following"
-                  className="py-2 text-gray-700 hover:text-teal-600 font-medium"
+                  className="py-2 text-white hover:text-teal-100 font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   我的关注
@@ -178,14 +178,14 @@ export default function Navbar() {
                 <>
                   <Link
                     href="/recommendations"
-                    className="py-2 text-gray-700 hover:text-teal-600 font-medium"
+                    className="py-2 text-white hover:text-teal-100 font-medium"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     推荐源
                   </Link>
                   <Link
                     href="/sources"
-                    className="py-2 text-gray-700 hover:text-teal-600 font-medium"
+                    className="py-2 text-white hover:text-teal-100 font-medium"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     管理源
@@ -193,15 +193,15 @@ export default function Navbar() {
                 </>
               )}
 
-              <div className="pt-3 border-t border-gray-100">
+              <div className="pt-3 border-t border-teal-500">
                 {user ? (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-teal-50">
                       {user.username}
                     </span>
                     <button
                       onClick={handleLogout}
-                      className="text-sm text-red-500 hover:text-red-600"
+                      className="text-sm text-red-200 hover:text-red-100"
                     >
                       退出登录
                     </button>
@@ -210,14 +210,14 @@ export default function Navbar() {
                   <div className="flex gap-3">
                     <Link
                       href="/login"
-                      className="flex-1 text-center py-2 text-gray-600 border border-gray-300 rounded-lg"
+                      className="flex-1 text-center py-2 text-white border border-teal-400 rounded-lg"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       登录
                     </Link>
                     <Link
                       href="/register"
-                      className="flex-1 text-center py-2 bg-teal-600 text-white rounded-lg shadow-sm"
+                      className="flex-1 text-center py-2 bg-white text-teal-600 rounded-lg shadow-sm font-bold"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       注册
@@ -230,5 +230,6 @@ export default function Navbar() {
         )}
       </div>
     </nav>
+
   );
 }
