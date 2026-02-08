@@ -1,50 +1,104 @@
+import { createBrowserClient, createServerClient, type CookieOptions } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// 使用懒加载模式，确保在实际使用时才初始化，而不是在模块加载时
-let _supabase: SupabaseClient | null = null;
+// 获取环境变量
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
+/**
+ * 创建浏览器端 Supabase 客户端
+ * 使用 @supabase/ssr 自动处理 PKCE verifier 在 cookie 中的存储
+ */
+export function createSupabaseBrowserClient() {
+    return createBrowserClient(
+        supabaseUrl,
+        supabaseAnonKey
+    );
+}
+
+/**
+ * 创建服务器端 Supabase 客户端（用于 API Routes 和 Server Components）
+ * 自动从 cookies 读取 PKCE verifier
+ */
+export async function createSupabaseServerClient() {
+    const cookieStore = await cookies();
+
+    return createServerClient(
+        supabaseUrl,
+        supabaseAnonKey,
+        {
+            cookies: {
+                getAll() {
+                    return cookieStore.getAll();
+                },
+                setAll(cookiesToSet) {
+                    try {
+                        cookiesToSet.forEach(({ name, value, options }) => {
+                            cookieStore.set(name, value, options);
+                        });
+                    } catch (error) {
+                        // 在 Server Components 中设置 cookie 可能会失败，这是预期行为
+                        // 因为 Server Components 在渲染后无法修改 headers
+                    }
+                },
+            },
+        }
+    );
+}
+
+/**
+ * 检查 Supabase 是否已配置
+ */
+export function isSupabaseConfigured(): boolean {
+    return !!(supabaseUrl && supabaseAnonKey);
+}
+
+// ============================================================================
+// 向后兼容的导出（用于现有代码）
+// ============================================================================
+
+let _legacySupabase: SupabaseClient | null = null;
+
+/**
+ * 获取传统的 Supabase 客户端（用于服务器端非 cookie 场景）
+ * @deprecated 推荐使用 createSupabaseBrowserClient 或 createSupabaseServerClient
+ */
 export function getSupabaseClient(): SupabaseClient {
-    if (!_supabase) {
-        // 在 Next.js 中，浏览器只能访问 NEXT_PUBLIC_ 开头的变量
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!_legacySupabase) {
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+        const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-        if (!supabaseUrl || !supabaseKey) {
+        if (!url || !key) {
             const isBrowser = typeof window !== 'undefined';
             const errorMsg = `Supabase configuration missing. ${isBrowser ? 'Make sure NEXT_PUBLIC_ variables are set in Vercel.' : 'Check your server-side environment variables.'}`;
-            console.error(errorMsg, { supabaseUrl: !!supabaseUrl, supabaseKey: !!supabaseKey });
+            console.error(errorMsg, { url: !!url, key: !!key });
             throw new Error(errorMsg);
         }
 
-        _supabase = createClient(supabaseUrl, supabaseKey, {
-            auth: {
-                flowType: 'pkce',
-                persistSession: true,
-                detectSessionInUrl: true
-            }
-        });
+        _legacySupabase = createClient(url, key);
     }
-    return _supabase;
+    return _legacySupabase;
 }
 
-// 导出一个函数用于检查配置是否完整（不抛出错误）
-export function isSupabaseConfigured(): boolean {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-    return !!(supabaseUrl && supabaseKey);
-}
-
-// 为了保持向后兼容，导出一个 getter
+/**
+ * 向后兼容的 supabase 导出
+ * @deprecated 推荐使用 createSupabaseBrowserClient
+ */
 export const supabase = new Proxy({} as SupabaseClient, {
     get(_target, prop) {
         try {
+            // 在浏览器端使用新的 SSR 客户端
+            if (typeof window !== 'undefined') {
+                const client = createSupabaseBrowserClient();
+                return (client as any)[prop];
+            }
+            // 在服务器端使用传统客户端
             const client = getSupabaseClient();
             return (client as any)[prop];
         } catch (e) {
-            // 如果报错（比如配置缺失），返回一个 dummy 函数或对象以防崩溃
             console.warn('Accessing supabase client without valid configuration.');
             return () => { throw e; };
         }
     }
 });
-

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useUser } from '@/lib/contexts/UserContext';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+import { createSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
 
 function LoginForm() {
   const router = useRouter();
@@ -62,11 +62,11 @@ function LoginForm() {
     }
 
     try {
+      const supabase = createSupabaseBrowserClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/api/auth/callback`,
-          skipBrowserRedirect: false,
         },
       });
       if (error) throw error;
@@ -75,6 +75,7 @@ function LoginForm() {
       setError(`Google 登录失败: ${err.message || '未知错误'}`);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-100 flex items-center justify-center p-4">
