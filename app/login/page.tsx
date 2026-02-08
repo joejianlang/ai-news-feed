@@ -5,16 +5,19 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useUser } from '@/lib/contexts/UserContext';
-import { supabase } from '@/lib/supabase/client';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+import { useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login, checkAuth } = useUser();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
-  const [error, setError] = useState('');
+  const urlError = searchParams.get('error');
+  const [error, setError] = useState(urlError || '');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,22 +47,33 @@ export default function LoginPage() {
     } catch (err) {
       setError('登录失败，请重试');
     } finally {
-      setIsLoading(true);
+      setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    setError('');
+
+    // 检查配置
+    if (!isSupabaseConfigured()) {
+      const msg = 'Supabase 配置缺失。请检查 Vercel 环境变量（NEXT_PUBLIC_SUPABASE_URL 等）。';
+      console.error(msg);
+      setError(msg);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/api/auth/callback`,
+          skipBrowserRedirect: false,
         },
       });
       if (error) throw error;
-    } catch (err) {
+    } catch (err: any) {
       console.error('Google login error:', err);
-      setError('Google 登录失败，请稍后重试');
+      setError(`Google 登录失败: ${err.message || '未知错误'}`);
     }
   };
 
