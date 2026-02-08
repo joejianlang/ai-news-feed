@@ -274,19 +274,6 @@ export default function Home() {
           <div className="space-y-6">
             {newsBatches.map((batch, batchIndex) => (
               <div key={batch.batchTime} className="bg-white rounded-lg shadow-sm overflow-hidden">
-                {/* 批次标题 */}
-                <div className="bg-gradient-to-r from-teal-600 to-cyan-600 px-4 py-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-white">
-                      <span className="text-lg font-bold">📰</span>
-                      <span className="font-semibold">更新时间: {formatBatchTime(batch.batchTime)}</span>
-                    </div>
-                    <span className="bg-white bg-opacity-20 text-white px-3 py-1 rounded-full text-sm font-medium">
-                      {batch.items.length} 条新闻
-                    </span>
-                  </div>
-                </div>
-
                 {/* 批次内的新闻列表 */}
                 <div className="divide-y divide-gray-200">
                   {batch.items.map(item => (
@@ -300,7 +287,7 @@ export default function Home() {
                           <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                             <span className="font-bold text-gray-900 text-sm sm:text-base truncate">{item.source?.name || '未知来源'}</span>
                             <span className="text-gray-500 text-xs sm:text-sm">·</span>
-                            <span className="text-gray-500 text-xs sm:text-sm">{formatTime(item.created_at)}</span>
+                            <span className="text-gray-500 text-xs sm:text-sm">{formatBatchTime(batch.batchTime)}</span>
                           </div>
                           {/* 已移除评论风格显示 */}
                         </div>
