@@ -38,7 +38,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
           <Link href="/" className="text-2xl sm:text-3xl font-bold text-gray-900 hover:text-teal-600 tracking-[0.3em] flex-shrink-0 transition-colors">
-            知&nbsp;流
+            智&nbsp;流
           </Link>
 
           {/* 搜索框 */}

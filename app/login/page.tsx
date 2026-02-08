@@ -67,11 +67,11 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
         <div className="flex flex-col items-center mb-6">
-          <Link href="/" className="mb-4">
-            <Image src="/logo.png" alt="AI News Logo" width={64} height={64} className="hover:scale-105 transition-transform" />
+          <Link href="/" className="text-4xl font-extrabold text-teal-800 tracking-[0.4em] mb-2 hover:text-teal-600 transition-colors">
+            智&nbsp;流
           </Link>
-          <h1 className="text-2xl font-bold text-teal-800">登 录</h1>
-          <p className="text-gray-500 text-sm mt-1">AI News Feed 智流新闻</p>
+          <h1 className="text-2xl font-bold text-gray-800">登 录</h1>
+          <p className="text-gray-500 italic text-sm mt-2">all you can &quot;see&quot;</p>
         </div>
 
         {error && (
