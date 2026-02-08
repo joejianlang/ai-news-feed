@@ -167,7 +167,7 @@ export default function Home() {
             <button
               onClick={() => setSelectedCategory(null)}
               className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${selectedCategory === null
-                ? 'text-blue-600 border-blue-600'
+                ? 'text-teal-600 border-teal-600'
                 : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
                 }`}
             >
@@ -181,7 +181,7 @@ export default function Home() {
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
                   className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${selectedCategory === category.id
-                    ? 'text-blue-600 border-blue-600'
+                    ? 'text-teal-600 border-teal-600'
                     : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
                     }`}
                 >
@@ -197,7 +197,7 @@ export default function Home() {
         <div className="max-w-2xl mx-auto px-4 py-2 flex justify-end items-center gap-4">
           <button
             onClick={handleRefresh}
-            className="text-blue-500 hover:text-blue-600 font-medium text-sm"
+            className="text-teal-500 hover:text-teal-600 font-medium text-sm"
             disabled={isLoading}
           >
             {isLoading ? '刷新中...' : '🔄 刷新'}
@@ -216,9 +216,9 @@ export default function Home() {
 
       {/* 地理位置栏 - 仅在"本地"分类显示 */}
       {categories.find(c => c.id === selectedCategory)?.name === '本地' && (
-        <div className="bg-blue-50 border-b border-blue-100">
+        <div className="bg-teal-50 border-b border-teal-100">
           <div className="max-w-2xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-blue-800">
+            <div className="flex items-center gap-2 text-teal-800">
               <span>📍 当前定位:</span>
               {isLocating ? (
                 <span className="animate-pulse">正在定位...</span>
@@ -232,13 +232,13 @@ export default function Home() {
               <button
                 onClick={detectLocation}
                 disabled={isLocating}
-                className="text-xs bg-white text-blue-600 border border-blue-200 px-3 py-1 rounded-full hover:bg-blue-100 transition-colors"
+                className="text-xs bg-white text-teal-600 border border-teal-200 px-3 py-1 rounded-full hover:bg-teal-100 transition-colors"
               >
                 📡 重新定位
               </button>
 
               <select
-                className="text-xs bg-white text-gray-700 border border-gray-300 px-2 py-1 rounded-full focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="text-xs bg-white text-gray-700 border border-gray-300 px-2 py-1 rounded-full focus:outline-none focus:ring-1 focus:ring-teal-500"
                 value={cityTag || ''}
                 onChange={(e) => setManualCity(e.target.value)}
               >
@@ -264,7 +264,7 @@ export default function Home() {
             {user?.role === 'admin' && (
               <Link
                 href="/sources"
-                className="bg-blue-500 text-white px-6 py-2 rounded-full hover:bg-blue-600"
+                className="bg-teal-500 text-white px-6 py-2 rounded-full hover:bg-teal-600"
               >
                 添加新闻源
               </Link>
@@ -275,7 +275,7 @@ export default function Home() {
             {newsBatches.map((batch, batchIndex) => (
               <div key={batch.batchTime} className="bg-white rounded-lg shadow-sm overflow-hidden">
                 {/* 批次标题 */}
-                <div className="bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-3">
+                <div className="bg-gradient-to-r from-teal-600 to-cyan-600 px-4 py-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-white">
                       <span className="text-lg font-bold">📰</span>
@@ -293,7 +293,7 @@ export default function Home() {
                     <article key={item.id} className="bg-white p-4 sm:p-6 hover:bg-gray-50 transition-colors">
                       {/* 头部信息 */}
                       <div className="flex items-center gap-2 sm:gap-3 mb-3">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
                           {item.source?.name.charAt(0) || 'N'}
                         </div>
                         <div className="flex-1 min-w-0">
