@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/lib/contexts/UserContext';
 
@@ -36,8 +37,18 @@ export default function Navbar() {
       <div className="max-w-2xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="text-lg sm:text-xl font-bold text-gray-900 hover:text-blue-600 tracking-wide flex-shrink-0">
-            知流
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="relative w-8 h-8 sm:w-10 sm:h-10 overflow-hidden">
+              <Image
+                src="/logo.png"
+                alt="AI News Feed Logo"
+                fill
+                className="object-contain group-hover:scale-105 transition-transform"
+              />
+            </div>
+            <span className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-teal-600 tracking-wide hidden xs:block">
+              AI News
+            </span>
           </Link>
 
           {/* 搜索框 */}
@@ -113,7 +124,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/register"
-                  className="text-sm bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                  className="text-sm bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors shadow-sm font-medium"
                 >
                   注册
                 </Link>
@@ -216,7 +227,7 @@ export default function Navbar() {
                     </Link>
                     <Link
                       href="/register"
-                      className="flex-1 text-center py-2 bg-blue-500 text-white rounded-lg"
+                      className="flex-1 text-center py-2 bg-teal-600 text-white rounded-lg shadow-sm"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       注册
