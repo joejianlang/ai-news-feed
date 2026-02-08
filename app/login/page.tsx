@@ -1,14 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useUser } from '@/lib/contexts/UserContext';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
-import { useSearchParams } from 'next/navigation';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, checkAuth } = useUser();
@@ -182,5 +181,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div >
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-teal-50 flex items-center justify-center">
+        <div className="text-teal-600 font-medium">加载中...</div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
