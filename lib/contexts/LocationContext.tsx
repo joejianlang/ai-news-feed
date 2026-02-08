@@ -12,6 +12,7 @@ export const POPULAR_CITIES = [
     { name: 'Edmonton', tag: '#Edmonton' },
     { name: 'Richmond', tag: '#Richmond' },
     { name: 'Markham', tag: '#Markham' },
+    { name: 'Guelph', tag: '#Guelph' },
 ];
 
 interface LocationContextType {
