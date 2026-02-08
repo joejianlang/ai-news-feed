@@ -16,7 +16,13 @@ export function getSupabaseClient(): SupabaseClient {
             throw new Error(errorMsg);
         }
 
-        _supabase = createClient(supabaseUrl, supabaseKey);
+        _supabase = createClient(supabaseUrl, supabaseKey, {
+            auth: {
+                flowType: 'pkce',
+                persistSession: true,
+                detectSessionInUrl: true
+            }
+        });
     }
     return _supabase;
 }
