@@ -197,7 +197,7 @@ export default function ForumPage() {
         <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
             <Navbar />
 
-            <header className="bg-card sticky top-[60px] z-20 shadow-sm pt-4 pb-2 transition-colors">
+            <header className="bg-card sticky top-[60px] z-20 border-b border-card-border shadow-sm pt-4 pb-2 transition-colors">
                 <div className="max-w-2xl mx-auto px-4">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-2xl font-black text-foreground tracking-tight">社区论坛</h2>
@@ -250,7 +250,7 @@ export default function ForumPage() {
                         const authorName = post.users?.email?.split('@')[0] || '匿名用户';
 
                         return (
-                            <div key={post.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <div key={post.id} className="bg-card p-6 rounded-2xl shadow-sm border border-card-border transition-colors">
                                 {/* 作者信息 */}
                                 <div className="flex items-start justify-between mb-3">
                                     <div className="flex items-center gap-3">
@@ -268,10 +268,10 @@ export default function ForumPage() {
                                     {/* 标签 */}
                                     <div className="flex flex-wrap gap-1">
                                         {post.is_ai_generated && (
-                                            <span className="text-xs font-bold bg-purple-50 text-purple-600 px-2 py-1 rounded-md">AI话题</span>
+                                            <span className="text-xs font-bold bg-purple-500/10 text-purple-400 px-2 py-1 rounded-md">AI话题</span>
                                         )}
                                         {post.tags?.slice(0, 2).map(tag => (
-                                            <span key={tag} className="text-xs font-bold bg-gray-100 text-gray-600 px-2 py-1 rounded-md">#{tag}</span>
+                                            <span key={tag} className="text-xs font-bold bg-background text-text-accent px-2 py-1 rounded-md border border-card-border">#{tag}</span>
                                         ))}
                                     </div>
                                 </div>

@@ -286,7 +286,7 @@ export default function Home() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                            <span className="font-bold text-foreground text-sm sm:text-base truncate">{item.source?.name || '未知来源'}</span>
+                            <span className="font-bold text-text-accent text-sm sm:text-base truncate">{item.source?.name || '未知来源'}</span>
                             <span className="text-text-muted text-xs sm:text-sm">·</span>
                             <span className="text-text-muted text-xs sm:text-sm">{formatBatchTime(batch.batchTime)}</span>
                           </div>
@@ -414,7 +414,7 @@ export default function Home() {
                           href={item.original_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 px-3 py-1.5 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 rounded-full text-sm font-medium hover:bg-teal-100 dark:hover:bg-teal-900/40 transition-colors border border-teal-200 dark:border-teal-800"
+                          className="flex items-center gap-1 px-3 py-1.5 bg-card text-text-accent rounded-full text-sm font-medium hover:bg-background transition-colors border border-card-border"
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-0.5">
                             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -424,7 +424,7 @@ export default function Home() {
                         </a>
                         <button
                           onClick={() => handleShare(item)}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-card text-text-secondary rounded-full text-sm font-medium hover:bg-background transition-colors border border-card-border"
+                          className="flex items-center gap-1 px-3 py-1.5 bg-card text-text-muted rounded-full text-sm font-medium hover:bg-background transition-colors border border-card-border"
                         >
                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-0.5">
                             <path d="M15 8l5 5-5 5" />

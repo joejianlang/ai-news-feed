@@ -10,20 +10,23 @@
   --text-primary: #111827;
   --text-secondary: #4b5563;
   --text-muted: #9ca3af;
+  --text-accent: #0d9488;
   --border-primary: #e5e7eb;
 }
 
 .dark {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --card-bg: #1e293b;
-  --card-border: #334155;
-  --nav-bg: #111827;
-  --nav-text: #f1f5f9;
-  --text-primary: #f8fafc;
+  --background: #1a1a1a;
+  --foreground: #ffffff;
+  --card-bg: #262626;
+  --card-border: #333333;
+  --nav-bg: #1f1f1f;
+  --nav-text: #ffffff;
+  --text-primary: #ffffff;
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --border-primary: #334155;
+  --text-muted: #888888;
+  --text-accent: #3b82f6;
+  /* City project blue */
+  --border-primary: #333333;
 }
 
 @theme inline {
@@ -36,6 +39,7 @@
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
+  --color-text-accent: var(--text-accent);
   --color-border-primary: var(--border-primary);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
