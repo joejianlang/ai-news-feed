@@ -483,6 +483,12 @@ export default function SourcesPage() {
             >
               📝 发布文章
             </button>
+            <button
+              onClick={() => router.push('/admin/ai-config')}
+              className="bg-teal-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-teal-700 text-sm sm:text-base font-semibold"
+            >
+              🤖 AI配置
+            </button>
           </div>
         </div>
 
