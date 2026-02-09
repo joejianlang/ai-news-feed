@@ -195,7 +195,7 @@ export default function Home() {
             {/* 全部 选项 */}
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${selectedCategory === null
+              className={`flex-shrink-0 px-4 py-3 text-[17px] font-bold border-b-2 transition-colors ${selectedCategory === null
                 ? 'text-teal-600 border-teal-600'
                 : 'text-text-secondary border-transparent hover:text-foreground hover:border-card-border'
                 }`}
@@ -209,7 +209,7 @@ export default function Home() {
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${selectedCategory === category.id
+                  className={`flex-shrink-0 px-4 py-3 text-[17px] font-bold border-b-2 transition-colors ${selectedCategory === category.id
                     ? 'text-teal-600 border-teal-600'
                     : 'text-text-secondary border-transparent hover:text-foreground hover:border-card-border'
                     }`}
