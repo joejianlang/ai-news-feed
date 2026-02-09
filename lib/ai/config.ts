@@ -2,7 +2,7 @@
 
 export type AIProvider = 'claude' | 'gemini';
 export type ClaudeModel = 'claude-haiku-4-20250514' | 'claude-sonnet-4-5-20250929' | 'claude-3-5-sonnet-20241022';
-export type GeminiModel = 'gemini-1.5-flash-8b' | 'gemini-1.5-flash' | 'gemini-1.5-pro';
+export type GeminiModel = 'gemini-1.5-flash-8b' | 'gemini-1.5-flash' | 'gemini-1.5-pro' | 'gemini-2.0-flash';
 
 export interface AIConfig {
   // 提供商和模型
@@ -26,7 +26,7 @@ export const AI_CONFIGS = {
   // Gemini 超省钱模式 - 最便宜！（约 $0.000079/条）⭐️ 新增
   'gemini-ultra-cheap': {
     provider: 'gemini' as const,
-    model: 'gemini-1.5-flash-8b' as const,
+    model: 'gemini-2.0-flash' as const,
     maxInputTokens: 2000,
     maxOutputTokens: 1500,
     maxContentLength: 3000,
@@ -37,7 +37,7 @@ export const AI_CONFIGS = {
   // Gemini 标准模式 - 超值（约 $0.000158/条）
   'gemini-standard': {
     provider: 'gemini' as const,
-    model: 'gemini-1.5-flash' as const,
+    model: 'gemini-2.0-flash' as const,
     maxInputTokens: 2000,
     maxOutputTokens: 1500,
     maxContentLength: 3000,
@@ -48,7 +48,7 @@ export const AI_CONFIGS = {
   // Gemini 高质量模式（约 $0.00263/条）
   'gemini-premium': {
     provider: 'gemini' as const,
-    model: 'gemini-1.5-pro' as const,
+    model: 'gemini-2.0-flash' as const,
     maxInputTokens: 4000,
     maxOutputTokens: 2048,
     maxContentLength: 5000,
@@ -130,6 +130,10 @@ export const MODEL_PRICING = {
   'gemini-1.5-pro': {
     input: 1.25,
     output: 5.0,
+  },
+  'gemini-2.0-flash': {
+    input: 0.1,
+    output: 0.4,
   },
 };
 

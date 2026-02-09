@@ -4,6 +4,30 @@ import * as path from 'path';
 import { createClient } from '@supabase/supabase-js';
 import { CURRENT_AI_CONFIG, estimateCost } from './config';
 
+// 加载环境变量
+function loadEnvFile() {
+  const envPath = path.resolve(process.cwd(), '.env.local');
+  try {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    const lines = envContent.split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const match = trimmed.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        const value = match[2].trim().replace(/^["'](.*)["']$/, '$1'); // 也去除引号
+        if (!process.env[key]) {
+          process.env[key] = value;
+        }
+      }
+    }
+  } catch (error) {
+    // Silence error if file not found in some environments
+  }
+}
+loadEnvFile();
+
 // 创建 Supabase 客户端用于读取配置
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '',
@@ -48,37 +72,6 @@ async function getAIConfigFromDB(): Promise<Record<string, string>> {
     return {};
   }
 }
-
-// 手动读取 .env.local 文件
-function loadEnvFile() {
-  const envPath = path.resolve(process.cwd(), '.env.local');
-  console.log('Loading env from:', envPath);
-
-  try {
-    const envContent = fs.readFileSync(envPath, 'utf8');
-    const lines = envContent.split('\n');
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      // 跳过注释和空行
-      if (!trimmed || trimmed.startsWith('#')) continue;
-
-      const match = trimmed.match(/^([^=]+)=(.*)$/);
-      if (match) {
-        const key = match[1].trim();
-        const value = match[2].trim();
-        if (!process.env[key]) {
-          process.env[key] = value;
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Failed to load .env.local:', error);
-  }
-}
-
-// 加载环境变量
-loadEnvFile();
 
 // 调试：检查 API Key
 console.log('Anthropic API Key exists:', !!process.env.ANTHROPIC_API_KEY);

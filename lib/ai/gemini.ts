@@ -61,9 +61,9 @@ ${filterRules}
 【评论】（${commentaryStyle}风格，${lengthRequirement}，幽默犀利，有深度有趣味，全部使用中文简体，不要出现任何英文词汇或缩写）`;
 
   try {
-    // 使用 Gemini 1.5 Flash（最新型号）
+    // 使用 Gemini 2.0 Flash（最新型号）
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash',
       generationConfig: {
         maxOutputTokens: 2048,
         temperature: 0.7,
