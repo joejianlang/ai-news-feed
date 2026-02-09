@@ -2,12 +2,14 @@
 
 import Navbar from '@/components/Navbar';
 import { useUser } from '@/lib/contexts/UserContext';
-import { User, FileText, Store, Heart, Settings, LogOut } from 'lucide-react';
+import { User, FileText, Store, Heart, Settings, LogOut, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/lib/contexts/ThemeContext';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
 export default function ProfilePage() {
     const { user } = useUser();
+    const { theme, toggleTheme } = useTheme();
     const [counts, setCounts] = useState({ posts: 0, services: 0, favorites: 0 });
     const [loading, setLoading] = useState(true);
 
@@ -52,12 +54,12 @@ export default function ProfilePage() {
 
     if (!user) {
         return (
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
                 <Navbar />
                 <div className="max-w-2xl mx-auto p-4">
                     <div className="py-20 text-center">
-                        <User size={64} className="mx-auto text-gray-300 mb-4" />
-                        <h3 className="text-xl font-bold text-gray-600 mb-4">登录后查看个人中心</h3>
+                        <User size={64} className="mx-auto text-text-muted mb-4" />
+                        <h3 className="text-xl font-bold text-text-secondary mb-4">登录后查看个人中心</h3>
                         <Link
                             href="/login"
                             className="inline-block bg-teal-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-teal-700 transition-colors"
@@ -78,56 +80,72 @@ export default function ProfilePage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
             <Navbar />
 
             <div className="max-w-2xl mx-auto p-4">
                 {/* 用户卡片 */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm mb-4">
+                <div className="bg-card rounded-2xl p-6 shadow-sm mb-4 transition-colors">
                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-full bg-teal-100 flex items-center justify-center">
-                            <span className="text-2xl font-bold text-teal-600">
+                        <div className="w-16 h-16 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                            <span className="text-2xl font-bold text-teal-600 dark:text-teal-400">
                                 {user.email?.substring(0, 2).toUpperCase()}
                             </span>
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-gray-900">
+                            <h2 className="text-xl font-bold text-foreground">
                                 {user.email?.split('@')[0]}
                             </h2>
-                            <p className="text-gray-500 text-sm">{user.email}</p>
+                            <p className="text-text-muted text-sm">{user.email}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* 菜单列表 */}
-                <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div className="bg-card rounded-2xl shadow-sm overflow-hidden transition-colors">
                     {menuItems.map((item, index) => (
                         <Link
                             key={item.label}
                             href={item.href}
-                            className={`flex items-center justify-between p-4 hover:bg-gray-50 transition-colors ${index !== menuItems.length - 1 ? 'border-b border-gray-100' : ''
+                            className={`flex items-center justify-between p-4 hover:bg-background transition-colors ${index !== menuItems.length - 1 ? 'border-b border-card-border' : ''
                                 }`}
                         >
                             <div className="flex items-center gap-3">
-                                <item.icon size={22} className="text-gray-500" />
-                                <span className="font-medium text-gray-800">{item.label}</span>
+                                <item.icon size={22} className="text-text-muted" />
+                                <span className="font-medium text-text-secondary">{item.label}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 {item.count !== undefined && (
-                                    <span className="text-gray-400 text-sm">{item.count}</span>
+                                    <span className="text-text-muted text-sm">{item.count}</span>
                                 )}
-                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
                             </div>
                         </Link>
                     ))}
+                    <button
+                        onClick={toggleTheme}
+                        className="w-full flex items-center justify-between p-4 hover:bg-background transition-colors border-t border-card-border"
+                    >
+                        <div className="flex items-center gap-3">
+                            {theme === 'light' ? (
+                                <Moon size={22} className="text-text-muted" />
+                            ) : (
+                                <Sun size={22} className="text-text-muted" />
+                            )}
+                            <span className="font-medium text-text-secondary">切换{theme === 'light' ? '夜间' : '日间'}模式</span>
+                        </div>
+                        <div className="text-sm text-text-muted">
+                            {theme === 'light' ? '关灯' : '开灯'}
+                        </div>
+                    </button>
                 </div>
 
                 {/* 登出按钮 */}
                 <button
                     onClick={handleLogout}
-                    className="w-full mt-4 bg-white text-red-500 p-4 rounded-2xl font-bold shadow-sm hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
+                    className="w-full mt-4 bg-card text-red-500 p-4 rounded-2xl font-bold shadow-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2"
                 >
                     <LogOut size={20} />
                     退出登录

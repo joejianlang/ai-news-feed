@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/lib/contexts/UserContext';
+import ThemeToggle from './ThemeToggle';
 
 export default function Navbar() {
   const { user, isLoading } = useUser();
@@ -38,18 +39,27 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 bg-teal-600 border-b border-teal-700 z-20 shadow-md">
+    <nav className="sticky top-0 bg-nav border-b border-teal-700 dark:border-slate-800 z-20 shadow-md transition-colors">
       <div className="max-w-2xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
           <Link href="/" className="flex-shrink-0 transition-opacity hover:opacity-80">
-            <Image
-              src="/logo.png"
-              alt="数位 Buffet"
-              width={160}
-              height={40}
-              className="h-8 sm:h-10 w-auto"
-              priority
+            <div
+              className="h-10 sm:h-12 w-48 sm:w-56 bg-white"
+              style={{
+                maskImage: 'url(/logo.png)',
+                WebkitMaskImage: 'url(/logo.png)',
+                maskMode: 'luminance' as any,
+                WebkitMaskMode: 'luminance' as any,
+                maskRepeat: 'no-repeat',
+                WebkitMaskRepeat: 'no-repeat',
+                maskSize: 'contain',
+                WebkitMaskSize: 'contain',
+                maskPosition: 'left center',
+                WebkitMaskPosition: 'left center'
+              } as React.CSSProperties}
+              role="img"
+              aria-label="数位 Buffet"
             />
           </Link>
 
@@ -135,21 +145,24 @@ export default function Navbar() {
           </div>
 
           {/* 移动端菜单按钮 */}
-          <button
-            className="md:hidden p-2 -mr-2 text-white"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            aria-label="菜单"
-          >
-            {isMenuOpen ? (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              className="md:hidden p-2 -mr-2 text-white"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="菜单"
+            >
+              {isMenuOpen ? (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* 移动端下拉菜单 */}

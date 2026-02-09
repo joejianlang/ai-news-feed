@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { UserProvider } from "@/lib/contexts/UserContext";
+import { ThemeProvider } from "@/lib/contexts/ThemeContext";
 import { LocationProvider } from "@/lib/contexts/LocationContext";
 import BottomNav from "@/components/BottomNav";
 
@@ -37,10 +38,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased pb-16 md:pb-0`}
       >
         <UserProvider>
-          <LocationProvider>
-            {children}
-            <BottomNav />
-          </LocationProvider>
+          <ThemeProvider>
+            <LocationProvider>
+              {children}
+              <BottomNav />
+            </LocationProvider>
+          </ThemeProvider>
         </UserProvider>
       </body>
     </html>

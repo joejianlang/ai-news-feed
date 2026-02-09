@@ -194,13 +194,13 @@ export default function ForumPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
             <Navbar />
 
-            <header className="bg-white sticky top-[60px] z-20 shadow-sm pt-4 pb-2">
+            <header className="bg-card sticky top-[60px] z-20 shadow-sm pt-4 pb-2 transition-colors">
                 <div className="max-w-2xl mx-auto px-4">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-2xl font-black text-gray-900 tracking-tight">社区论坛</h2>
+                        <h2 className="text-2xl font-black text-foreground tracking-tight">社区论坛</h2>
                         <button
                             onClick={() => user ? setShowCreateModal(true) : alert('请先登录')}
                             className="bg-teal-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg active:scale-95 transition-all flex items-center"
@@ -219,8 +219,8 @@ export default function ForumPage() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
                                 className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all whitespace-nowrap flex items-center gap-1 ${activeTab === tab.id
-                                        ? 'bg-teal-600 text-white shadow-md'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    ? 'bg-teal-600 text-white shadow-md'
+                                    : 'bg-background text-text-secondary hover:bg-card-border'
                                     }`}
                             >
                                 <tab.icon size={16} />
@@ -260,8 +260,8 @@ export default function ForumPage() {
                                             </span>
                                         </div>
                                         <div>
-                                            <span className="font-bold text-gray-900">@{authorName}</span>
-                                            <span className="text-xs text-gray-400 ml-2">{getTimeDiff(post.created_at)}</span>
+                                            <span className="font-bold text-foreground">@{authorName}</span>
+                                            <span className="text-xs text-text-muted ml-2">{getTimeDiff(post.created_at)}</span>
                                         </div>
                                     </div>
 
@@ -277,8 +277,8 @@ export default function ForumPage() {
                                 </div>
 
                                 {/* 标题和内容 */}
-                                <h3 className="text-lg font-extrabold text-gray-900 mb-2">{post.title}</h3>
-                                <p className={`text-gray-700 leading-relaxed whitespace-pre-wrap ${isExpanded ? '' : 'line-clamp-3'}`}>
+                                <h3 className="text-lg font-extrabold text-foreground mb-2">{post.title}</h3>
+                                <p className={`text-text-secondary leading-relaxed whitespace-pre-wrap ${isExpanded ? '' : 'line-clamp-3'}`}>
                                     {post.content}
                                 </p>
 
@@ -305,7 +305,7 @@ export default function ForumPage() {
                                 )}
 
                                 {/* 操作栏 */}
-                                <div className="flex items-center gap-6 mt-4 pt-4 border-t border-gray-100 text-gray-500">
+                                <div className="flex items-center gap-6 mt-4 pt-4 border-t border-card-border text-text-muted">
                                     <button
                                         onClick={() => handleLike(post.id)}
                                         className="flex items-center gap-2 hover:text-red-500 transition-colors"
@@ -328,20 +328,20 @@ export default function ForumPage() {
 
                                 {/* 评论区 */}
                                 {showComments && (
-                                    <div className="mt-4 pt-4 border-t border-gray-100">
-                                        <h4 className="font-bold text-gray-900 mb-3">评论 ({post.comments_count})</h4>
+                                    <div className="mt-4 pt-4 border-t border-card-border">
+                                        <h4 className="font-bold text-foreground mb-3">评论 ({post.comments_count})</h4>
 
                                         {/* 评论列表 */}
                                         <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
                                             {comments[post.id]?.map(comment => (
-                                                <div key={comment.id} className="bg-gray-50 p-3 rounded-xl">
+                                                <div key={comment.id} className="bg-background p-3 rounded-xl">
                                                     <div className="flex justify-between mb-1">
-                                                        <span className="font-bold text-sm text-gray-900">
+                                                        <span className="font-bold text-sm text-foreground">
                                                             @{comment.users?.email?.split('@')[0] || '匿名'}
                                                         </span>
-                                                        <span className="text-xs text-gray-400">{getTimeDiff(comment.created_at)}</span>
+                                                        <span className="text-xs text-text-muted">{getTimeDiff(comment.created_at)}</span>
                                                     </div>
-                                                    <p className="text-gray-700 text-sm">{comment.content}</p>
+                                                    <p className="text-text-secondary text-sm">{comment.content}</p>
                                                 </div>
                                             ))}
                                             {(!comments[post.id] || comments[post.id].length === 0) && (
@@ -356,7 +356,7 @@ export default function ForumPage() {
                                                 placeholder="写下你的评论..."
                                                 value={newComment}
                                                 onChange={(e) => setNewComment(e.target.value)}
-                                                className="flex-1 bg-gray-100 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                                className="flex-1 bg-background rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-foreground"
                                             />
                                             <button
                                                 onClick={() => handleComment(post.id)}
@@ -377,46 +377,46 @@ export default function ForumPage() {
             {/* 发帖模态框 */}
             {showCreateModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-5">
-                    <div className="bg-white w-full max-w-md rounded-3xl p-7 relative shadow-2xl max-h-[90vh] overflow-y-auto">
+                    <div className="bg-card w-full max-w-md rounded-3xl p-7 relative shadow-2xl max-h-[90vh] overflow-y-auto transition-colors">
                         <div className="flex justify-between items-center mb-5">
-                            <h2 className="text-2xl font-black text-gray-900">发帖</h2>
-                            <button onClick={() => setShowCreateModal(false)} className="p-2 bg-gray-100 rounded-xl text-gray-500">
+                            <h2 className="text-2xl font-black text-foreground">发帖</h2>
+                            <button onClick={() => setShowCreateModal(false)} className="p-2 bg-background rounded-xl text-text-muted">
                                 <X size={20} />
                             </button>
                         </div>
 
                         <form onSubmit={handleSubmitPost} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-bold text-gray-600 mb-2">标题 *</label>
+                                <label className="block text-sm font-bold text-text-secondary mb-2">标题 *</label>
                                 <input
                                     required
                                     type="text"
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full bg-gray-50 p-4 rounded-xl text-base font-medium border-none focus:ring-2 focus:ring-teal-500 text-gray-900"
+                                    className="w-full bg-background p-4 rounded-xl text-base font-medium border-none focus:ring-2 focus:ring-teal-500 text-foreground"
                                     placeholder="说点什么..."
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-600 mb-2">内容 *</label>
+                                <label className="block text-sm font-bold text-text-secondary mb-2">内容 *</label>
                                 <textarea
                                     required
                                     value={formData.content}
                                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                                     rows={5}
-                                    className="w-full bg-gray-50 p-4 rounded-xl text-base font-medium border-none focus:ring-2 focus:ring-teal-500 text-gray-900 resize-none"
+                                    className="w-full bg-background p-4 rounded-xl text-base font-medium border-none focus:ring-2 focus:ring-teal-500 text-foreground resize-none"
                                     placeholder="分享你的想法..."
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-600 mb-2">标签（逗号分隔）</label>
+                                <label className="block text-sm font-bold text-text-secondary mb-2">标签（逗号分隔）</label>
                                 <input
                                     type="text"
                                     value={formData.tags}
                                     onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                                    className="w-full bg-gray-50 p-4 rounded-xl text-base font-medium border-none focus:ring-2 focus:ring-teal-500 text-gray-900"
+                                    className="w-full bg-background p-4 rounded-xl text-base font-medium border-none focus:ring-2 focus:ring-teal-500 text-foreground"
                                     placeholder="例如：讨论, 求助, 分享"
                                 />
                             </div>

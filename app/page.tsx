@@ -184,12 +184,12 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* 顶部导航 */}
       <Navbar />
 
       {/* 分类标签栏 - 与 Navbar 一起固定 */}
-      <div className="bg-white border-b border-gray-200 sticky top-[57px] z-10">
+      <div className="bg-card border-b border-card-border sticky top-[57px] z-10 transition-colors">
         <div className="max-w-2xl mx-auto">
           <div className="flex overflow-x-auto scrollbar-hide">
             {/* 全部 选项 */}
@@ -197,7 +197,7 @@ export default function Home() {
               onClick={() => setSelectedCategory(null)}
               className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${selectedCategory === null
                 ? 'text-teal-600 border-teal-600'
-                : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                : 'text-text-secondary border-transparent hover:text-foreground hover:border-card-border'
                 }`}
             >
               全部
@@ -211,7 +211,7 @@ export default function Home() {
                   onClick={() => setSelectedCategory(category.id)}
                   className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${selectedCategory === category.id
                     ? 'text-teal-600 border-teal-600'
-                    : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                    : 'text-text-secondary border-transparent hover:text-foreground hover:border-card-border'
                     }`}
                 >
                   {category.name}
@@ -225,7 +225,7 @@ export default function Home() {
 
       {/* 地理位置栏 - 仅在"本地"分类显示 */}
       {categories.find(c => c.id === selectedCategory)?.name === '本地' && (
-        <div className="bg-teal-50 border-b border-teal-100">
+        <div className="bg-teal-50 dark:bg-teal-900/20 border-b border-teal-100 dark:border-teal-900/30">
           <div className="max-w-2xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-teal-800">
               <span>📍 Current Location:</span>
@@ -274,11 +274,11 @@ export default function Home() {
         ) : (
           <div className="space-y-6">
             {newsBatches.map((batch, batchIndex) => (
-              <div key={batch.batchTime} className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <div key={batch.batchTime} className="bg-card rounded-lg shadow-sm overflow-hidden transition-colors">
                 {/* 批次内的新闻列表 */}
-                <div className="divide-y divide-gray-200">
+                <div className="divide-y divide-card-border">
                   {batch.items.map(item => (
-                    <article key={item.id} className="bg-white p-4 sm:p-6 hover:bg-gray-50 transition-colors">
+                    <article key={item.id} className="bg-card p-4 sm:p-6 hover:bg-background transition-colors">
                       {/* 头部信息 */}
                       <div className="flex items-center gap-2 sm:gap-3 mb-3">
                         <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
@@ -286,9 +286,9 @@ export default function Home() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                            <span className="font-bold text-gray-900 text-sm sm:text-base truncate">{item.source?.name || '未知来源'}</span>
-                            <span className="text-gray-500 text-xs sm:text-sm">·</span>
-                            <span className="text-gray-500 text-xs sm:text-sm">{formatBatchTime(batch.batchTime)}</span>
+                            <span className="font-bold text-foreground text-sm sm:text-base truncate">{item.source?.name || '未知来源'}</span>
+                            <span className="text-text-muted text-xs sm:text-sm">·</span>
+                            <span className="text-text-muted text-xs sm:text-sm">{formatBatchTime(batch.batchTime)}</span>
                           </div>
                           {/* 已移除评论风格显示 */}
                         </div>
@@ -300,7 +300,7 @@ export default function Home() {
                       </div>
 
                       {/* 标题 */}
-                      <h2 className="text-lg sm:text-xl font-bold mb-3 text-gray-900 leading-tight">{item.title}</h2>
+                      <h2 className="text-lg sm:text-xl font-bold mb-3 text-foreground leading-tight">{item.title}</h2>
 
                       {/* 文章配图 */}
                       {item.content_type === 'article' && item.image_url && (
@@ -374,7 +374,7 @@ export default function Home() {
 
                       {/* 内容摘要 */}
                       {item.ai_summary && item.content_type === 'article' && (
-                        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-teal-50 rounded-lg border-l-4 border-teal-400">
+                        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-teal-50 dark:bg-teal-900/20 rounded-lg border-l-4 border-teal-400">
                           <div className="flex items-center justify-between mb-2">
                             <div className="text-sm font-bold text-teal-700">📝 内容摘要</div>
                             <button
@@ -384,7 +384,7 @@ export default function Home() {
                               {expandedCommentary.has(`${item.id}-summary`) ? '收起 ▲' : '查看全文 ▼'}
                             </button>
                           </div>
-                          <p className={`text-gray-800 text-base leading-normal ${expandedCommentary.has(`${item.id}-summary`) ? '' : 'line-clamp-1'}`}>
+                          <p className={`text-text-secondary text-base leading-normal ${expandedCommentary.has(`${item.id}-summary`) ? '' : 'line-clamp-1'}`}>
                             {item.ai_summary}
                           </p>
                         </div>
@@ -392,7 +392,7 @@ export default function Home() {
 
                       {/* 专业解读 */}
                       {item.ai_commentary && (
-                        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-cyan-50 rounded-lg border-l-4 border-cyan-400">
+                        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg border-l-4 border-cyan-400">
                           <div className="flex items-center justify-between mb-2">
                             <div className="text-sm font-bold text-cyan-700">💬 专业解读</div>
                             <button
@@ -402,7 +402,7 @@ export default function Home() {
                               {expandedCommentary.has(item.id) ? '收起 ▲' : '展开解读 ▼'}
                             </button>
                           </div>
-                          <p className={`text-gray-800 text-base leading-normal whitespace-pre-wrap ${expandedCommentary.has(item.id) ? '' : 'line-clamp-1'}`}>
+                          <p className={`text-text-secondary text-base leading-normal whitespace-pre-wrap ${expandedCommentary.has(item.id) ? '' : 'line-clamp-1'}`}>
                             {item.ai_commentary}
                           </p>
                         </div>
@@ -414,7 +414,7 @@ export default function Home() {
                           href={item.original_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 px-3 py-1.5 bg-teal-50 text-teal-700 rounded-full text-sm font-medium hover:bg-teal-100 transition-colors border border-teal-200"
+                          className="flex items-center gap-1 px-3 py-1.5 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400 rounded-full text-sm font-medium hover:bg-teal-100 dark:hover:bg-teal-900/40 transition-colors border border-teal-200 dark:border-teal-800"
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-0.5">
                             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
@@ -424,7 +424,7 @@ export default function Home() {
                         </a>
                         <button
                           onClick={() => handleShare(item)}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-gray-50 text-gray-700 rounded-full text-sm font-medium hover:bg-gray-100 transition-colors border border-gray-200"
+                          className="flex items-center gap-1 px-3 py-1.5 bg-card text-text-secondary rounded-full text-sm font-medium hover:bg-background transition-colors border border-card-border"
                         >
                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-0.5">
                             <path d="M15 8l5 5-5 5" />
