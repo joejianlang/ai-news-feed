@@ -232,7 +232,10 @@ export async function followSource(userId: string, sourceId: string) {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('followSource error:', error);
+    throw error;
+  }
   return data as UserFollow;
 }
 
