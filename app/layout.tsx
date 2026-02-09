@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "知流",
+  title: "数位自助餐",
   description: "智能资讯，随心而阅",
   viewport: {
     width: 'device-width',

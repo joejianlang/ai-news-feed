@@ -42,8 +42,15 @@ export default function Navbar() {
       <div className="max-w-2xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="text-2xl sm:text-3xl font-bold text-white hover:text-teal-100 tracking-[0.3em] flex-shrink-0 transition-colors">
-            智&nbsp;流
+          <Link href="/" className="flex-shrink-0 transition-opacity hover:opacity-80">
+            <Image
+              src="/logo.png"
+              alt="数位自助餐"
+              width={160}
+              height={40}
+              className="h-8 sm:h-10 w-auto"
+              priority
+            />
           </Link>
 
           {/* 搜索框 */}
