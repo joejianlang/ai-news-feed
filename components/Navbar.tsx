@@ -45,7 +45,7 @@ export default function Navbar() {
           <Link href="/" className="flex-shrink-0 transition-opacity hover:opacity-80">
             <Image
               src="/logo.png"
-              alt="数位自助餐"
+              alt="数位 Buffet"
               width={160}
               height={40}
               className="h-8 sm:h-10 w-auto"
