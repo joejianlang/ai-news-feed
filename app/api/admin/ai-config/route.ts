@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdmin } from '@/lib/auth/adminAuth';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseAdmin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// 延迟初始化 Supabase 客户端，避免构建时错误
+function getSupabaseAdmin() {
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '',
+        process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+    );
+}
 
 // GET - 获取所有 AI 配置
 export async function GET(request: NextRequest) {
@@ -15,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const { data, error } = await supabaseAdmin
+        const { data, error } = await getSupabaseAdmin()
             .from('ai_config')
             .select('*')
             .order('config_key');
@@ -51,7 +54,7 @@ export async function PUT(request: NextRequest) {
 
         // 批量更新
         for (const [key, value] of Object.entries(updates)) {
-            const { error } = await supabaseAdmin
+            const { error } = await getSupabaseAdmin()
                 .from('ai_config')
                 .upsert({
                     config_key: key,
