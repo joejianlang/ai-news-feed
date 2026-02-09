@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     console.error('获取关注列表失败:', error);
     return NextResponse.json({
       error: '获取关注列表失败',
-      details: error.message || String(error)
+      details: error.message || error.toString() || '未知数据库错误'
     }, { status: 500 });
   }
 }
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     console.error('关注失败:', error);
     return NextResponse.json({
       error: '关注失败',
-      details: error.message || String(error)
+      details: error.message || error.toString() || '未知数据库错误'
     }, { status: 500 });
   }
 }
@@ -85,7 +85,7 @@ export async function DELETE(request: NextRequest) {
     console.error('取消关注失败:', error);
     return NextResponse.json({
       error: '取消关注失败',
-      details: error.message || String(error)
+      details: error.message || error.toString() || '未知数据库错误'
     }, { status: 500 });
   }
 }
