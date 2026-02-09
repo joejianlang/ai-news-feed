@@ -19,9 +19,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ follows });
   } catch (error: any) {
     console.error('获取关注列表失败:', error);
+    const details = error instanceof Error ? error.message : JSON.stringify(error);
     return NextResponse.json({
       error: '获取关注列表失败',
-      details: error.message || error.toString() || '未知数据库错误'
+      details: details || '未知错误'
     }, { status: 500 });
   }
 }
@@ -54,9 +55,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ follow, success: true });
   } catch (error: any) {
     console.error('关注失败:', error);
+    const details = error instanceof Error ? error.message : JSON.stringify(error);
     return NextResponse.json({
       error: '关注失败',
-      details: error.message || error.toString() || '未知数据库错误'
+      details: details || '未知错误'
     }, { status: 500 });
   }
 }
@@ -83,9 +85,10 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('取消关注失败:', error);
+    const details = error instanceof Error ? error.message : JSON.stringify(error);
     return NextResponse.json({
       error: '取消关注失败',
-      details: error.message || error.toString() || '未知数据库错误'
+      details: details || '未知错误'
     }, { status: 500 });
   }
 }
