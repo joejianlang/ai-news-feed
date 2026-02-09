@@ -227,7 +227,7 @@ export async function getUserById(id: string) {
 // 关注相关查询
 export async function followSource(userId: string, sourceId: string) {
   const { data, error } = await supabase
-    .from('user_follows')
+    .from('user_source_follows')
     .insert([{ user_id: userId, source_id: sourceId }])
     .select()
     .single();
@@ -241,7 +241,7 @@ export async function followSource(userId: string, sourceId: string) {
 
 export async function unfollowSource(userId: string, sourceId: string) {
   const { error } = await supabase
-    .from('user_follows')
+    .from('user_source_follows')
     .delete()
     .eq('user_id', userId)
     .eq('source_id', sourceId);
@@ -251,7 +251,7 @@ export async function unfollowSource(userId: string, sourceId: string) {
 
 export async function getUserFollows(userId: string) {
   const { data, error } = await supabase
-    .from('user_follows')
+    .from('user_source_follows')
     .select(`
       *,
       source:news_sources(*)
@@ -265,7 +265,7 @@ export async function getUserFollows(userId: string) {
 
 export async function isFollowing(userId: string, sourceId: string) {
   const { data, error } = await supabase
-    .from('user_follows')
+    .from('user_source_follows')
     .select('id')
     .eq('user_id', userId)
     .eq('source_id', sourceId)
@@ -281,7 +281,7 @@ export async function isFollowing(userId: string, sourceId: string) {
 export async function getFollowingNewsItems(userId: string, limit = 50) {
   // 先获取用户关注的source_id列表
   const { data: follows, error: followError } = await supabase
-    .from('user_follows')
+    .from('user_source_follows')
     .select('source_id')
     .eq('user_id', userId);
 
