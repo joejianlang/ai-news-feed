@@ -39,6 +39,26 @@ INSERT INTO ai_config (config_key, config_value, description) VALUES
 
 ('commentary_length_video', '150-250字，简洁精炼', '视频评论字数要求'),
 
-('commentary_length_deep_dive', '800-1000字，请分为三个部分：【背景】历史与来龙去脉、【分析】核心观点与深层解读、【影响】未来趋势与建议', '深度分析评论字数要求')
+('commentary_length_deep_dive', '800-1000字，请分为三个部分：【背景】历史与来龙去脉、【分析】核心观点与深层解读、【影响】未来趋势与建议', '深度分析评论字数要求'),
+
+('classification_categories', '本地
+热点
+政治
+科技
+财经
+文化娱乐
+体育
+深度', '新闻分类类别列表，每行一个'),
+
+('classification_rules', '1. **本地 (Local)**：新闻中提到加拿大城市、省份、联邦/省级政府机构（CBSA, CRA, Health Canada）或加拿大特有事物
+2. **热点**：中文圈热点（微博、微信、抖音热门）或全球主流媒体头条，或突发重大事件
+3. **深度**：侧重结构性问题、宏观经济、颠覆性技术或高热度社会争议的深度分析
+4. **其他分类**：财经、科技、政治（非加拿大）、文化娱乐、体育', '分类优先级规则说明'),
+
+('canadian_cities', 'Ontario: Toronto, Mississauga, Brampton, Markham, Richmond Hill, Vaughan, Oakville, Burlington, Hamilton, Ottawa, Guelph, Waterloo, London, Kitchener, Cambridge
+BC: Vancouver, Richmond, Burnaby, Surrey, Coquitlam, Victoria, Kelowna
+Quebec: Montreal, Quebec City, Laval, Gatineau
+Alberta: Calgary, Edmonton
+Others: Winnipeg, Halifax, Saskatoon, Regina', '加拿大主要城市列表（用于本地新闻识别）')
 
 ON CONFLICT (config_key) DO NOTHING;

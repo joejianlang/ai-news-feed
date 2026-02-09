@@ -17,6 +17,9 @@ interface AIConfig {
     commentary_length_article?: ConfigItem;
     commentary_length_video?: ConfigItem;
     commentary_length_deep_dive?: ConfigItem;
+    classification_categories?: ConfigItem;
+    classification_rules?: ConfigItem;
+    canadian_cities?: ConfigItem;
 }
 
 export default function AIConfigPage() {
@@ -33,6 +36,10 @@ export default function AIConfigPage() {
     const [articleLength, setArticleLength] = useState('');
     const [videoLength, setVideoLength] = useState('');
     const [deepDiveLength, setDeepDiveLength] = useState('');
+    // 分类配置
+    const [classificationCategories, setClassificationCategories] = useState('');
+    const [classificationRules, setClassificationRules] = useState('');
+    const [canadianCities, setCanadianCities] = useState('');
 
     useEffect(() => {
         loadConfig();
@@ -57,6 +64,10 @@ export default function AIConfigPage() {
             setArticleLength(data.commentary_length_article?.value || '');
             setVideoLength(data.commentary_length_video?.value || '');
             setDeepDiveLength(data.commentary_length_deep_dive?.value || '');
+            // 分类配置
+            setClassificationCategories(data.classification_categories?.value || '');
+            setClassificationRules(data.classification_rules?.value || '');
+            setCanadianCities(data.canadian_cities?.value || '');
         } catch (error) {
             console.error('Error loading config:', error);
             setMessage({ type: 'error', text: '加载配置失败' });
@@ -80,6 +91,9 @@ export default function AIConfigPage() {
                     commentary_length_article: articleLength,
                     commentary_length_video: videoLength,
                     commentary_length_deep_dive: deepDiveLength,
+                    classification_categories: classificationCategories,
+                    classification_rules: classificationRules,
+                    canadian_cities: canadianCities,
                 }),
             });
 
@@ -118,7 +132,7 @@ export default function AIConfigPage() {
                         <p className="text-gray-600 text-sm mt-1">配置 AI 内容审查规则和提示词模板</p>
                     </div>
                     <Link
-                        href="/admin"
+                        href="/sources"
                         className="text-teal-600 hover:text-teal-700 font-medium"
                     >
                         ← 返回管理后台
@@ -147,6 +161,53 @@ export default function AIConfigPage() {
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-gray-800"
                             placeholder="每行一条过滤规则..."
                         />
+                    </div>
+
+                    {/* 分类设置区域 */}
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                        <h2 className="text-lg font-semibold text-gray-800 mb-4">🏷️ 新闻分类配置</h2>
+
+                        {/* 分类类别 */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                分类类别（每行一个）
+                            </label>
+                            <textarea
+                                value={classificationCategories}
+                                onChange={(e) => setClassificationCategories(e.target.value)}
+                                rows={4}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-gray-800"
+                                placeholder="本地&#10;热点&#10;政治&#10;科技..."
+                            />
+                        </div>
+
+                        {/* 分类规则 */}
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                分类优先级规则
+                            </label>
+                            <textarea
+                                value={classificationRules}
+                                onChange={(e) => setClassificationRules(e.target.value)}
+                                rows={6}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-gray-800"
+                                placeholder="1. 本地：提到加拿大城市...&#10;2. 热点：突发事件..."
+                            />
+                        </div>
+
+                        {/* 加拿大城市 */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                加拿大城市列表（用于本地新闻识别）
+                            </label>
+                            <textarea
+                                value={canadianCities}
+                                onChange={(e) => setCanadianCities(e.target.value)}
+                                rows={5}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-gray-800"
+                                placeholder="Ontario: Toronto, Mississauga...&#10;BC: Vancouver, Richmond..."
+                            />
+                        </div>
                     </div>
 
                     {/* 摘要要求 */}
