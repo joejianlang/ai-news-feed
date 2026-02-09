@@ -4,9 +4,41 @@ import Navbar from '@/components/Navbar';
 import { useUser } from '@/lib/contexts/UserContext';
 import { User, FileText, Store, Heart, Settings, LogOut } from 'lucide-react';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 export default function ProfilePage() {
     const { user } = useUser();
+    const [counts, setCounts] = useState({ posts: 0, services: 0, favorites: 0 });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (user) {
+            loadCounts();
+        }
+    }, [user]);
+
+    const loadCounts = async () => {
+        try {
+            setLoading(true);
+            // 获取发帖数
+            const postsRes = await fetch(`/api/forum?userId=${user?.id}`);
+            const postsData = await postsRes.json();
+
+            // 获取服务数
+            const servicesRes = await fetch(`/api/services?userId=${user?.id}`);
+            const servicesData = await servicesRes.json();
+
+            setCounts({
+                posts: postsData.total || 0,
+                services: servicesData.total || 0,
+                favorites: 0
+            });
+        } catch (error) {
+            console.error('Failed to load activity counts:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (!user) {
         return (
@@ -29,9 +61,9 @@ export default function ProfilePage() {
     }
 
     const menuItems = [
-        { icon: FileText, label: '我的发帖', href: '/profile/posts', count: 0 },
-        { icon: Store, label: '我的服务', href: '/profile/services', count: 0 },
-        { icon: Heart, label: '我的收藏', href: '/profile/favorites', count: 0 },
+        { icon: FileText, label: '我的发帖', href: '/profile/posts', count: counts.posts },
+        { icon: Store, label: '我的服务', href: '/profile/services', count: counts.services },
+        { icon: Heart, label: '我的收藏', href: '/profile/favorites', count: counts.favorites },
         { icon: Settings, label: '账户设置', href: '/profile/settings' },
     ];
 
