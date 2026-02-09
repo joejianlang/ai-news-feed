@@ -218,7 +218,7 @@ export async function scrapeYouTubeChannel(
     }
 
     // 获取频道最新视频
-    const videos = await getChannelVideos(finalChannelId, 5);
+    const videos = await getChannelVideos(finalChannelId, 15);
 
     const scrapedContents: ScrapedContent[] = [];
 

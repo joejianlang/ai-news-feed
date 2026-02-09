@@ -139,7 +139,7 @@ export async function runFetchPipeline(specificSourceId?: string) {
                                 if (exists) {
                                     skippedItemsCount++;
                                     consecutiveSkips++;
-                                    console.log(`[${source.name}] Skipping existing/similar item: ${item.title}`);
+                                    console.log(`[${source.name}] Skipping existing/similar item: ${item.title} (${item.contentType})`);
 
                                     if (consecutiveSkips >= MAX_CONSECUTIVE_SKIPS && source.source_type !== 'youtube_channel') {
                                         console.log(`[${source.name}] Hit ${MAX_CONSECUTIVE_SKIPS} consecutive existing items, stopping fetch.`);
@@ -162,7 +162,7 @@ export async function runFetchPipeline(specificSourceId?: string) {
                                 // 检查 AI 是否标记为应跳过的服务类内容
                                 if (analysis.shouldSkip) {
                                     skippedItemsCount++;
-                                    console.log(`[${source.name}] AI filtered out service-type content: ${item.title}`);
+                                    console.log(`[${source.name}] AI filtered out content (${item.contentType}): ${item.title} - Reason: ${analysis.skipReason || 'unknown'}`);
                                     return 'CONTINUE';
                                 }
 

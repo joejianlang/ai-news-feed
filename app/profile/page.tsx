@@ -40,6 +40,16 @@ export default function ProfilePage() {
         }
     };
 
+    const handleLogout = async () => {
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+        // 强制刷新页面以清除所有状态
+        window.location.href = '/';
+    };
+
     if (!user) {
         return (
             <div className="min-h-screen bg-gray-50">
@@ -115,7 +125,10 @@ export default function ProfilePage() {
                 </div>
 
                 {/* 登出按钮 */}
-                <button className="w-full mt-4 bg-white text-red-500 p-4 rounded-2xl font-bold shadow-sm hover:bg-red-50 transition-colors flex items-center justify-center gap-2">
+                <button
+                    onClick={handleLogout}
+                    className="w-full mt-4 bg-white text-red-500 p-4 rounded-2xl font-bold shadow-sm hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
+                >
                     <LogOut size={20} />
                     退出登录
                 </button>

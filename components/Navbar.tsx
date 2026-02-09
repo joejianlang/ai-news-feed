@@ -211,12 +211,6 @@ export default function Navbar() {
                     <span className="text-sm text-teal-50">
                       {user.username}
                     </span>
-                    <button
-                      onClick={handleLogout}
-                      className="text-sm text-red-200 hover:text-red-100"
-                    >
-                      退出登录
-                    </button>
                   </div>
                 ) : (
                   <div className="flex gap-3">

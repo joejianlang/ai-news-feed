@@ -4,6 +4,8 @@ export interface AnalysisResult {
   summary: string;
   commentary: string;
   translatedTitle?: string;
+  shouldSkip?: boolean;
+  skipReason?: string;
 }
 
 // 根据内容类型获取评论字数要求
@@ -33,23 +35,37 @@ export async function analyzeContentWithGemini(
   // 获取字数要求
   const lengthRequirement = getCommentaryLength(contentType, isDeepDive);
 
+  const filterRules = `日程安排/节目表（如电视播放时间、直播安排）
+活动预告/观赛指南/购票指南
+周期性总结（如"本周回顾"、"今日要闻"、"每日简报"等汇总帖）
+纯粹的广告或促销内容
+天气预报、体育比分列表等纯信息罗列`;
+
   // 简洁的 Prompt
-  const prompt = `分析新闻并输出三部分（全部使用中文简体，禁止出现任何英文）：
+  const prompt = `分析新闻并输出以下部分（全部使用中文简体，禁止出现任何英文）：
 
 标题：${title}
 内容：${truncatedContent}
 
-输出格式：
+**首先判断**：这是否是以下类型的"服务类/概括性内容"？
+${filterRules}
+
+**如果是上述类型**，只需输出：
+【跳过】是
+【原因】（简短说明原因，如：直播安排、广告等）
+
+**如果是真正的新闻报道**，输出：
+【跳过】否
 【翻译标题】${title.match(/[a-zA-Z]/) ? '（翻译成中文简体）' : '（保持原样）'}
 【摘要】（80-150字，概括核心内容、关键要素、影响，全部中文）
 【评论】（${commentaryStyle}风格，${lengthRequirement}，幽默犀利，有深度有趣味，全部使用中文简体，不要出现任何英文词汇或缩写）`;
 
   try {
-    // 使用 Gemini 2.5 Flash（最新免费模型，速度快成本低）
+    // 使用 Gemini 1.5 Flash（最新型号）
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-1.5-flash',
       generationConfig: {
-        maxOutputTokens: 8000, // 增加限制以容纳思考链token
+        maxOutputTokens: 2048,
         temperature: 0.7,
       },
       safetySettings: [
@@ -78,19 +94,19 @@ export async function analyzeContentWithGemini(
 
     const response = result.response.text();
 
-    // 估算成本（Gemini Flash-8B 定价）
-    const estimatedInputTokens = Math.ceil(prompt.length / 4);
-    const estimatedOutputTokens = Math.ceil(response.length / 4);
-    const cost = (estimatedInputTokens / 1_000_000) * 0.0375 +
-      (estimatedOutputTokens / 1_000_000) * 0.15;
-
-    console.log(`[Gemini] Model: gemini-2.5-flash`);
-    console.log(`[Gemini] Content Type: ${contentType}, Deep Dive: ${isDeepDive}`);
-    console.log(`[Gemini] Duration: ${duration}ms`);
-    console.log(`[Gemini] Estimated tokens - Input: ${estimatedInputTokens}, Output: ${estimatedOutputTokens}`);
-    console.log(`[Gemini] Estimated cost: $${cost.toFixed(7)}`);
-
     // 解析响应
+    const skipMatch = response.match(/【跳过】\s*(是|否)/);
+    const reasonMatch = response.match(/【原因】\s*([\s\S]*?)(?=\n|【|$)/);
+
+    if (skipMatch && skipMatch[1] === '是') {
+      return {
+        summary: '',
+        commentary: '',
+        shouldSkip: true,
+        skipReason: reasonMatch ? reasonMatch[1].trim() : '服务类内容',
+      };
+    }
+
     const titleMatch = response.match(/【翻译标题】\s*([\s\S]*?)\s*【摘要】/);
     const summaryMatch = response.match(/【摘要】\s*([\s\S]*?)\s*【评论】/);
     const commentaryMatch = response.match(/【评论】\s*([\s\S]*)/);
@@ -99,6 +115,7 @@ export async function analyzeContentWithGemini(
       summary: summaryMatch ? summaryMatch[1].trim() : response.slice(0, 200),
       commentary: commentaryMatch ? commentaryMatch[1].trim() : '暂无评论',
       translatedTitle: titleMatch ? titleMatch[1].trim() : undefined,
+      shouldSkip: false,
     };
   } catch (error) {
     console.error('Gemini analysis failed:', error);
