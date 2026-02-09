@@ -43,9 +43,9 @@ export default function Navbar() {
       <div className="max-w-2xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="flex-shrink-0 transition-opacity hover:opacity-80">
+          <Link href="/" className="flex-shrink-0 transition-opacity hover:opacity-80 pl-2">
             <div
-              className="h-20 sm:h-24 w-80 sm:w-96 bg-white"
+              className="h-16 sm:h-28 w-48 sm:w-96 bg-white shrink-0"
               style={{
                 maskImage: 'url(/logo.png)',
                 WebkitMaskImage: 'url(/logo.png)',
@@ -53,8 +53,8 @@ export default function Navbar() {
                 WebkitMaskMode: 'luminance' as any,
                 maskRepeat: 'no-repeat',
                 WebkitMaskRepeat: 'no-repeat',
-                maskSize: 'contain',
-                WebkitMaskSize: 'contain',
+                maskSize: '100% auto',
+                WebkitMaskSize: '100% auto',
                 maskPosition: 'left center',
                 WebkitMaskPosition: 'left center'
               } as React.CSSProperties}
@@ -148,7 +148,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <button
-              className="md:hidden p-2 -mr-2 text-white"
+              className="md:hidden p-2 text-white"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="菜单"
             >
