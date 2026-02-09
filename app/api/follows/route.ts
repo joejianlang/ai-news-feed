@@ -17,9 +17,12 @@ export async function GET(request: NextRequest) {
 
     const follows = await getUserFollows(payload.userId);
     return NextResponse.json({ follows });
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取关注列表失败:', error);
-    return NextResponse.json({ error: '获取关注列表失败' }, { status: 500 });
+    return NextResponse.json({
+      error: '获取关注列表失败',
+      details: error.message || String(error)
+    }, { status: 500 });
   }
 }
 
@@ -49,9 +52,12 @@ export async function POST(request: NextRequest) {
 
     const follow = await followSource(payload.userId, sourceId);
     return NextResponse.json({ follow, success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('关注失败:', error);
-    return NextResponse.json({ error: '关注失败' }, { status: 500 });
+    return NextResponse.json({
+      error: '关注失败',
+      details: error.message || String(error)
+    }, { status: 500 });
   }
 }
 
@@ -75,8 +81,11 @@ export async function DELETE(request: NextRequest) {
 
     await unfollowSource(payload.userId, sourceId);
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('取消关注失败:', error);
-    return NextResponse.json({ error: '取消关注失败' }, { status: 500 });
+    return NextResponse.json({
+      error: '取消关注失败',
+      details: error.message || String(error)
+    }, { status: 500 });
   }
 }
