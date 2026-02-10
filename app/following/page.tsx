@@ -155,22 +155,16 @@ export default function FollowingPage() {
                 {/* 展开后的顶部操控栏 */}
                 {isFullExpanded && (
                   <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-y border-teal-500/20 px-4 py-3 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
-                    <button
-                      onClick={() => toggleExpansion(item.id, 'preview')}
-                      className="flex items-center gap-1 text-teal-600 font-black text-sm hover:opacity-70"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="m18 15-6-6-6 6" />
-                      </svg>
-                      <span>收起全文</span>
-                    </button>
+                    <span className="text-teal-600 font-extrabold text-sm uppercase tracking-widest">
+                      正在阅读
+                    </span>
                     <a
                       href={item.original_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-text-muted hover:text-teal-600 text-sm font-bold flex items-center gap-1"
                     >
-                      <span>阅读原文</span>
+                      <span>打开原文</span>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
@@ -179,114 +173,134 @@ export default function FollowingPage() {
                   </div>
                 )}
 
-                {/* 文章配图 / 视频 */}
-                {item.content_type === 'article' && item.image_url && (
-                  <div className="relative group overflow-hidden">
-                    <img
-                      src={item.image_url}
-                      alt={item.title}
-                      className="w-full h-auto max-h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
-                    {item.location && (
-                      <div className="absolute top-4 left-4 bg-black/80 text-white text-[11px] font-black px-2.5 py-1.5 rounded flex items-center gap-1.5 shadow-lg backdrop-blur-sm border border-white/10 tracking-widest uppercase">
-                        <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse"></span>
-                        {item.location}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {item.content_type === 'video' && (() => {
-                  const videoId = item.video_id || extractYouTubeVideoId(item.original_url);
-                  if (!videoId) return null;
-                  const isPlaying = playingVideoId === videoId;
-
-                  return (
-                    <div className="relative overflow-hidden">
-                      <div className="relative" style={{ paddingBottom: '56.25%' }}>
-                        {isPlaying ? (
-                          <iframe
-                            className="absolute top-0 left-0 w-full h-full"
-                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`}
-                            title={item.title}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
-                        ) : (
-                          <div
-                            className="absolute top-0 left-0 w-full h-full cursor-pointer group"
-                            onClick={() => setPlayingVideoId(videoId)}
-                          >
-                            <img
-                              src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
-                              alt={item.title}
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                              onError={(e) => {
-                                const target = e.currentTarget;
-                                if (target.src.includes('maxresdefault')) {
-                                  target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                                }
-                              }}
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/30 transition-all">
-                              <div className="w-16 h-16 bg-red-600/90 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                                <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M8 5v14l11-7z" />
-                                </svg>
-                              </div>
-                            </div>
+                {/* 整合容器：包含图片、Tab 和内容 */}
+                <div className="mx-4 mb-5 p-3 sm:p-4 bg-gray-50/80 dark:bg-white/5 rounded-2xl border border-card-border/50">
+                  {/* 文章配图 / 视频 */}
+                  <div className="mb-4 rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5">
+                    {item.content_type === 'article' && item.image_url && (
+                      <div className="relative group overflow-hidden">
+                        <img
+                          src={item.image_url}
+                          alt={item.title}
+                          className="w-full h-auto max-h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                        {item.location && (
+                          <div className="absolute top-3 left-3 bg-black/80 text-white text-[10px] font-black px-2 py-1 rounded flex items-center gap-1.5 shadow-lg backdrop-blur-sm border border-white/10 tracking-widest uppercase">
+                            <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse"></span>
+                            {item.location}
                           </div>
                         )}
                       </div>
-                    </div>
-                  );
-                })()}
+                    )}
 
-                {/* 交互式 Tabs */}
-                <div className="flex border-b border-card-border">
-                  <button
-                    onClick={() => toggleTab(item.id, 'summary')}
-                    className={`flex-1 py-4 text-[14px] font-black uppercase tracking-widest transition-all ${activeTab === 'summary'
-                      ? 'text-teal-600 border-b-4 border-teal-600 bg-teal-500/5'
-                      : 'text-text-muted hover:text-foreground opacity-60'
-                      }`}
-                  >
-                    内容摘要
-                  </button>
-                  {item.ai_commentary && (
+                    {item.content_type === 'video' && (() => {
+                      const videoId = item.video_id || extractYouTubeVideoId(item.original_url);
+                      if (!videoId) return null;
+                      const isPlaying = playingVideoId === videoId;
+
+                      return (
+                        <div className="relative overflow-hidden">
+                          <div className="relative" style={{ paddingBottom: '56.25%' }}>
+                            {isPlaying ? (
+                              <iframe
+                                className="absolute top-0 left-0 w-full h-full"
+                                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`}
+                                title={item.title}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                              />
+                            ) : (
+                              <div
+                                className="absolute top-0 left-0 w-full h-full cursor-pointer group"
+                                onClick={() => setPlayingVideoId(videoId)}
+                              >
+                                <img
+                                  src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                                  alt={item.title}
+                                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                  onError={(e) => {
+                                    const target = e.currentTarget;
+                                    if (target.src.includes('maxresdefault')) {
+                                      target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                    }
+                                  }}
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/30 transition-all">
+                                  <div className="w-14 h-14 bg-red-600/90 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                                    <svg className="w-7 h-7 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* 交互式 Tabs */}
+                  <div className="flex border-b border-card-border/50 mb-2">
                     <button
-                      onClick={() => toggleTab(item.id, 'commentary')}
-                      className={`flex-1 py-4 text-[14px] font-black uppercase tracking-widest transition-all ${activeTab === 'commentary'
-                        ? 'text-cyan-600 border-b-4 border-cyan-600 bg-cyan-500/5'
-                        : 'text-text-muted hover:text-foreground opacity-60'
+                      onClick={() => toggleTab(item.id, 'summary')}
+                      className={`flex-1 py-3 text-[13px] font-black uppercase tracking-widest transition-all ${activeTab === 'summary'
+                        ? 'text-teal-600 border-b-2 sm:border-b-4 border-teal-600'
+                        : 'text-text-muted opacity-60'
                         }`}
                     >
-                      专业解读
+                      内容摘要
                     </button>
-                  )}
-                </div>
+                    {item.ai_commentary && (
+                      <button
+                        onClick={() => toggleTab(item.id, 'commentary')}
+                        className={`flex-1 py-3 text-[13px] font-black uppercase tracking-widest transition-all ${activeTab === 'commentary'
+                          ? 'text-cyan-600 border-b-2 sm:border-b-4 border-cyan-600'
+                          : 'text-text-muted opacity-60'
+                          }`}
+                      >
+                        专业解读
+                      </button>
+                    )}
+                  </div>
 
-                {/* 内容展示区 */}
-                <div className="relative">
-                  <div
-                    className={`px-5 py-6 transition-all duration-700 overflow-hidden ${isFullExpanded ? 'max-h-none pb-20' : 'max-h-[220px]'
-                      }`}
-                  >
-                    <p className={`text-text-secondary text-[17px] leading-[1.8] font-medium font-sans whitespace-pre-wrap ${!isFullExpanded ? 'line-clamp-6' : ''}`}>
-                      {content}
-                    </p>
+                  {/* 内容展示区 */}
+                  <div className="relative">
+                    <div
+                      className={`transition-all duration-700 overflow-hidden ${isFullExpanded ? 'max-h-none' : 'max-h-[100px]'
+                        }`}
+                    >
+                      <p className={`text-text-secondary text-[16px] leading-[1.7] font-medium font-sans whitespace-pre-wrap ${!isFullExpanded ? 'line-clamp-1' : ''}`}>
+                        {content}
+                      </p>
 
-                    {!isFullExpanded && (
-                      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white dark:from-card via-white/90 dark:via-card/90 to-transparent flex items-end justify-center pb-4">
+                      {!isFullExpanded && (
+                        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-50/80 dark:from-background via-gray-50/50 to-transparent flex items-end justify-center pb-1">
+                          <button
+                            onClick={() => toggleExpansion(item.id, 'full')}
+                            className="px-6 py-2 bg-teal-600 text-white rounded-full font-black text-xs shadow-xl hover:bg-teal-700 transition-all flex items-center gap-1.5 ring-4 ring-teal-500/10"
+                          >
+                            <span>继续阅读</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="m6 9 6 6 6-6" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 收起按钮移到底部 */}
+                    {isFullExpanded && (
+                      <div className="mt-8 pt-4 border-t border-card-border/30 flex justify-center pb-4">
                         <button
-                          onClick={() => toggleExpansion(item.id, 'full')}
-                          className="px-8 py-3 bg-teal-600 text-white rounded-full font-black text-sm shadow-xl hover:bg-teal-700 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 group ring-4 ring-teal-500/10"
+                          onClick={() => toggleExpansion(item.id, 'preview')}
+                          className="px-8 py-2.5 bg-gray-100 dark:bg-gray-800 text-text-muted rounded-full font-black text-xs hover:bg-gray-200 dark:hover:bg-gray-700 transition-all flex items-center gap-2"
                         >
-                          <span>继续阅读</span>
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-y-0.5 transition-transform">
-                            <path d="m6 9 6 6 6-6" />
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="m18 15-6-6-6 6" />
                           </svg>
+                          <span>收起全文内容</span>
                         </button>
                       </div>
                     )}
@@ -295,15 +309,18 @@ export default function FollowingPage() {
 
                 {/* 底部评论区 */}
                 {!isFullExpanded && (
-                  <div className="px-5 pb-4 border-t border-card-border/50 pt-4 flex justify-between items-center bg-gray-50/50 dark:bg-white/5">
+                  <div className="px-5 pb-5 pt-1 flex justify-between items-center">
                     <div className="flex items-center gap-6">
                       <a
                         href={item.original_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-teal-600 dark:text-teal-400 text-sm font-black hover:opacity-80 transition-all"
+                        className="text-teal-600 dark:text-teal-400 text-sm font-black hover:opacity-80 transition-all flex items-center gap-1"
                       >
-                        原文链接
+                        <span>原文</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m9 18 6-6-6-6" />
+                        </svg>
                       </a>
                       <CommentSection
                         newsItemId={item.id}
