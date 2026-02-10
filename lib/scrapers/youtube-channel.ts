@@ -1,8 +1,6 @@
 import { google } from 'googleapis';
 import { YoutubeTranscript } from 'youtube-transcript';
 import type { YouTubeVideo } from '@/types';
-import * as fs from 'fs';
-import * as path from 'path';
 
 // 加载环境变量
 // loadEnvFile() - 移除手动加载，由 Next.js 自动处理
