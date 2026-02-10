@@ -178,12 +178,26 @@ export default function Home() {
 
   const toggleExpansion = (itemId: string, state: 'preview' | 'full') => {
     setExpansionStates(prev => ({ ...prev, [itemId]: state }));
+
     if (state === 'preview') {
       // 收起时滚动回条目顶部
       const element = document.getElementById(`article-${itemId}`);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+    } else if (state === 'full') {
+      // 展开时，自动将“正在阅读”栏对齐到分类栏下方
+      setTimeout(() => {
+        const element = document.getElementById(`reading-bar-${itemId}`);
+        if (element) {
+          const headerHeight = window.innerWidth < 640 ? 96 : 112;
+          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+          window.scrollTo({
+            top: elementPosition - headerHeight,
+            behavior: 'smooth'
+          });
+        }
+      }, 100); // 稍微长一点的延迟确保展开动画和 DOM 渲染完成
     }
   };
 
