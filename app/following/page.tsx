@@ -132,29 +132,33 @@ export default function FollowingPage() {
                 id={`article-${item.id}`}
                 className={`bg-white dark:bg-card transition-all duration-500 border-b border-card-border last:border-0 rounded-2xl mb-4 sm:mb-8 shadow-sm ring-1 ring-card-border overflow-hidden ${isFullExpanded ? 'ring-teal-500/30 shadow-xl scale-[1.01]' : ''}`}
               >
-                {/* 头部信息 - 统一 Padding */}
-                <div className="px-4 pt-3 sm:pt-4 pb-2">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center text-white font-extrabold text-sm sm:text-base flex-shrink-0 shadow-inner">
-                      {item.source?.name.charAt(0) || 'N'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col">
-                        <span className="font-extrabold text-text-accent text-[15px] sm:text-[17px] truncate leading-tight">
-                          {item.source?.name || '未知来源'}
-                        </span>
-                        <span className="text-text-muted text-[12px] sm:text-[13px] font-medium opacity-80 uppercase tracking-wider">
-                          {item.published_at ? new Date(item.published_at).toLocaleString('zh-CN') : '刚刚'}
-                        </span>
+                {/* 头部信息 - 全文模式下隐藏 */}
+                {!isFullExpanded && (
+                  <>
+                    <div className="px-4 pt-3 sm:pt-4 pb-2">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center text-white font-extrabold text-sm sm:text-base flex-shrink-0 shadow-inner">
+                          {item.source?.name.charAt(0) || 'N'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col">
+                            <span className="font-extrabold text-text-accent text-[15px] sm:text-[17px] truncate leading-tight">
+                              {item.source?.name || '未知来源'}
+                            </span>
+                            <span className="text-text-muted text-[12px] sm:text-[13px] font-medium opacity-80 uppercase tracking-wider">
+                              {item.published_at ? new Date(item.published_at).toLocaleString('zh-CN') : '刚刚'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-                <div className="px-4 mb-2">
-                  <h2 className="text-xl sm:text-2xl font-black text-foreground leading-[1.3] group-hover:text-teal-600 transition-colors">
-                    {item.title}
-                  </h2>
-                </div>
+                    <div className="px-4 mb-2">
+                      <h2 className="text-xl sm:text-2xl font-black text-foreground leading-[1.3] group-hover:text-teal-600 transition-colors">
+                        {item.title}
+                      </h2>
+                    </div>
+                  </>
+                )}
 
                 {/* 展开后的顶部操控栏 */}
                 {isFullExpanded && (
@@ -178,72 +182,74 @@ export default function FollowingPage() {
                 )}
 
                 {/* 整合容器：包含图片、Tab 和内容 */}
-                <div className="mx-0 -mt-2.5 mb-5 px-4 py-3 sm:py-4 bg-transparent dark:bg-black rounded-none border-y border-card-border/50">
-                  {/* 文章配图 / 视频 */}
-                  <div className="mb-2 rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5">
-                    {item.content_type === 'article' && item.image_url && (
-                      <div className="relative group overflow-hidden">
-                        <img
-                          src={item.image_url}
-                          alt={item.title}
-                          className="w-full h-auto max-h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
-                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                        />
-                        {item.location && (
-                          <div className="absolute top-3 left-3 bg-black/80 text-white text-[10px] font-black px-2 py-1 rounded flex items-center gap-1.5 shadow-lg backdrop-blur-sm border border-white/10 tracking-widest uppercase">
-                            <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse"></span>
-                            {item.location}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                <div className={`mx-0 mb-5 px-4 py-3 sm:py-4 bg-transparent dark:bg-black rounded-none border-y border-card-border/50 ${isFullExpanded ? '-mt-1' : '-mt-2.5'}`}>
+                  {/* 文章配图 / 视频 - 专业解读模式下显示时隐藏 */}
+                  {!(isFullExpanded && activeTab === 'commentary') && (
+                    <div className="mb-2 rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5 transition-all duration-300">
+                      {item.content_type === 'article' && item.image_url && (
+                        <div className="relative group overflow-hidden">
+                          <img
+                            src={item.image_url}
+                            alt={item.title}
+                            className="w-full h-auto max-h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                          {item.location && (
+                            <div className="absolute top-3 left-3 bg-black/80 text-white text-[10px] font-black px-2 py-1 rounded flex items-center gap-1.5 shadow-lg backdrop-blur-sm border border-white/10 tracking-widest uppercase">
+                              <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse"></span>
+                              {item.location}
+                            </div>
+                          )}
+                        </div>
+                      )}
 
-                    {item.content_type === 'video' && (() => {
-                      const videoId = item.video_id || extractYouTubeVideoId(item.original_url);
-                      if (!videoId) return null;
-                      const isPlaying = playingVideoId === videoId;
+                      {item.content_type === 'video' && (() => {
+                        const videoId = item.video_id || extractYouTubeVideoId(item.original_url);
+                        if (!videoId) return null;
+                        const isPlaying = playingVideoId === videoId;
 
-                      return (
-                        <div className="relative overflow-hidden">
-                          <div className="relative" style={{ paddingBottom: '56.25%' }}>
-                            {isPlaying ? (
-                              <iframe
-                                className="absolute top-0 left-0 w-full h-full"
-                                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`}
-                                title={item.title}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                              />
-                            ) : (
-                              <div
-                                className="absolute top-0 left-0 w-full h-full cursor-pointer group"
-                                onClick={() => setPlayingVideoId(videoId)}
-                              >
-                                <img
-                                  src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
-                                  alt={item.title}
-                                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                  onError={(e) => {
-                                    const target = e.currentTarget;
-                                    if (target.src.includes('maxresdefault')) {
-                                      target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                                    }
-                                  }}
+                        return (
+                          <div className="relative overflow-hidden">
+                            <div className="relative" style={{ paddingBottom: '56.25%' }}>
+                              {isPlaying ? (
+                                <iframe
+                                  className="absolute top-0 left-0 w-full h-full"
+                                  src={`https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`}
+                                  title={item.title}
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
                                 />
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/30 transition-all">
-                                  <div className="w-14 h-14 bg-red-600/90 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                                    <svg className="w-7 h-7 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                      <path d="M8 5v14l11-7z" />
-                                    </svg>
+                              ) : (
+                                <div
+                                  className="absolute top-0 left-0 w-full h-full cursor-pointer group"
+                                  onClick={() => setPlayingVideoId(videoId)}
+                                >
+                                  <img
+                                    src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                                    alt={item.title}
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                    onError={(e) => {
+                                      const target = e.currentTarget;
+                                      if (target.src.includes('maxresdefault')) {
+                                        target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                      }
+                                    }}
+                                  />
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/30 transition-all">
+                                    <div className="w-14 h-14 bg-red-600/90 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                                      <svg className="w-7 h-7 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z" />
+                                      </svg>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
+                        );
+                      })()}
+                    </div>
+                  )}
 
                   {/* 交互式 Tabs */}
                   <div className="flex border-b border-card-border/50 mb-3">

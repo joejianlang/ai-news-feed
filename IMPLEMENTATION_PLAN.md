@@ -84,6 +84,22 @@ CREATE INDEX idx_user_follows_source_id ON user_follows(source_id);
 - [ ] 在主页新闻卡片添加"关注"按钮
 - [ ] 实现关注状态显示（已关注/未关注）
 
+## 阅读模式下的精细化 UI 优化 (Phase 23)
+
+### 目标
+根据用户选择的内容维度（摘要 vs 解读）动态调整界面，在保证信息触达的同时最大化阅读舒适度。
+
+### 方案设计
+1. **统一隐藏头部**：当 `isFullExpanded` 为 `true` 时，始终隐藏文章的元信息（来源、日期、原标题、关注按钮）。
+2. **条件性隐藏媒体（图片/视频）**：
+   - **内容摘要 (Summary)**：保留图片/视频。用户在此模式下通常需要视觉辅助。
+   - **专业解读 (Interpretation)**：隐藏图片/视频。进入深度阅读模式，排除视觉干扰，让文字内容上移吸顶。
+3. **结构调整**：
+   - “正在阅读”工具栏 始终置于卡片顶部。
+   - 首页：工具栏 `top-[96px]/[112px]`。
+   - 关注页：工具栏 `top-[48px]/[64px]`。
+4. **代码同步**：在 `app/page.tsx` 和 `app/following/page.tsx` 实现一致的 `isFullExpanded && activeTab === 'commentary'` 判断逻辑。
+
 ### Phase 5: 个性化Feed页面
 - [ ] 创建 `/app/following/page.tsx` - "我的关注"页面
 - [ ] 创建 `/api/news/following` - 获取关注源的新闻
