@@ -56,8 +56,21 @@ export default function FollowingPage() {
 
   const toggleTab = (itemId: string, tab: 'summary' | 'commentary') => {
     setActiveTabs(prev => ({ ...prev, [itemId]: tab }));
-  };
 
+    // 当切换 Tab 时，自动将“正在阅读”栏对齐到导航栏下方
+    setTimeout(() => {
+      const element = document.getElementById(`reading-bar-${itemId}`);
+      if (element) {
+        // 计算顶部导航栏的高度
+        const headerHeight = window.innerWidth < 640 ? 48 : 64;
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({
+          top: elementPosition - headerHeight,
+          behavior: 'smooth'
+        });
+      }
+    }, 50);
+  };
   const toggleExpansion = (itemId: string, state: 'preview' | 'full') => {
     setExpansionStates(prev => ({ ...prev, [itemId]: state }));
     if (state === 'preview') {
@@ -164,7 +177,7 @@ export default function FollowingPage() {
                 <div className={`mx-0 mb-5 bg-transparent dark:bg-black rounded-none border-y border-card-border/50 ${isFullExpanded ? 'mt-0 pt-0' : '-mt-2.5'}`}>
                   {/* 展开后的顶部操控栏 - 移入容器内部以防止遮挡图片 */}
                   {isFullExpanded && (
-                    <div className="z-20 bg-background/95 backdrop-blur-md px-4 pt-3 pb-0 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
+                    <div id={`reading-bar-${item.id}`} className="z-20 bg-background/95 backdrop-blur-md px-4 pt-3 pb-0 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
                       <span className="text-teal-600 font-extrabold text-sm uppercase tracking-widest">
                         正在阅读
                       </span>
