@@ -349,7 +349,7 @@ export default function Home() {
                         )}
 
                         {/* 整合容器：包含图片、Tab 和内容，具有内边距 */}
-                        <div className={`mx-0 mb-5 px-4 py-3 sm:py-4 bg-transparent dark:bg-black rounded-none border-y border-card-border/50 ${isFullExpanded ? '-mt-1' : '-mt-2.5'}`}>
+                        <div className={`mx-0 mb-5 px-4 py-3 sm:py-4 bg-transparent dark:bg-black rounded-none border-y border-card-border/50 ${isFullExpanded ? 'mt-0 pt-0' : '-mt-2.5'}`}>
                           {/* 文章配图 / 视频 - 专业解读模式下显示时隐藏 */}
                           {!(isFullExpanded && activeTab === 'commentary') && (
                             <div className="mb-2 rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5 transition-all duration-300">
