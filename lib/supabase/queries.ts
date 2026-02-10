@@ -71,7 +71,7 @@ export async function getNewsItems(limit = 50) {
 }
 
 // 按批次分组获取新闻（用于前端按"更新时间"分组显示）
-export async function getNewsItemsByBatch(limit = 50, categoryId?: string, cityTag?: string) {
+export async function getNewsItemsByBatch(limit = 50, categoryId?: string, cityTag?: string, excludeSourceIds?: string[]) {
   let query = supabase
     .from('news_items')
     .select(`
@@ -79,6 +79,11 @@ export async function getNewsItemsByBatch(limit = 50, categoryId?: string, cityT
       source:news_sources(*)
     `)
     .eq('is_published', true);
+
+  // 如果指定了要排除的来源
+  if (excludeSourceIds && excludeSourceIds.length > 0) {
+    query = query.not('source_id', 'in', `(${excludeSourceIds.join(',')})`);
+  }
 
   // 如果指定了分类，添加分类过滤
   if (categoryId) {

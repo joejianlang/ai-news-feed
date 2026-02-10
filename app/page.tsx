@@ -221,6 +221,21 @@ export default function Home() {
             >
               全部
             </button>
+
+            {/* 我的关注 - 显示快捷入口 */}
+            {user && (
+              <Link
+                href="/following"
+                className="flex-shrink-0 px-4 py-3 text-[17px] font-bold border-b-2 border-transparent text-teal-600 hover:text-teal-700 flex items-center gap-1.5 transition-colors group"
+              >
+                <div className="w-5 h-5 flex items-center justify-center">
+                  <svg className="w-4 h-4 fill-teal-600 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                </div>
+                <span>关注</span>
+              </Link>
+            )}
             {/* 动态分类 - 过滤掉旧分类 */}
             {categories
               .filter((cat: Category) => !['传统新闻媒体', 'YouTube网红', '网络专业媒体'].includes(cat.name))
@@ -524,19 +539,23 @@ export default function Home() {
       </main>
 
       {/* 底部提示 */}
-      {newsBatches.length > 0 && (
-        <div className="text-center py-8 text-gray-400 text-sm">
-          共 {newsBatches.length} 批更新，累计 {getTotalNewsCount()} 条新闻
-        </div>
-      )}
+      {
+        newsBatches.length > 0 && (
+          <div className="text-center py-8 text-gray-400 text-sm">
+            共 {newsBatches.length} 批更新，累计 {getTotalNewsCount()} 条新闻
+          </div>
+        )
+      }
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-    </div>
+      {
+        toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )
+      }
+    </div >
   );
 }
