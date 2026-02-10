@@ -83,7 +83,7 @@ export async function analyzeContentWithGemini(
 纯粹的广告或促销内容
 天气预报、体育比分列表等纯信息罗列`;
 
-  const summaryReq = dbConfig['summary_requirements'] || '80-150字，概括核心内容、关键要素、影响，全部中文';
+  const summaryReq = dbConfig['summary_requirements'] || '80-150字，以叙述性的语言概括核心新闻内容（需包含时间、地点、人物、起因、经过、结果等要素，但禁止出现"【时间】"、"[地点]"等此类显式的标注词），全部使用中文简体。';
   const commentaryReq = dbConfig['commentary_requirements'] || '幽默犀利，有深度有趣味，全部使用中文简体，不要出现任何英文词汇或缩写';
 
   const prompt = `分析新闻并输出以下部分（全部使用中文简体，禁止出现任何英文）：
