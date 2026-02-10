@@ -181,6 +181,8 @@ export async function runFetchPipeline(specificSourceId?: string) {
                                         published_at: item.publishedAt?.toISOString(),
                                         video_id: item.videoId,
                                         image_url: item.imageUrl,
+                                        is_published: true,
+                                        batch_completed_at: new Date().toISOString()
                                     }])
                                     .select()
                                     .single();

@@ -38,9 +38,32 @@ async function updateFetchStatus(status: {
   }
 }
 
+// 自动修复：查找因之前脚本中断而卡在草稿状态的新闻
+async function healStuckItems() {
+  console.log('[Heal] 🔍 检查是否有被卡住的草稿...');
+  const { data: stuckItems, error } = await supabase
+    .from('news_items')
+    .update({
+      is_published: true,
+      batch_completed_at: new Date().toISOString()
+    })
+    .eq('is_published', false)
+    .not('ai_summary', 'is', null) // 只修复已经有了摘要的
+    .select('id');
+
+  if (error) {
+    console.error('[Heal] ❌ 修复失败:', error);
+  } else if (stuckItems && stuckItems.length > 0) {
+    console.log(`[Heal] ✅ 成功修复并发布了 ${stuckItems.length} 个被卡住的新闻项`);
+  }
+}
+
 // GET - 定时任务触发（通过 cron job 调用）
 export async function GET(request: Request) {
   console.log('[Cron] 📥 收到抓取请求');
+
+  // 先进行自我修复
+  await healStuckItems();
 
   // 验证 cron secret（可选，用于外部调用时验证）
   const authHeader = request.headers.get('authorization');
@@ -73,9 +96,10 @@ export async function GET(request: Request) {
 
     console.log(`[Cron] 🚀 开始顺序抓取 ${sources.length} 个新闻源`);
 
-    // 生成本次抓取的批次ID
+    // 生成本次抓取的批次ID和时间
     const batchId = randomUUID();
-    console.log(`[Cron] 📦 批次ID: ${batchId}`);
+    const completedAt = new Date().toISOString();
+    console.log(`[Cron] 📦 批次ID: ${batchId}, 批次时间: ${completedAt}`);
 
     // 更新状态：开始抓取
     console.log('[Cron] 💾 更新状态为运行中...');
@@ -163,7 +187,8 @@ export async function GET(request: Request) {
                 video_id: item.videoId,
                 image_url: item.imageUrl,
                 fetch_batch_id: batchId,
-                is_published: false,
+                is_published: true, // Default to true for immediate visibility
+                batch_completed_at: completedAt, // Use consistent batch time
               });
 
               return { skipped: false };
@@ -203,8 +228,7 @@ export async function GET(request: Request) {
       }
     }
 
-    // 批量发布本次抓取的所有新闻
-    const completedAt = new Date().toISOString();
+    // 批量发布本次抓取的所有新闻（冗余但安全的最后一步）
     console.log(`[Cron] 📢 发布批次 ${batchId} 的 ${results.newItems} 条新闻...`);
     await publishBatch(batchId, completedAt);
     console.log(`[Cron] ✅ 批次已发布`);
