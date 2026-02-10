@@ -91,6 +91,9 @@ export interface NewsItem {
   fetch_batch_id?: string; // 抓取批次ID
   is_published?: boolean; // 是否已发布（false为草稿状态）
   batch_completed_at?: string; // 批次完成时间（用于显示"更新时间"）
+  location?: string | null; // 新闻涉及的城市
+  tags?: string[]; // 标签列表
+  is_hot?: boolean; // 是否为热点新闻
   created_at: string;
   updated_at: string;
   source?: NewsSource;

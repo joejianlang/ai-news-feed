@@ -241,73 +241,86 @@ export default function Home() {
                 {/* 批次内的新闻列表 */}
                 <div className="divide-y divide-card-border">
                   {batch.items.map(item => (
-                    <article key={item.id} className="bg-card p-4 sm:p-6 hover:bg-background transition-colors">
-                      {/* 头部信息 */}
-                      <div className="flex items-center gap-2 sm:gap-3 mb-3">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
+                    <article key={item.id} className="bg-card p-4 sm:p-5 hover:bg-background/50 transition-colors border-b border-card-border last:border-0 rounded-xl mb-4 sm:mb-6 shadow-sm ring-1 ring-card-border">
+                      {/* 头部信息 - 更加精致 */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center text-white font-extrabold text-sm sm:text-base flex-shrink-0 shadow-inner">
                           {item.source?.name.charAt(0) || 'N'}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                            <span className="font-bold text-text-accent text-sm sm:text-base truncate">{item.source?.name || '未知来源'}</span>
-                            <span className="text-text-muted text-xs sm:text-sm">·</span>
-                            <span className="text-text-muted text-xs sm:text-sm">{formatBatchTime(batch.batchTime)}</span>
+                          <div className="flex flex-col">
+                            <span className="font-extrabold text-text-accent text-[15px] sm:text-[17px] truncate leading-tight">
+                              {item.source?.name || '未知来源'}
+                            </span>
+                            <span className="text-text-muted text-[12px] sm:text-[13px] font-medium opacity-80 uppercase tracking-wider">
+                              {formatBatchTime(batch.batchTime)}
+                            </span>
                           </div>
-                          {/* 已移除评论风格显示 */}
                         </div>
                         {item.source && (
-                          <FollowButton
-                            sourceId={item.source_id}
-                          />
+                          <div className="flex-shrink-0 scale-90 sm:scale-100">
+                            <FollowButton sourceId={item.source_id} />
+                          </div>
                         )}
                       </div>
 
-                      {/* 标题 */}
-                      <h2 className="text-lg sm:text-xl font-bold mb-3 text-foreground leading-tight">{item.title}</h2>
+                      {/* 标题 - 更加醒目 */}
+                      <h2 className="text-[19px] sm:text-[22px] font-black mb-4 text-foreground leading-[1.3] tracking-tight hover:text-teal-600 transition-colors cursor-pointer">
+                        {item.title}
+                      </h2>
 
-                      {/* 内容摘要 - 已移动到标题后面 */}
+                      {/* 内容摘要 - City666 风格方框 */}
                       {item.ai_summary && item.content_type === 'article' && (
-                        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-teal-50 dark:bg-teal-900/20 rounded-lg border-l-4 border-teal-400">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="text-sm font-bold text-teal-700">📝 内容摘要</div>
+                        <div className="mb-4 bg-gray-50 dark:bg-gray-800/40 rounded-xl border-l-[6px] border-teal-500 overflow-hidden shadow-sm">
+                          <div className="flex items-center justify-between px-4 py-3 bg-gray-100/50 dark:bg-white/5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">📝</span>
+                              <span className="text-[14px] font-black text-teal-700 dark:text-teal-400 tracking-wide uppercase">内容摘要</span>
+                            </div>
                             <button
                               onClick={() => toggleCommentary(`${item.id}-summary`)}
-                              className="text-teal-600 hover:text-teal-800 text-xs font-medium"
+                              className="text-teal-600 dark:text-teal-400 hover:text-teal-800 text-[13px] font-bold flex items-center gap-1 group"
                             >
-                              {expandedCommentary.has(`${item.id}-summary`) ? '收起 ▲' : '查看全文 ▼'}
+                              <span>{expandedCommentary.has(`${item.id}-summary`) ? '收起全文' : '查看全文'}</span>
+                              <span className={`transform transition-transform ${expandedCommentary.has(`${item.id}-summary`) ? 'rotate-180' : ''}`}>▼</span>
                             </button>
                           </div>
-                          <p className={`text-text-secondary text-base leading-normal ${expandedCommentary.has(`${item.id}-summary`) ? '' : 'line-clamp-1'}`}>
-                            {item.ai_summary}
-                          </p>
+                          <div className="px-4 py-3">
+                            <p className={`text-text-secondary text-[16px] leading-[1.6] font-medium font-sans ${expandedCommentary.has(`${item.id}-summary`) ? '' : 'line-clamp-2'}`}>
+                              {item.ai_summary}
+                            </p>
+                          </div>
                         </div>
                       )}
 
-                      {/* 文章配图 */}
+                      {/* 文章配图 - 带城市角标 */}
                       {item.content_type === 'article' && item.image_url && (
-                        <div className="mb-4 rounded-lg overflow-hidden">
+                        <div className="mb-5 rounded-xl overflow-hidden shadow-md relative group">
                           <img
                             src={item.image_url}
                             alt={item.title}
-                            className="w-full h-auto object-cover"
+                            className="w-full h-auto max-h-[400px] object-cover transition-transform duration-500 group-hover:scale-105"
                             onError={(e) => {
-                              // 如果图片加载失败，隐藏图片
                               e.currentTarget.style.display = 'none';
                             }}
                           />
+                          {/* 城市角标 */}
+                          {item.location && (
+                            <div className="absolute top-4 left-4 bg-black/80 text-white text-[12px] font-black px-3 py-1.5 rounded-lg shadow-lg backdrop-blur-sm border border-white/10 tracking-widest uppercase">
+                              {item.location}
+                            </div>
+                          )}
                         </div>
                       )}
 
                       {/* YouTube 视频播放器 */}
                       {item.content_type === 'video' && (() => {
-                        // 优先使用数据库中的 video_id，如果没有则从 URL 提取
                         const videoId = item.video_id || extractYouTubeVideoId(item.original_url);
                         if (!videoId) return null;
-
                         const isPlaying = playingVideoId === videoId;
 
                         return (
-                          <div className="mb-4 rounded-lg overflow-hidden shadow-lg">
+                          <div className="mb-5 rounded-xl overflow-hidden shadow-xl ring-1 ring-white/10 relative">
                             <div className="relative" style={{ paddingBottom: '56.25%' }}>
                               {isPlaying ? (
                                 <iframe
@@ -322,26 +335,22 @@ export default function Home() {
                                   className="absolute top-0 left-0 w-full h-full cursor-pointer group"
                                   onClick={() => setPlayingVideoId(videoId)}
                                 >
-                                  {/* 缩略图 - 底层 */}
                                   <img
                                     src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
                                     alt={item.title}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                     onError={(e) => {
-                                      // 如果最高清缩略图失败，尝试高清缩略图
                                       const target = e.currentTarget;
                                       if (target.src.includes('maxresdefault')) {
                                         target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
                                       } else if (target.src.includes('hqdefault')) {
-                                        // 如果高清也失败，尝试标准缩略图
                                         target.src = `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
                                       }
                                     }}
                                   />
-                                  {/* 播放按钮覆盖层 - 上层 */}
-                                  <div className="absolute inset-0 flex items-center justify-center group-hover:bg-black group-hover:bg-opacity-30 transition-all">
-                                    <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                                      <svg className="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-all">
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-600/90 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform backdrop-blur-[2px]">
+                                      <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M8 5v14l11-7z" />
                                       </svg>
                                     </div>
@@ -349,60 +358,77 @@ export default function Home() {
                                 </div>
                               )}
                             </div>
+                            {/* 视频城市角标 */}
+                            {item.location && !isPlaying && (
+                              <div className="absolute top-4 left-4 bg-black/80 text-white text-[12px] font-black px-3 py-1.5 rounded-lg shadow-lg border border-white/10 tracking-widest uppercase">
+                                {item.location}
+                              </div>
+                            )}
                           </div>
                         );
                       })()}
 
-
-                      {/* 专业解读 */}
+                      {/* 专业解读 - City666 风格方框 */}
                       {item.ai_commentary && (
-                        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-cyan-50 dark:bg-cyan-900/20 rounded-lg border-l-4 border-cyan-400">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="text-sm font-bold text-cyan-700">💬 专业解读</div>
+                        <div className="mb-5 bg-gray-50 dark:bg-gray-800/40 rounded-xl border-l-[6px] border-cyan-500 overflow-hidden shadow-sm">
+                          <div className="flex items-center justify-between px-4 py-3 bg-gray-100/50 dark:bg-white/5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">💬</span>
+                              <span className="text-[14px] font-black text-cyan-700 dark:text-cyan-400 tracking-wide uppercase">专业解读</span>
+                            </div>
                             <button
                               onClick={() => toggleCommentary(item.id)}
-                              className="text-cyan-600 hover:text-cyan-800 text-xs font-medium"
+                              className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 text-[13px] font-bold flex items-center gap-1 group"
                             >
-                              {expandedCommentary.has(item.id) ? '收起 ▲' : '展开解读 ▼'}
+                              <span>{expandedCommentary.has(item.id) ? '收起解读' : '展开解读'}</span>
+                              <span className={`transform transition-transform ${expandedCommentary.has(item.id) ? 'rotate-180' : ''}`}>▼</span>
                             </button>
                           </div>
-                          <p className={`text-text-secondary text-base leading-normal whitespace-pre-wrap ${expandedCommentary.has(item.id) ? '' : 'line-clamp-1'}`}>
-                            {item.ai_commentary}
-                          </p>
+                          <div className="px-4 py-3">
+                            <p className={`text-text-secondary text-[16px] leading-[1.6] font-medium whitespace-pre-wrap font-sans ${expandedCommentary.has(item.id) ? '' : 'line-clamp-2'}`}>
+                              {item.ai_commentary}
+                            </p>
+                          </div>
                         </div>
                       )}
 
-                      {/* 底部链接与分享 */}
-                      <div className="flex items-center gap-3 mb-4">
-                        <a
-                          href={item.original_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 px-3 py-1.5 bg-card text-text-accent rounded-full text-sm font-medium hover:bg-background transition-colors border border-card-border"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-0.5">
-                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                          </svg>
-                          <span>查看原文</span>
-                        </a>
-                        <button
-                          onClick={() => handleShare(item)}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-card text-text-muted rounded-full text-sm font-medium hover:bg-background transition-colors border border-card-border"
-                        >
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="mr-0.5">
-                            <path d="M15 8l5 5-5 5" />
-                            <path d="M20 13H10a8 8 0 0 0-8 8" />
-                          </svg>
-                          <span>分享</span>
-                        </button>
+                      {/* 底部链接与分享 - 精简化 */}
+                      <div className="flex items-center justify-between mb-5 border-t border-card-border pt-4">
+                        <div className="flex items-center gap-3">
+                          <a
+                            href={item.original_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 py-1.5 text-teal-600 dark:text-teal-400 text-[14px] font-black hover:opacity-80 transition-all group"
+                          >
+                            <span className="group-hover:translate-x-1 transition-transform tracking-tight">阅读原文</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="m9 18 6-6-6-6" />
+                            </svg>
+                          </a>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <button
+                            onClick={() => handleShare(item)}
+                            className="p-2 text-text-muted hover:text-teal-600 transition-colors bg-gray-50 dark:bg-gray-800/50 rounded-lg"
+                            title="分享"
+                          >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                              <polyline points="16 6 12 2 8 6" />
+                              <line x1="12" y1="2" x2="12" y2="15" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
 
                       {/* 评论区 */}
-                      <CommentSection
-                        newsItemId={item.id}
-                        initialCommentCount={item.comment_count || 0}
-                      />
+                      <div className="mt-2">
+                        <CommentSection
+                          newsItemId={item.id}
+                          initialCommentCount={item.comment_count || 0}
+                        />
+                      </div>
                     </article>
                   ))}
                 </div>

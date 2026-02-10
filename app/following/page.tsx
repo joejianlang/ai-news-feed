@@ -102,60 +102,81 @@ export default function FollowingPage() {
 
         <div className="space-y-4 sm:space-y-6">
           {news.map((item) => (
-            <div key={item.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-              {/* 来源信息 */}
-              <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 mb-3 flex-wrap">
-                <span className="font-semibold text-teal-600">{item.source?.name}</span>
-                {item.published_at && (
-                  <>
-                    <span>•</span>
-                    <span>{new Date(item.published_at).toLocaleString('zh-CN')}</span>
-                  </>
-                )}
+            <article key={item.id} className="bg-white dark:bg-card p-4 sm:p-5 hover:bg-teal-50/30 dark:hover:bg-background/50 transition-colors border-b border-card-border last:border-0 rounded-xl mb-4 sm:mb-6 shadow-sm ring-1 ring-card-border">
+              {/* 头部信息 */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center text-white font-extrabold text-sm sm:text-base flex-shrink-0 shadow-inner">
+                  {item.source?.name.charAt(0) || 'N'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col">
+                    <span className="font-extrabold text-text-accent text-[15px] sm:text-[17px] truncate leading-tight">
+                      {item.source?.name || '未知来源'}
+                    </span>
+                    <span className="text-text-muted text-[12px] sm:text-[13px] font-medium opacity-80 uppercase tracking-wider">
+                      {item.published_at ? new Date(item.published_at).toLocaleString('zh-CN') : '刚刚'}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* 标题 */}
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-gray-800 leading-tight">{item.title}</h2>
+              <h2 className="text-[19px] sm:text-[22px] font-black mb-4 text-foreground leading-[1.3] tracking-tight hover:text-teal-600 transition-colors cursor-pointer">
+                {item.title}
+              </h2>
 
-              {/* 内容摘要 - 已移动到标题后面 */}
+              {/* 内容摘要 */}
               {item.ai_summary && item.content_type === 'article' && (
-                <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-teal-50 rounded-lg border-l-4 border-teal-400">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-bold text-teal-700">📝 内容摘要</div>
+                <div className="mb-4 bg-gray-50 dark:bg-gray-800/40 rounded-xl border-l-[6px] border-teal-500 overflow-hidden shadow-sm">
+                  <div className="flex items-center justify-between px-4 py-3 bg-gray-100/50 dark:bg-white/5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">📝</span>
+                      <span className="text-[14px] font-black text-teal-700 dark:text-teal-400 tracking-wide uppercase">内容摘要</span>
+                    </div>
                     <button
                       onClick={() => toggleExpand(`${item.id}-summary`)}
-                      className="text-teal-600 hover:text-teal-800 text-xs font-medium"
+                      className="text-teal-600 dark:text-teal-400 hover:text-teal-800 text-[13px] font-bold flex items-center gap-1 group"
                     >
-                      {expandedItems.has(`${item.id}-summary`) ? '收起 ▲' : '查看全文 ▼'}
+                      <span>{expandedItems.has(`${item.id}-summary`) ? '收起全文' : '查看全文'}</span>
+                      <span className={`transform transition-transform ${expandedItems.has(`${item.id}-summary`) ? 'rotate-180' : ''}`}>▼</span>
                     </button>
                   </div>
-                  <p className={`text-gray-800 text-sm leading-relaxed ${expandedItems.has(`${item.id}-summary`) ? '' : 'line-clamp-1'}`}>
-                    {item.ai_summary}
-                  </p>
+                  <div className="px-4 py-3">
+                    <p className={`text-text-secondary text-[16px] leading-[1.6] font-medium font-sans ${expandedItems.has(`${item.id}-summary`) ? '' : 'line-clamp-2'}`}>
+                      {item.ai_summary}
+                    </p>
+                  </div>
                 </div>
               )}
 
               {/* 文章配图 */}
               {item.content_type === 'article' && item.image_url && (
-                <div className="mb-4 rounded-lg overflow-hidden">
+                <div className="mb-5 rounded-xl overflow-hidden shadow-md relative group">
                   <img
                     src={item.image_url}
                     alt={item.title}
-                    className="w-full h-auto object-cover"
+                    className="w-full h-auto max-h-[400px] object-cover transition-transform duration-500 group-hover:scale-105"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
                   />
+                  {/* 城市角标 */}
+                  {item.location && (
+                    <div className="absolute top-4 left-4 bg-black/80 text-white text-[12px] font-black px-3 py-1.5 rounded-lg shadow-lg backdrop-blur-sm border border-white/10 tracking-widest uppercase">
+                      {item.location}
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* 视频播放器 */}
               {item.content_type === 'video' && (() => {
                 const videoId = item.video_id || extractYouTubeVideoId(item.original_url);
+                if (!videoId) return null;
                 const isPlaying = playingVideoId === videoId;
 
                 return (
-                  <div className="mb-4 rounded-lg overflow-hidden shadow-lg">
+                  <div className="mb-5 rounded-xl overflow-hidden shadow-xl ring-1 ring-white/10 relative">
                     <div className="relative" style={{ paddingBottom: '56.25%' }}>
                       {isPlaying ? (
                         <iframe
@@ -173,7 +194,7 @@ export default function FollowingPage() {
                           <img
                             src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
                             alt={item.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                             onError={(e) => {
                               const target = e.currentTarget;
                               if (target.src.includes('maxresdefault')) {
@@ -183,9 +204,9 @@ export default function FollowingPage() {
                               }
                             }}
                           />
-                          <div className="absolute inset-0 flex items-center justify-center group-hover:bg-black group-hover:bg-opacity-30 transition-all">
-                            <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                              <svg className="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-all">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-600/90 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform backdrop-blur-[2px]">
+                              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M8 5v14l11-7z" />
                               </svg>
                             </div>
@@ -197,45 +218,53 @@ export default function FollowingPage() {
                 );
               })()}
 
-
-              {/* 专业解读（可折叠） */}
+              {/* 专业解读 */}
               {item.ai_commentary && (
-                <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-cyan-50 rounded-lg border-l-4 border-cyan-400">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-bold text-cyan-700">💬 专业解读</div>
+                <div className="mb-5 bg-gray-50 dark:bg-gray-800/40 rounded-xl border-l-[6px] border-cyan-500 overflow-hidden shadow-sm">
+                  <div className="flex items-center justify-between px-4 py-3 bg-gray-100/50 dark:bg-white/5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">💬</span>
+                      <span className="text-[14px] font-black text-cyan-700 dark:text-cyan-400 tracking-wide uppercase">专业解读</span>
+                    </div>
                     <button
                       onClick={() => toggleExpand(`${item.id}-commentary`)}
-                      className="text-cyan-600 hover:text-cyan-800 text-xs font-medium"
+                      className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 text-[13px] font-bold flex items-center gap-1 group"
                     >
-                      {expandedItems.has(`${item.id}-commentary`) ? '收起 ▲' : '展开解读 ▼'}
+                      <span>{expandedItems.has(`${item.id}-commentary`) ? '收起解读' : '展开解读'}</span>
+                      <span className={`transform transition-transform ${expandedItems.has(`${item.id}-commentary`) ? 'rotate-180' : ''}`}>▼</span>
                     </button>
                   </div>
-                  <p className={`text-gray-800 text-sm leading-relaxed whitespace-pre-wrap ${expandedItems.has(`${item.id}-commentary`) ? '' : 'line-clamp-1'}`}>
-                    {item.ai_commentary}
-                  </p>
+                  <div className="px-4 py-3">
+                    <p className={`text-text-secondary text-[16px] leading-[1.6] font-medium whitespace-pre-wrap font-sans ${expandedItems.has(`${item.id}-commentary`) ? '' : 'line-clamp-2'}`}>
+                      {item.ai_commentary}
+                    </p>
+                  </div>
                 </div>
               )}
 
-              {/* 查看原文链接 */}
-              <a
-                href={item.original_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-teal-600 hover:text-teal-700 active:text-teal-800 text-xs sm:text-sm font-medium"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                </svg>
-                查看原文
-              </a>
+              {/* 底部链接 */}
+              <div className="flex items-center justify-between mb-5 border-t border-card-border pt-4">
+                <a
+                  href={item.original_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 py-1.5 text-teal-600 dark:text-teal-400 text-[14px] font-black hover:opacity-80 transition-all group"
+                >
+                  <span className="group-hover:translate-x-1 transition-transform tracking-tight">阅读原文</span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </a>
+              </div>
 
               {/* 评论区 */}
-              <CommentSection
-                newsItemId={item.id}
-                initialCommentCount={item.comment_count || 0}
-              />
-            </div>
+              <div className="mt-2">
+                <CommentSection
+                  newsItemId={item.id}
+                  initialCommentCount={item.comment_count || 0}
+                />
+              </div>
+            </article>
           ))}
         </div>
       </div>
