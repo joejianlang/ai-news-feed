@@ -146,8 +146,9 @@ export default function FollowingPage() {
                       </div>
                     </div>
                   </div>
-
-                  <h2 className="text-[19px] sm:text-[23px] font-black mb-4 text-foreground leading-[1.3] tracking-tight hover:text-teal-600 transition-colors">
+                </div>
+                <div className="px-5 mb-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-foreground leading-[1.3] group-hover:text-teal-600 transition-colors">
                     {item.title}
                   </h2>
                 </div>
@@ -174,9 +175,9 @@ export default function FollowingPage() {
                 )}
 
                 {/* 整合容器：包含图片、Tab 和内容 */}
-                <div className="mx-4 mb-5 p-3 sm:p-4 bg-gray-50/80 dark:bg-white/5 rounded-2xl border border-card-border/50">
+                <div className="mx-0 mb-5 p-3 sm:p-4 bg-gray-100 dark:bg-black rounded-none border-y border-card-border/50">
                   {/* 文章配图 / 视频 */}
-                  <div className="mb-4 rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5">
+                  <div className="mb-2 rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5">
                     {item.content_type === 'article' && item.image_url && (
                       <div className="relative group overflow-hidden">
                         <img
@@ -242,10 +243,10 @@ export default function FollowingPage() {
                   </div>
 
                   {/* 交互式 Tabs */}
-                  <div className="flex border-b border-card-border/50 mb-2">
+                  <div className="flex border-b border-card-border/50 mb-3">
                     <button
                       onClick={() => toggleTab(item.id, 'summary')}
-                      className={`flex-1 py-3 text-[13px] font-black uppercase tracking-widest transition-all ${activeTab === 'summary'
+                      className={`flex-1 py-3 text-[16px] font-black uppercase tracking-widest transition-all ${activeTab === 'summary'
                         ? 'text-teal-600 border-b-2 sm:border-b-4 border-teal-600'
                         : 'text-text-muted opacity-60'
                         }`}
@@ -255,7 +256,7 @@ export default function FollowingPage() {
                     {item.ai_commentary && (
                       <button
                         onClick={() => toggleTab(item.id, 'commentary')}
-                        className={`flex-1 py-3 text-[13px] font-black uppercase tracking-widest transition-all ${activeTab === 'commentary'
+                        className={`flex-1 py-3 text-[16px] font-black uppercase tracking-widest transition-all ${activeTab === 'commentary'
                           ? 'text-cyan-600 border-b-2 sm:border-b-4 border-cyan-600'
                           : 'text-text-muted opacity-60'
                           }`}
@@ -271,12 +272,12 @@ export default function FollowingPage() {
                       className={`transition-all duration-700 overflow-hidden ${isFullExpanded ? 'max-h-none' : 'max-h-[100px]'
                         }`}
                     >
-                      <p className={`text-text-secondary text-[16px] leading-[1.7] font-medium font-sans whitespace-pre-wrap ${!isFullExpanded ? 'line-clamp-1' : ''}`}>
+                      <p className={`text-text-secondary dark:text-white text-[16px] leading-[1.7] font-medium font-sans whitespace-pre-wrap ${!isFullExpanded ? 'line-clamp-1' : ''}`}>
                         {content}
                       </p>
 
                       {!isFullExpanded && (
-                        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-50/80 dark:from-background via-gray-50/50 to-transparent flex items-end justify-center pb-1">
+                        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-100 dark:from-black via-gray-100/50 dark:via-black/50 to-transparent flex items-end justify-center pb-1">
                           <button
                             onClick={() => toggleExpansion(item.id, 'full')}
                             className="px-6 py-2 bg-teal-600 text-white rounded-full font-black text-xs shadow-xl hover:bg-teal-700 transition-all flex items-center gap-1.5 ring-4 ring-teal-500/10"
@@ -295,7 +296,7 @@ export default function FollowingPage() {
                       <div className="mt-8 pt-4 border-t border-card-border/30 flex justify-center pb-4">
                         <button
                           onClick={() => toggleExpansion(item.id, 'preview')}
-                          className="px-8 py-2.5 bg-gray-100 dark:bg-gray-800 text-text-muted rounded-full font-black text-xs hover:bg-gray-200 dark:hover:bg-gray-700 transition-all flex items-center gap-2"
+                          className="px-8 py-2.5 bg-gray-100 dark:bg-gray-800 text-text-muted dark:text-gray-300 rounded-full font-black text-xs hover:bg-gray-200 dark:hover:bg-gray-700 transition-all flex items-center gap-2"
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                             <path d="m18 15-6-6-6 6" />
