@@ -160,8 +160,6 @@ export default function Home() {
 
   const toggleTab = (itemId: string, tab: 'summary' | 'commentary') => {
     setActiveTabs(prev => ({ ...prev, [itemId]: tab }));
-    // 切换 Tab 时重置为预览模式
-    setExpansionStates(prev => ({ ...prev, [itemId]: 'preview' }));
   };
 
   const toggleExpansion = (itemId: string, state: 'preview' | 'full') => {

@@ -56,7 +56,6 @@ export default function FollowingPage() {
 
   const toggleTab = (itemId: string, tab: 'summary' | 'commentary') => {
     setActiveTabs(prev => ({ ...prev, [itemId]: tab }));
-    setExpansionStates(prev => ({ ...prev, [itemId]: 'preview' }));
   };
 
   const toggleExpansion = (itemId: string, state: 'preview' | 'full') => {
