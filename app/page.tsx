@@ -207,7 +207,7 @@ export default function Home() {
 
       {/* 分类标签栏 - 与 Navbar 一起固定 */}
       <div className="bg-card border-b border-card-border sticky top-[48px] sm:top-[64px] z-30 transition-colors h-[48px]">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="flex overflow-x-auto scrollbar-hide">
             {/* 全部 选项 */}
             <button

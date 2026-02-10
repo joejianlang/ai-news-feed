@@ -109,7 +109,7 @@ export default function FollowingPage() {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <Navbar />
 
-      <div className="max-w-2xl mx-auto px-4 py-4 sm:py-8">
+      <main className="max-w-6xl mx-auto py-8 px-4">
         <div className="flex items-center justify-between mb-4 sm:mb-8">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800">我的关注</h1>
           <button
@@ -373,7 +373,7 @@ export default function FollowingPage() {
             );
           })}
         </div>
-      </div>
+      </main>
     </div>
   );
 }
