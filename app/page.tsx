@@ -318,7 +318,7 @@ export default function Home() {
                         <div className={`mx-0 mb-5 bg-transparent dark:bg-black rounded-none border-y border-card-border/50 ${isFullExpanded ? 'mt-0 pt-0' : '-mt-2.5'}`}>
                           {/* 展开后的顶部操控栏 - 移入容器内部以防止遮挡图片 */}
                           {isFullExpanded && (
-                            <div className="z-20 bg-background/95 backdrop-blur-md border-b border-teal-500/10 px-4 py-2 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
+                            <div className="z-20 bg-background/95 backdrop-blur-md px-4 pt-2 pb-0 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
                               <div className="flex items-center gap-4">
                                 <span className="text-teal-600 font-extrabold text-sm uppercase tracking-widest">
                                   正在阅读
@@ -350,7 +350,7 @@ export default function Home() {
                             </div>
                           )}
 
-                          <div className="px-4 py-3 sm:py-4">
+                          <div className={`px-4 ${isFullExpanded ? 'pt-0 pb-3 sm:pt-0 sm:pb-4' : 'py-3 sm:py-4'}`}>
                             {/* 文章配图 / 视频 - 专业解读模式下显示时隐藏 */}
                             {!(isFullExpanded && activeTab === 'commentary') && (
                               <div className="mb-2 rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5 transition-all duration-300">
