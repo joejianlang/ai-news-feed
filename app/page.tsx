@@ -294,7 +294,7 @@ export default function Home() {
                             )}
                           </div>
 
-                          <h2 className="text-xl sm:text-2xl font-black text-foreground leading-[1.3] tracking-tight group-hover:text-teal-600 transition-colors mb-2 px-3 sm:px-4">
+                          <h2 className="text-xl sm:text-2xl font-black text-foreground leading-[1.3] tracking-tight group-hover:text-teal-600 transition-colors mb-2">
                             {item.title}
                           </h2>
                         </div>
