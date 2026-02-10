@@ -164,7 +164,7 @@ export default function FollowingPage() {
                 <div className={`mx-0 mb-5 bg-transparent dark:bg-black rounded-none border-y border-card-border/50 ${isFullExpanded ? 'mt-0 pt-0' : '-mt-2.5'}`}>
                   {/* 展开后的顶部操控栏 - 移入容器内部以防止遮挡图片 */}
                   {isFullExpanded && (
-                    <div className="sticky top-[48px] sm:top-[64px] z-20 bg-background/95 backdrop-blur-md border-b border-teal-500/10 px-4 py-3 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
+                    <div className="z-20 bg-background/95 backdrop-blur-md border-b border-teal-500/10 px-4 py-3 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
                       <span className="text-teal-600 font-extrabold text-sm uppercase tracking-widest">
                         正在阅读
                       </span>
