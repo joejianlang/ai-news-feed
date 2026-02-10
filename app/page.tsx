@@ -208,7 +208,7 @@ export default function Home() {
       <Navbar />
 
       {/* 分类标签栏 - 与 Navbar 一起固定 */}
-      <div className="bg-card border-b border-card-border sticky top-[48px] sm:top-[61.5px] z-10 transition-colors h-[48px]">
+      <div className="bg-card border-b border-card-border sticky top-[48px] sm:top-[64px] z-30 transition-colors h-[48px]">
         <div className="max-w-2xl mx-auto">
           <div className="flex overflow-x-auto scrollbar-hide">
             {/* 全部 选项 */}
@@ -301,7 +301,7 @@ export default function Home() {
 
                         {/* 展开后的顶部操控栏 - 移除收起功能，保留原文和分享 */}
                         {isFullExpanded && (
-                          <div className="sticky top-[96px] sm:top-[109.5px] z-20 bg-background/95 backdrop-blur-md border-y border-teal-500/20 px-4 py-2 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
+                          <div className="sticky top-[96px] sm:top-[112px] z-20 bg-background/95 backdrop-blur-md border-y border-teal-500/20 px-4 py-2 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
                             <div className="flex items-center gap-4">
                               <span className="text-teal-600 font-extrabold text-sm uppercase tracking-widest">
                                 正在阅读

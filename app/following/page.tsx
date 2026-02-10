@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { NewsItem } from '@/types';
+import Navbar from '@/components/Navbar';
+import FollowButton from '@/components/FollowButton';
 import CommentSection from '@/components/comments/CommentSection';
 
 export default function FollowingPage() {
@@ -105,7 +107,9 @@ export default function FollowingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-100">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+      <Navbar />
+
       <div className="max-w-2xl mx-auto px-4 py-4 sm:py-8">
         <div className="flex items-center justify-between mb-4 sm:mb-8">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-800">我的关注</h1>
@@ -155,7 +159,7 @@ export default function FollowingPage() {
 
                 {/* 展开后的顶部操控栏 */}
                 {isFullExpanded && (
-                  <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-y border-teal-500/20 px-4 py-3 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
+                  <div className="sticky top-[48px] sm:top-[64px] z-20 bg-background/95 backdrop-blur-md border-y border-teal-500/20 px-4 py-3 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
                     <span className="text-teal-600 font-extrabold text-sm uppercase tracking-widest">
                       正在阅读
                     </span>
