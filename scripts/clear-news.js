@@ -9,10 +9,10 @@ const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config({ path: '.env.local' });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('错误: 缺少 Supabase 环境变量');
+  console.error('错误: 缺少 Supabase 环境变量 (需要 SERVICE_ROLE_KEY)');
   process.exit(1);
 }
 

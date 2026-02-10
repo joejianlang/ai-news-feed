@@ -62,7 +62,7 @@ function getCategoryMap(categories: string): Record<string, string> {
         map[trimmed] = trimmed;
     }
 
-    // 添加英文别名
+    // 添加更多逻辑映射和别名
     map['local'] = '本地';
     map['trending'] = '热点';
     map['politics'] = '政治';
@@ -70,9 +70,12 @@ function getCategoryMap(categories: string): Record<string, string> {
     map['technology'] = '科技';
     map['finance'] = '财经';
     map['entertainment'] = '文化娱乐';
+    map['娱乐'] = '文化娱乐';
     map['sports'] = '体育';
     map['indepth'] = '深度';
     map['in-depth'] = '深度';
+    map['其他'] = '热点'; // 回退到热点
+    map['未知'] = '热点'; // 回退到热点
 
     return map;
 }
