@@ -46,7 +46,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between gap-4">
           {/* Logo & Location Container */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex-shrink-0 transition-opacity hover:opacity-80 pl-2">
+            <Link href="/" className="flex-shrink-0 transition-opacity hover:opacity-80">
               <div
                 className="h-8 sm:h-12 w-24 sm:w-40 bg-white shrink-0"
                 style={{

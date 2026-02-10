@@ -134,7 +134,7 @@ export default function FollowingPage() {
                 className={`bg-white dark:bg-card transition-all duration-500 border-b border-card-border last:border-0 rounded-2xl mb-4 sm:mb-8 shadow-sm ring-1 ring-card-border overflow-hidden ${isFullExpanded ? 'ring-teal-500/30 shadow-xl scale-[1.01]' : ''}`}
               >
                 {/* 头部信息 - 统一 Padding */}
-                <div className="p-3 sm:p-4 pb-2">
+                <div className="px-4 pt-3 sm:pt-4 pb-2">
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center text-white font-extrabold text-sm sm:text-base flex-shrink-0 shadow-inner">
                       {item.source?.name.charAt(0) || 'N'}
@@ -151,7 +151,7 @@ export default function FollowingPage() {
                     </div>
                   </div>
                 </div>
-                <div className="px-3 sm:px-4 mb-2">
+                <div className="px-4 mb-2">
                   <h2 className="text-xl sm:text-2xl font-black text-foreground leading-[1.3] group-hover:text-teal-600 transition-colors">
                     {item.title}
                   </h2>
@@ -179,7 +179,7 @@ export default function FollowingPage() {
                 )}
 
                 {/* 整合容器：包含图片、Tab 和内容 */}
-                <div className="mx-0 -mt-2.5 mb-5 p-3 sm:p-4 bg-transparent dark:bg-black rounded-none border-y border-card-border/50">
+                <div className="mx-0 -mt-2.5 mb-5 px-4 py-3 sm:py-4 bg-transparent dark:bg-black rounded-none border-y border-card-border/50">
                   {/* 文章配图 / 视频 */}
                   <div className="mb-2 rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5">
                     {item.content_type === 'article' && item.image_url && (
@@ -314,7 +314,7 @@ export default function FollowingPage() {
 
                 {/* 底部功能栏 - 重构 */}
                 {!isFullExpanded && (
-                  <div className="px-3 sm:px-4 pb-5 pt-2 flex flex-col gap-4">
+                  <div className="px-4 pb-5 pt-2 flex flex-col gap-4">
                     {/* 第一行：原文与分享 */}
                     <div className="flex justify-between items-center">
                       <a
