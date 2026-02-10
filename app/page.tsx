@@ -334,7 +334,7 @@ export default function Home() {
                         )}
 
                         {/* 整合容器：包含图片、Tab 和内容，具有内边距 */}
-                        <div className="mx-0 mb-5 p-3 sm:p-4 bg-gray-100 dark:bg-black rounded-none border-y border-card-border/50">
+                        <div className="mx-0 -mt-2.5 mb-5 p-3 sm:p-4 bg-transparent dark:bg-black rounded-none border-y border-card-border/50">
                           {/* 文章配图 / 视频 */}
                           <div className="mb-2 rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5">
                             {item.content_type === 'article' && item.image_url && (
