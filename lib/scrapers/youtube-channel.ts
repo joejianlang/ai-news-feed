@@ -33,8 +33,13 @@ function loadEnvFile() {
 // 加载环境变量
 loadEnvFile();
 
+console.log('--- YouTube Scraper Initialization ---');
 console.log('YouTube API Key exists:', !!process.env.YOUTUBE_API_KEY);
-console.log('YouTube API Key length:', process.env.YOUTUBE_API_KEY?.length);
+if (process.env.YOUTUBE_API_KEY) {
+  console.log('YouTube API Key length:', process.env.YOUTUBE_API_KEY.length);
+  console.log('YouTube API Key prefix:', process.env.YOUTUBE_API_KEY.substring(0, 5) + '...');
+}
+console.log('------------------------------------');
 
 const youtube = google.youtube({
   version: 'v3',

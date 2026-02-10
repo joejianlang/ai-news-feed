@@ -199,19 +199,26 @@ export async function scrapeYouTubeChannel(
     let finalChannelId = channelId;
 
     if (!finalChannelId) {
+      console.log(`[YouTube Channel] No channelId provided, extracting from URL: ${url}`);
       const extractedId = extractChannelId(url);
 
       if (!extractedId) {
         throw new Error('Invalid YouTube channel URL');
       }
 
-      // 如果提取的是用户名（以 @ 开头或从 /c/ /user/ 提取），需要转换为频道 ID
-      if (extractedId.startsWith('@') || url.includes('/c/') || url.includes('/user/')) {
-        const channelId = await getChannelIdByUsername(extractedId);
-        if (!channelId) {
-          throw new Error('Could not find channel ID');
+      console.log(`[YouTube Channel] Extracted ID/Handle: ${extractedId}`);
+
+      // 改进判断逻辑：如果提取的不是以 UC 开头的频道ID，说明是用户名/别名
+      const isActuallyAChannelId = extractedId.startsWith('UC') && extractedId.length >= 24;
+
+      if (!isActuallyAChannelId) {
+        console.log(`[YouTube Channel] Resolution needed for handle: ${extractedId}`);
+        const resolvedId = await getChannelIdByUsername(extractedId);
+        if (!resolvedId) {
+          throw new Error(`Could not resolve channel ID for: ${extractedId}`);
         }
-        finalChannelId = channelId;
+        finalChannelId = resolvedId;
+        console.log(`[YouTube Channel] Resolved ${extractedId} to ${finalChannelId}`);
       } else {
         finalChannelId = extractedId;
       }
