@@ -117,6 +117,24 @@ export default function FollowingPage() {
               {/* 标题 */}
               <h2 className="text-lg sm:text-xl font-bold mb-3 text-gray-800 leading-tight">{item.title}</h2>
 
+              {/* 内容摘要 - 已移动到标题后面 */}
+              {item.ai_summary && item.content_type === 'article' && (
+                <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-teal-50 rounded-lg border-l-4 border-teal-400">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-bold text-teal-700">📝 内容摘要</div>
+                    <button
+                      onClick={() => toggleExpand(`${item.id}-summary`)}
+                      className="text-teal-600 hover:text-teal-800 text-xs font-medium"
+                    >
+                      {expandedItems.has(`${item.id}-summary`) ? '收起 ▲' : '查看全文 ▼'}
+                    </button>
+                  </div>
+                  <p className={`text-gray-800 text-sm leading-relaxed ${expandedItems.has(`${item.id}-summary`) ? '' : 'line-clamp-1'}`}>
+                    {item.ai_summary}
+                  </p>
+                </div>
+              )}
+
               {/* 文章配图 */}
               {item.content_type === 'article' && item.image_url && (
                 <div className="mb-4 rounded-lg overflow-hidden">
@@ -179,23 +197,6 @@ export default function FollowingPage() {
                 );
               })()}
 
-              {/* 内容摘要（可折叠） */}
-              {item.ai_summary && item.content_type === 'article' && (
-                <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-teal-50 rounded-lg border-l-4 border-teal-400">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-bold text-teal-700">📝 内容摘要</div>
-                    <button
-                      onClick={() => toggleExpand(`${item.id}-summary`)}
-                      className="text-teal-600 hover:text-teal-800 text-xs font-medium"
-                    >
-                      {expandedItems.has(`${item.id}-summary`) ? '收起 ▲' : '查看全文 ▼'}
-                    </button>
-                  </div>
-                  <p className={`text-gray-800 text-sm leading-relaxed ${expandedItems.has(`${item.id}-summary`) ? '' : 'line-clamp-1'}`}>
-                    {item.ai_summary}
-                  </p>
-                </div>
-              )}
 
               {/* 专业解读（可折叠） */}
               {item.ai_commentary && (

@@ -1,4 +1,5 @@
 import { google } from 'googleapis';
+import { YoutubeTranscript } from 'youtube-transcript';
 import type { YouTubeVideo } from '@/types';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -143,13 +144,29 @@ export async function getChannelVideos(
     const videos: YouTubeVideo[] = [];
 
     for (const item of playlistResponse.data.items || []) {
-      if (item.snippet && item.contentDetails) {
+      const videoId = item.contentDetails?.videoId || '';
+      if (videoId) {
+        // 尝试获取视频字幕
+        let transcriptContent = '';
+        try {
+          const transcript = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'zh' });
+          transcriptContent = transcript.map(t => t.text).join(' ');
+        } catch (zhError) {
+          try {
+            const transcript = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' });
+            transcriptContent = transcript.map(t => t.text).join(' ');
+          } catch (enError) {
+            console.warn(`No transcript found for ${videoId}, using description.`);
+          }
+        }
+
         videos.push({
-          id: item.contentDetails.videoId || '',
-          title: item.snippet.title || 'Untitled',
-          description: item.snippet.description || '',
-          publishedAt: item.snippet.publishedAt || new Date().toISOString(),
-          thumbnailUrl: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.default?.url || undefined,
+          id: videoId,
+          title: item.snippet?.title || 'Untitled',
+          description: item.snippet?.description || '',
+          content: transcriptContent || item.snippet?.description || '', // 将字幕或描述存入 content
+          publishedAt: item.snippet?.publishedAt || new Date().toISOString(),
+          thumbnailUrl: item.snippet?.thumbnails?.high?.url || item.snippet?.thumbnails?.default?.url || undefined,
         });
       }
     }

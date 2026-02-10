@@ -110,6 +110,7 @@ export interface YouTubeVideo {
   id: string;
   title: string;
   description: string;
+  content?: string;
   publishedAt: string;
   thumbnailUrl?: string;
 }

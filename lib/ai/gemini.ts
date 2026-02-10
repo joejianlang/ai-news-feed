@@ -1,4 +1,47 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import { createClient } from '@supabase/supabase-js';
+import { CURRENT_AI_CONFIG, estimateCost } from './config';
+
+// 创建 Supabase 客户端用于读取配置
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+);
+
+// 缓存配置，避免每次都查询数据库
+let configCache: Record<string, string> | null = null;
+let configCacheTime: number = 0;
+const CONFIG_CACHE_TTL = 5 * 60 * 1000; // 5 分钟缓存
+
+// 从数据库获取 AI 配置
+async function getAIConfigFromDB(): Promise<Record<string, string>> {
+  if (configCache && Date.now() - configCacheTime < CONFIG_CACHE_TTL) {
+    return configCache;
+  }
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('ai_config')
+      .select('config_key, config_value');
+
+    if (error) {
+      console.error('Error fetching AI config from DB:', error);
+      return {};
+    }
+
+    const config: Record<string, string> = {};
+    for (const item of data || []) {
+      config[item.config_key] = item.config_value;
+    }
+
+    configCache = config;
+    configCacheTime = Date.now();
+    return config;
+  } catch (error) {
+    console.error('Error fetching AI config:', error);
+    return {};
+  }
+}
 
 export interface AnalysisResult {
   summary: string;
@@ -9,15 +52,14 @@ export interface AnalysisResult {
 }
 
 // 根据内容类型获取评论字数要求
-function getCommentaryLength(contentType: string, isDeepDive: boolean): string {
+async function getCommentaryLength(contentType: string, isDeepDive: boolean, dbConfig: Record<string, string>): Promise<string> {
   if (isDeepDive) {
-    return '800-1000字，请分为三个部分：【背景】历史与来龙去脉、【分析】核心观点与深层解读、【影响】未来趋势与建议';
+    return dbConfig['commentary_length_deep_dive'] || '800-1000字，请分为三个部分：【背景】历史与来龙去脉、【分析】核心观点与深层解读、【影响】未来趋势与建议';
   }
   if (contentType === 'video') {
-    return '150-250字，简洁精炼';
+    return dbConfig['commentary_length_video'] || '150-250字，简洁精炼';
   }
-  // 默认文章类型
-  return '300-500字';
+  return dbConfig['commentary_length_article'] || '300-500字';
 }
 
 export async function analyzeContentWithGemini(
@@ -27,21 +69,23 @@ export async function analyzeContentWithGemini(
   contentType: string = 'article',
   isDeepDive: boolean = false
 ): Promise<AnalysisResult> {
-  // 动态初始化 Gemini，确保环境变量已加载
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-  // 限制内容长度
-  const truncatedContent = content.length > 3000 ? content.substring(0, 3000) + '...' : content;
 
-  // 获取字数要求
-  const lengthRequirement = getCommentaryLength(contentType, isDeepDive);
+  const dbConfig = await getAIConfigFromDB();
+  const maxLen = CURRENT_AI_CONFIG.maxContentLength;
+  const truncatedContent = content.length > maxLen ? content.substring(0, maxLen) + '...' : content;
 
-  const filterRules = `日程安排/节目表（如电视播放时间、直播安排）
+  const lengthRequirement = await getCommentaryLength(contentType, isDeepDive, dbConfig);
+
+  const filterRules = dbConfig['filter_rules'] || `日程安排/节目表（如电视播放时间、直播安排）
 活动预告/观赛指南/购票指南
 周期性总结（如"本周回顾"、"今日要闻"、"每日简报"等汇总帖）
 纯粹的广告或促销内容
 天气预报、体育比分列表等纯信息罗列`;
 
-  // 简洁的 Prompt
+  const summaryReq = dbConfig['summary_requirements'] || '80-150字，概括核心内容、关键要素、影响，全部中文';
+  const commentaryReq = dbConfig['commentary_requirements'] || '幽默犀利，有深度有趣味，全部使用中文简体，不要出现任何英文词汇或缩写';
+
   const prompt = `分析新闻并输出以下部分（全部使用中文简体，禁止出现任何英文）：
 
 标题：${title}
@@ -57,11 +101,10 @@ ${filterRules}
 **如果是真正的新闻报道**，输出：
 【跳过】否
 【翻译标题】${title.match(/[a-zA-Z]/) ? '（翻译成中文简体）' : '（保持原样）'}
-【摘要】（80-150字，概括核心内容、关键要素、影响，全部中文）
-【评论】（${commentaryStyle}风格，${lengthRequirement}，幽默犀利，有深度有趣味，全部使用中文简体，不要出现任何英文词汇或缩写）`;
+【摘要】（${summaryReq}）
+【评论】（${commentaryStyle}风格，${lengthRequirement}，${commentaryReq}）`;
 
   try {
-    // 使用 Gemini 2.0 Flash（最新型号）
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
       generationConfig: {
@@ -69,32 +112,16 @@ ${filterRules}
         temperature: 0.7,
       },
       safetySettings: [
-        {
-          category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-          threshold: HarmBlockThreshold.BLOCK_NONE,
-        },
-        {
-          category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-          threshold: HarmBlockThreshold.BLOCK_NONE,
-        },
-        {
-          category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-          threshold: HarmBlockThreshold.BLOCK_NONE,
-        },
-        {
-          category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-          threshold: HarmBlockThreshold.BLOCK_NONE,
-        },
+        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+        { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+        { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
       ],
     });
 
-    const startTime = Date.now();
     const result = await model.generateContent(prompt);
-    const duration = Date.now() - startTime;
-
     const response = result.response.text();
 
-    // 解析响应
     const skipMatch = response.match(/【跳过】\s*(是|否)/);
     const reasonMatch = response.match(/【原因】\s*([\s\S]*?)(?=\n|【|$)/);
 
@@ -122,4 +149,3 @@ ${filterRules}
     throw error;
   }
 }
-

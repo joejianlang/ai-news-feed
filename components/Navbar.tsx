@@ -5,10 +5,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/lib/contexts/UserContext';
+import { useLocation } from '@/lib/contexts/LocationContext';
 import ThemeToggle from './ThemeToggle';
 
 export default function Navbar() {
   const { user, isLoading } = useUser();
+  const { city, detectLocation } = useLocation();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,28 +42,46 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 bg-nav border-b border-teal-700 dark:border-slate-800 z-20 shadow-md transition-colors">
-      <div className="max-w-2xl mx-auto px-4 py-3">
+      <div className="max-w-2xl mx-auto px-4 py-1.5 sm:py-2">
         <div className="flex items-center justify-between gap-4">
-          {/* Logo */}
-          <Link href="/" className="flex-shrink-0 transition-opacity hover:opacity-80 pl-2">
-            <div
-              className="h-11 sm:h-20 w-32 sm:w-64 bg-white shrink-0"
-              style={{
-                maskImage: 'url(/logo.png)',
-                WebkitMaskImage: 'url(/logo.png)',
-                maskMode: 'luminance' as any,
-                WebkitMaskMode: 'luminance' as any,
-                maskRepeat: 'no-repeat',
-                WebkitMaskRepeat: 'no-repeat',
-                maskSize: '100% auto',
-                WebkitMaskSize: '100% auto',
-                maskPosition: 'left center',
-                WebkitMaskPosition: 'left center'
-              } as React.CSSProperties}
-              role="img"
-              aria-label="数位 Buffet"
-            />
-          </Link>
+          {/* Logo & Location Container */}
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex-shrink-0 transition-opacity hover:opacity-80 pl-2">
+              <div
+                className="h-8 sm:h-12 w-24 sm:w-40 bg-white shrink-0"
+                style={{
+                  maskImage: 'url(/logo.png)',
+                  WebkitMaskImage: 'url(/logo.png)',
+                  maskMode: 'luminance' as any,
+                  WebkitMaskMode: 'luminance' as any,
+                  maskRepeat: 'no-repeat',
+                  WebkitMaskRepeat: 'no-repeat',
+                  maskSize: '100% auto',
+                  WebkitMaskSize: '100% auto',
+                  maskPosition: 'left center',
+                  WebkitMaskPosition: 'left center'
+                } as React.CSSProperties}
+                role="img"
+                aria-label="数位 Buffet"
+              />
+            </Link>
+
+            {/* Simplified Location */}
+            <button
+              onClick={detectLocation}
+              className="flex items-center gap-1.5 text-white/90 hover:text-white transition-colors py-1 px-2 rounded-md hover:bg-white/10"
+              title="点击重新定位"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <span className="text-sm font-bold tracking-tight">{city || '定位中...'}</span>
+              <svg className="w-3 h-3 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="18 15 12 9 6 15" className="rotate-180 origin-center" />
+              </svg>
+            </button>
+          </div>
 
           {/* 搜索框 */}
           <form onSubmit={handleSearch} className="flex-1 max-w-md hidden sm:block">

@@ -189,7 +189,7 @@ export default function Home() {
       <Navbar />
 
       {/* 分类标签栏 - 与 Navbar 一起固定 */}
-      <div className="bg-card border-b border-card-border sticky top-[57px] z-10 transition-colors">
+      <div className="bg-card border-b border-card-border sticky top-[48px] sm:top-[61.5px] z-10 transition-colors h-[48px]">
         <div className="max-w-2xl mx-auto">
           <div className="flex overflow-x-auto scrollbar-hide">
             {/* 全部 选项 */}
@@ -223,43 +223,6 @@ export default function Home() {
 
 
 
-      {/* 地理位置栏 - 仅在"本地"分类显示 */}
-      {categories.find(c => c.id === selectedCategory)?.name === '本地' && (
-        <div className="bg-teal-50 dark:bg-teal-900/20 border-b border-teal-100 dark:border-teal-900/30">
-          <div className="max-w-2xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-teal-800">
-              <span>📍 Current Location:</span>
-              {isLocating ? (
-                <span className="animate-pulse">Locating...</span>
-              ) : (
-                <span className="font-bold text-lg">{city || 'All Local News'}</span>
-              )}
-              {locationError && <span className="text-red-500 text-xs">({locationError})</span>}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={detectLocation}
-                disabled={isLocating}
-                className="text-xs bg-white text-teal-600 border border-teal-200 px-3 py-1 rounded-full hover:bg-teal-100 transition-colors"
-              >
-                📡 Relocate
-              </button>
-
-              <select
-                className="text-xs bg-white text-gray-700 border border-gray-300 px-2 py-1 rounded-full focus:outline-none focus:ring-1 focus:ring-teal-500"
-                value={cityTag || ''}
-                onChange={(e) => setManualCity(e.target.value)}
-              >
-                <option value="">All Cities</option>
-                {POPULAR_CITIES.map(c => (
-                  <option key={c.tag} value={c.tag}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* 时间线 */}
       <main className="max-w-2xl mx-auto">
@@ -301,6 +264,24 @@ export default function Home() {
 
                       {/* 标题 */}
                       <h2 className="text-lg sm:text-xl font-bold mb-3 text-foreground leading-tight">{item.title}</h2>
+
+                      {/* 内容摘要 - 已移动到标题后面 */}
+                      {item.ai_summary && item.content_type === 'article' && (
+                        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-teal-50 dark:bg-teal-900/20 rounded-lg border-l-4 border-teal-400">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="text-sm font-bold text-teal-700">📝 内容摘要</div>
+                            <button
+                              onClick={() => toggleCommentary(`${item.id}-summary`)}
+                              className="text-teal-600 hover:text-teal-800 text-xs font-medium"
+                            >
+                              {expandedCommentary.has(`${item.id}-summary`) ? '收起 ▲' : '查看全文 ▼'}
+                            </button>
+                          </div>
+                          <p className={`text-text-secondary text-base leading-normal ${expandedCommentary.has(`${item.id}-summary`) ? '' : 'line-clamp-1'}`}>
+                            {item.ai_summary}
+                          </p>
+                        </div>
+                      )}
 
                       {/* 文章配图 */}
                       {item.content_type === 'article' && item.image_url && (
@@ -372,23 +353,6 @@ export default function Home() {
                         );
                       })()}
 
-                      {/* 内容摘要 */}
-                      {item.ai_summary && item.content_type === 'article' && (
-                        <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-teal-50 dark:bg-teal-900/20 rounded-lg border-l-4 border-teal-400">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="text-sm font-bold text-teal-700">📝 内容摘要</div>
-                            <button
-                              onClick={() => toggleCommentary(`${item.id}-summary`)}
-                              className="text-teal-600 hover:text-teal-800 text-xs font-medium"
-                            >
-                              {expandedCommentary.has(`${item.id}-summary`) ? '收起 ▲' : '查看全文 ▼'}
-                            </button>
-                          </div>
-                          <p className={`text-text-secondary text-base leading-normal ${expandedCommentary.has(`${item.id}-summary`) ? '' : 'line-clamp-1'}`}>
-                            {item.ai_summary}
-                          </p>
-                        </div>
-                      )}
 
                       {/* 专业解读 */}
                       {item.ai_commentary && (
