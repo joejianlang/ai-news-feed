@@ -294,7 +294,7 @@ export default function Home() {
                             )}
                           </div>
 
-                          <h2 className="text-xl sm:text-2xl font-black text-foreground leading-[1.3] tracking-tight group-hover:text-teal-600 transition-colors mb-2 px-5">
+                          <h2 className="text-xl sm:text-2xl font-black text-foreground leading-[1.3] tracking-tight group-hover:text-teal-600 transition-colors mb-2 px-3 sm:px-4">
                             {item.title}
                           </h2>
                         </div>
@@ -474,36 +474,43 @@ export default function Home() {
                           </div>
                         </div>
 
-                        {/* 底部功能栏 - 保持精简 */}
+                        {/* 底部功能栏 - 重构为多行布局 */}
                         {!isFullExpanded && (
-                          <div className="px-5 pb-5 pt-1 flex justify-between items-center">
-                            <div className="flex items-center gap-6">
+                          <div className="px-3 sm:px-4 pb-5 pt-2 flex flex-col gap-4">
+                            {/* 第一行：原文与分享 */}
+                            <div className="flex justify-between items-center">
                               <a
                                 href={item.original_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-teal-600 dark:text-teal-400 text-sm font-black hover:opacity-80 transition-all flex items-center gap-1"
+                                className="text-teal-600 dark:text-teal-400 text-[15px] font-black hover:opacity-80 transition-all flex items-center gap-1.5"
                               >
                                 <span>原文</span>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="m9 18 6-6-6-6" />
                                 </svg>
                               </a>
+
+                              <button
+                                onClick={() => handleShare(item)}
+                                className="p-2 text-text-muted hover:text-teal-600 hover:bg-teal-500/10 rounded-full transition-all"
+                                aria-label="分享"
+                              >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                                  <polyline points="16 6 12 2 8 6" />
+                                  <line x1="12" y1="2" x2="12" y2="15" />
+                                </svg>
+                              </button>
+                            </div>
+
+                            {/* 第二行：独立的评论区块 */}
+                            <div className="w-full">
                               <CommentSection
                                 newsItemId={item.id}
                                 initialCommentCount={item.comment_count || 0}
                               />
                             </div>
-                            <button
-                              onClick={() => handleShare(item)}
-                              className="p-1.5 text-text-muted hover:text-teal-600 hover:bg-teal-500/10 rounded-lg transition-all"
-                            >
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-                                <polyline points="16 6 12 2 8 6" />
-                                <line x1="12" y1="2" x2="12" y2="15" />
-                              </svg>
-                            </button>
                           </div>
                         )}
                       </article>
