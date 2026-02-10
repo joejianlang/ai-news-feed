@@ -271,8 +271,8 @@ export default function Home() {
                         id={`article-${item.id}`}
                         className={`bg-card transition-all duration-500 border-b border-card-border last:border-0 sm:rounded-2xl mb-4 sm:mb-8 shadow-sm ring-1 ring-card-border overflow-hidden ${isFullExpanded ? 'ring-teal-500/30 shadow-xl' : ''}`}
                       >
-                        {/* 头部信息 - 展开后可选是否隐藏或保持 */}
-                        <div className="p-4 sm:p-5 pb-2">
+                        {/* 头部信息 - 统一 Padding */}
+                        <div className="p-3 sm:p-4 pb-2">
                           <div className="flex items-center gap-3 mb-4">
                             <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center text-white font-extrabold text-sm sm:text-base flex-shrink-0 shadow-inner">
                               {item.source?.name.charAt(0) || 'N'}
