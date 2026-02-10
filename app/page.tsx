@@ -336,14 +336,14 @@ export default function Home() {
                               )}
                             </div>
 
-                            <h2 className="text-xl sm:text-2xl font-black text-foreground leading-[1.3] tracking-tight group-hover:text-teal-600 transition-colors mb-2">
+                            <h2 className="text-xl sm:text-2xl font-black text-foreground leading-[1.3] tracking-tight group-hover:text-teal-600 transition-colors mb-1">
                               {item.title}
                             </h2>
                           </div>
                         )}
 
                         {/* 整合容器：包含操控栏、图片、Tab 和内容 */}
-                        <div className={`mx-0 mb-5 bg-transparent dark:bg-black rounded-none border-y border-card-border/50 ${isFullExpanded ? 'mt-0 pt-0' : '-mt-2.5'}`}>
+                        <div className={`mx-0 mb-2 bg-transparent dark:bg-black rounded-none border-y border-card-border/50 ${isFullExpanded ? 'mt-0 pt-0' : '-mt-2.5'}`}>
                           {/* 展开后的顶部操控栏 - 移入容器内部以防止遮挡图片 */}
                           {isFullExpanded && (
                             <div id={`reading-bar-${item.id}`} className="z-20 bg-background/95 backdrop-blur-md px-4 pt-2 pb-0 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
@@ -378,7 +378,7 @@ export default function Home() {
                             </div>
                           )}
 
-                          <div className={`px-4 ${isFullExpanded ? 'pt-0 pb-3 sm:pt-0 sm:pb-4' : 'py-3 sm:py-4'}`}>
+                          <div className={`px-4 ${isFullExpanded ? 'pt-0 pb-3 sm:pt-0 sm:pb-4' : 'pt-1.5 pb-3 sm:pt-2 sm:pb-4'}`}>
                             {/* 文章配图 / 视频 - 专业解读模式下显示时隐藏 */}
                             {!(isFullExpanded && activeTab === 'commentary') && (
                               <div className="mb-2 rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5 transition-all duration-300">
@@ -523,7 +523,7 @@ export default function Home() {
 
                         {/* 底部功能栏 - 重构为多行布局 */}
                         {!isFullExpanded && (
-                          <div className="px-4 pb-5 pt-2 flex flex-col gap-4">
+                          <div className="px-4 pb-5 pt-1 flex flex-col gap-2">
                             {/* 第一行：原文与分享 */}
                             <div className="flex justify-between items-center">
                               <a
