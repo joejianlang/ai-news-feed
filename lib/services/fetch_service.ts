@@ -181,6 +181,20 @@ export async function runFetchPipeline(specificSourceId?: string) {
         for (let i = 0; i < drafts.length; i++) {
             const news = drafts[i];
 
+            // 🛑 每处理 5 条新闻检查一次是否有人手动点击了“重置”
+            if (i % 5 === 0) {
+                const { data: currentStatus } = await supabaseAdmin
+                    .from('system_settings')
+                    .select('value')
+                    .eq('key', 'fetch_status')
+                    .single();
+
+                if (currentStatus?.value?.is_running === false) {
+                    console.log('🛑 用户已请求重置，正在中止抓取流水线...');
+                    return { success: false, message: '流水线被用户中止' };
+                }
+            }
+
             await updateFetchStatus({
                 is_running: true,
                 current_source: `AI 分析中 (${i + 1}/${drafts.length}): ${news.title.substring(0, 20)}...`,
