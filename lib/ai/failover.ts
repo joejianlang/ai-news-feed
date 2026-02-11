@@ -133,6 +133,9 @@ export async function analyzeContentWithFailover(
         summary: `（AI 服务暂时不可用）${content.substring(0, 150)}...`,
         commentary: '（AI 评论服务暂时不可用，请稍后重试）',
         translatedTitle: title,
+        category: '热点',
+        tags: ['#无服务'],
+        location: null
       };
     }
   }

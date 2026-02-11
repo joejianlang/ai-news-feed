@@ -1,8 +1,8 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { getActiveNewsSources } from '@/lib/supabase/queries';
+import { getActiveNewsSources, updateLastFetchedTime } from '@/lib/supabase/queries';
 import { scrapeContent } from '@/lib/scrapers';
-import { analyzeContent } from '@/lib/ai';
+import { analyzeContent, AnalysisResult } from '@/lib/ai';
 
 // Initialize Service Role Client for admin operations
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -29,6 +29,18 @@ export async function updateFetchStatus(status: any) {
     }
 }
 
+/**
+ * Shuffle array using Fisher-Yates algorithm
+ */
+function shuffleArray<T>(array: T[]): T[] {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+}
+
 export async function runFetchPipeline(specificSourceId?: string) {
     try {
         const sources = await getActiveNewsSources();
@@ -36,231 +48,150 @@ export async function runFetchPipeline(specificSourceId?: string) {
             ? sources.filter(s => s.id === specificSourceId)
             : sources;
 
+        // 0. Pre-fetch categories for mapping
+        const { data: categoriesData } = await supabaseAdmin.from('categories').select('id, name');
+        const categoryMap: Record<string, string> = {};
+        categoriesData?.forEach(c => categoryMap[c.name] = c.id);
+
+        const batchId = crypto.randomUUID();
+        const batchTime = new Date().toISOString();
+
         // Initialize status
         await updateFetchStatus({
             is_running: true,
-            current_source: '准备开始...',
+            current_source: '阶段 1: 正在从各源抓取原始数据...',
             progress: 0,
             total: targetSources.length,
-            started_at: new Date().toISOString()
+            started_at: batchTime
         });
 
-        const results: any[] = [];
-        let newItemsCount = 0;
-        let skippedItemsCount = 0;
-        let errorCount = 0;
+        console.log(`🚀 开始抓取阶段: 共 ${targetSources.length} 个源`);
 
+        // --- STAGE 1: 快速抓取并存为草稿 ---
+        let totalScraped = 0;
         for (let i = 0; i < targetSources.length; i++) {
             const source = targetSources[i];
+            await updateFetchStatus({ is_running: true, current_source: `抓取中: ${source.name}`, progress: i, total: targetSources.length });
 
-            // Update status
+            try {
+                const scrapedItems = await scrapeContent(source.url, source.source_type, source.youtube_channel_id);
+
+                for (const item of scrapedItems) {
+                    // 检查去重
+                    const { data: exists } = await supabaseAdmin.rpc('find_similar_news', {
+                        check_title: item.title,
+                        check_url: item.url,
+                        time_window_hours: 48,
+                        similarity_threshold: 0.8
+                    });
+
+                    if (exists && exists.length > 0) continue;
+
+                    // 存为草稿
+                    await supabaseAdmin.from('news_items').insert([{
+                        source_id: source.id,
+                        original_url: item.url,
+                        title: item.title,
+                        content: item.content,
+                        content_type: item.contentType,
+                        published_at: item.publishedAt?.toISOString(),
+                        video_id: item.videoId,
+                        image_url: item.imageUrl,
+                        fetch_batch_id: batchId,
+                        is_published: false, // 初始为草稿
+                    }]);
+                    totalScraped++;
+                }
+
+                await updateLastFetchedTime(source.id);
+            } catch (err) {
+                console.error(`Failed to scrape ${source.name}:`, err);
+            }
+        }
+
+        console.log(`✅ 阶段 1 完成: 抓取到 ${totalScraped} 条新内容。准备进入阶段 2 混合处理...`);
+
+        // --- STAGE 2: 混合打乱并 AI 处理 ---
+        // 获取所有未发布的条目（包括之前可能卡住的）
+        const { data: drafts } = await supabaseAdmin
+            .from('news_items')
+            .select('*, source:news_sources(commentary_style)')
+            .eq('is_published', false)
+            .limit(100);
+
+        if (!drafts || drafts.length === 0) {
+            await updateFetchStatus({ is_running: false, current_source: '无新内容需处理', progress: targetSources.length, total: targetSources.length });
+            return { success: true, newItems: 0 };
+        }
+
+        // 随机打乱，打破来源聚集
+        const shuffledDrafts = shuffleArray(drafts);
+        console.log(`🧠 开始 AI 处理阶段: 待处理 ${shuffledDrafts.length} 条新闻 (已打乱重排)`);
+
+        let successCount = 0;
+        for (let i = 0; i < shuffledDrafts.length; i++) {
+            const news = shuffledDrafts[i];
+
             await updateFetchStatus({
                 is_running: true,
-                current_source: source.name,
+                current_source: `AI 分析中 (${i + 1}/${shuffledDrafts.length}): ${news.title.substring(0, 20)}...`,
                 progress: i,
-                total: targetSources.length,
-                started_at: new Date().toISOString()
+                total: shuffledDrafts.length
             });
 
             try {
-                console.log(`Fetching from ${source.name}...`);
+                // 调用合并后的 AI 接口（包含翻译、摘要、评论、分类、标签、地点）
+                const analysis = await analyzeContent(
+                    news.content,
+                    news.title,
+                    news.source?.commentary_style || '',
+                    news.content_type || 'article'
+                );
 
-                // Timeout wrapper: 60s
-                const fetchWithTimeout = async () => {
-                    return Promise.race([
-                        scrapeContent(
-                            source.url,
-                            source.source_type,
-                            source.youtube_channel_id
-                        ),
-                        new Promise<never>((_, reject) =>
-                            setTimeout(() => reject(new Error(`抓取 ${source.name} 超时（60秒）`)), 60000)
-                        )
-                    ]);
-                };
-
-                const scrapedItems = await fetchWithTimeout();
-
-                let consecutiveSkips = 0;
-                const MAX_CONSECUTIVE_SKIPS = 3;
-
-                for (let j = 0; j < scrapedItems.length; j++) {
-                    const item = scrapedItems[j];
-
-                    // Update item status
-                    await updateFetchStatus({
-                        is_running: true,
-                        current_source: `${source.name} (处理 ${j + 1}/${scrapedItems.length})`,
-                        progress: i,
-                        total: targetSources.length,
-                        started_at: new Date().toISOString()
-                    });
-
-                    try {
-                        console.log(`[${source.name}] Processing item ${j + 1}/${scrapedItems.length}: ${item.title}`);
-
-                        // 30s timeout per item
-                        await Promise.race([
-                            (async () => {
-                                let exists = false;
-
-                                // 1. RPC Similarity Check
-                                const { data: similarData, error: rpcError } = await supabaseAdmin.rpc('find_similar_news', {
-                                    check_title: item.title,
-                                    check_url: item.url,
-                                    time_window_hours: 24,
-                                    similarity_threshold: 0.6
-                                });
-
-                                if (!rpcError && similarData && similarData.length > 0) {
-                                    exists = true;
-                                } else {
-                                    // 2. Exact URL fallback
-                                    const query = supabaseAdmin
-                                        .from('news_items')
-                                        .select('id')
-                                        .eq('original_url', item.url);
-
-                                    if (item.videoId) {
-                                        const { data: videoMatch } = await supabaseAdmin
-                                            .from('news_items')
-                                            .select('id')
-                                            .eq('video_id', item.videoId)
-                                            .maybeSingle();
-                                        if (videoMatch) exists = true;
-                                    }
-
-                                    if (!exists) {
-                                        const { data: urlMatch } = await query.maybeSingle();
-                                        if (urlMatch) exists = true;
-                                    }
-                                }
-
-                                if (exists) {
-                                    skippedItemsCount++;
-                                    consecutiveSkips++;
-                                    console.log(`[${source.name}] Skipping existing/similar item: ${item.title} (${item.contentType})`);
-
-                                    if (consecutiveSkips >= MAX_CONSECUTIVE_SKIPS && source.source_type !== 'youtube_channel') {
-                                        console.log(`[${source.name}] Hit ${MAX_CONSECUTIVE_SKIPS} consecutive existing items, stopping fetch.`);
-                                        return 'BREAK';
-                                    }
-                                    return 'CONTINUE';
-                                }
-
-                                consecutiveSkips = 0;
-
-                                console.log(`[${source.name}] analyzing content...`);
-                                const analysis = await analyzeContent(
-                                    item.content,
-                                    item.title,
-                                    source.commentary_style,
-                                    item.contentType,
-                                    false
-                                );
-
-                                // 检查 AI 是否标记为应跳过的服务类内容
-                                if (analysis.shouldSkip) {
-                                    skippedItemsCount++;
-                                    console.log(`[${source.name}] AI filtered out content (${item.contentType}): ${item.title} - Reason: ${analysis.skipReason || 'unknown'}`);
-                                    return 'CONTINUE';
-                                }
-
-                                const finalTitle = analysis.translatedTitle || item.title;
-
-                                const { data: newsItem, error: insertError } = await supabaseAdmin
-                                    .from('news_items')
-                                    .insert([{
-                                        source_id: source.id,
-                                        original_url: item.url,
-                                        title: finalTitle,
-                                        content: item.content,
-                                        content_type: item.contentType,
-                                        ai_summary: analysis.summary,
-                                        ai_commentary: analysis.commentary,
-                                        published_at: item.publishedAt?.toISOString(),
-                                        video_id: item.videoId,
-                                        image_url: item.imageUrl,
-                                        is_published: true,
-                                        batch_completed_at: new Date().toISOString()
-                                    }])
-                                    .select()
-                                    .single();
-
-                                if (insertError) {
-                                    console.error(`DB Insert failed for ${item.title}:`, insertError);
-                                    throw new Error(`DB Insert failed: ${insertError.message}`);
-                                }
-
-                                results.push(newsItem);
-                                newItemsCount++;
-                                console.log(`[${source.name}] Item saved: ${finalTitle}`);
-                            })(),
-                            new Promise<never>((_, reject) =>
-                                setTimeout(() => reject(new Error(`处理新闻超时: ${item.title.substring(0, 50)}...`)), 30000)
-                            )
-                        ]).then((result) => {
-                            if (result === 'BREAK') throw new Error('BREAK_LOOP');
-                            if (result === 'CONTINUE') return;
-                        });
-
-                    } catch (itemError: any) {
-                        if (itemError?.message === 'BREAK_LOOP') {
-                            break;
-                        }
-                        console.error(`Error processing item from ${source.name}:`, itemError);
-                        errorCount++;
-                        continue;
-                    }
+                if (analysis.shouldSkip) {
+                    await supabaseAdmin.from('news_items').delete().eq('id', news.id);
+                    continue;
                 }
 
-                console.log(`Fetched ${newItemsCount} new items, skipped ${skippedItemsCount} existing items from ${source.name}`);
+                const catId = categoryMap[analysis.category || ''] || categoryMap['热点'];
 
-                await supabaseAdmin
-                    .from('news_sources')
-                    .update({ last_fetched_at: new Date().toISOString() })
-                    .eq('id', source.id);
+                // 立即更新并发布
+                await supabaseAdmin.from('news_items').update({
+                    title: analysis.translatedTitle || news.title,
+                    ai_summary: analysis.summary,
+                    ai_commentary: analysis.commentary,
+                    category_id: catId,
+                    tags: analysis.tags,
+                    location: analysis.location,
+                    is_published: true, // 处理完一条发一条，绝不卡死
+                    batch_completed_at: batchTime, // 保持同一批次的时间聚合
+                    updated_at: new Date().toISOString()
+                }).eq('id', news.id);
 
-            } catch (error) {
-                console.error(`Error fetching from ${source.name}:`, error);
-                errorCount++;
+                successCount++;
+                console.log(`[OK] 已发布 (${i + 1}/${shuffledDrafts.length}): ${analysis.translatedTitle || news.title}`);
+
+                // 稍微延迟，保护 API
+                await new Promise(r => setTimeout(r, 500));
+            } catch (err) {
+                console.error(`AI 阶段处理失败 [${news.id}]:`, err);
             }
-
-            await updateFetchStatus({
-                is_running: true,
-                current_source: `完成 ${source.name}`,
-                progress: i + 1,
-                total: targetSources.length,
-                started_at: new Date().toISOString()
-            });
         }
 
         // Final Status
         await updateFetchStatus({
             is_running: false,
-            current_source: '已完成',
-            progress: targetSources.length,
-            total: targetSources.length,
+            current_source: `处理完成: 新发布 ${successCount} 条`,
+            progress: shuffledDrafts.length,
+            total: shuffledDrafts.length,
             last_completed_at: new Date().toISOString()
         });
 
-        return {
-            success: true,
-            processed: targetSources.length,
-            newItems: newItemsCount,
-            skippedItems: skippedItemsCount,
-            errors: errorCount
-        };
+        return { success: true, newItems: successCount };
 
     } catch (error) {
         console.error('Error in fetch pipeline:', error);
-
-        await updateFetchStatus({
-            is_running: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
-            last_completed_at: new Date().toISOString()
-        });
-
+        await updateFetchStatus({ is_running: false, error: String(error) });
         throw error;
     }
 }

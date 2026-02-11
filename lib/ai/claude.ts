@@ -88,6 +88,9 @@ export interface AnalysisResult {
   translatedTitle?: string;
   shouldSkip?: boolean;
   skipReason?: string;
+  category?: string;
+  tags?: string[];
+  location?: string | null;
 }
 
 // 根据内容类型获取评论字数要求（使用数据库配置）
@@ -144,6 +147,12 @@ export async function analyzeContent(
   // 将过滤规则格式化为列表
   const filterRulesList = filterRules.split('\n').filter(r => r.trim()).map(r => `- ${r.trim()}`).join('\n');
 
+  // 逻辑：如果 commentaryStyle 为空，则摘要和评论都不生成
+  // 逻辑：如果是视频，即使有 commentaryStyle，也只生成摘要，不生成评论
+  const skipAllAI = !commentaryStyle || commentaryStyle.trim() === '';
+  const skipCommentaryOnly = contentType === 'video' || skipAllAI;
+  const skipSummary = skipAllAI;
+
   // 动态生成 Prompt
   const prompt = `分析新闻并输出以下部分（全部使用中文简体，禁止出现任何英文）：
 
@@ -159,8 +168,8 @@ ${filterRulesList}
 **如果是真正的新闻报道**，输出：
 【跳过】否
 【翻译标题】${title.match(/[a-zA-Z]/) ? '（翻译成中文简体）' : '（保持原样）'}
-【摘要】（${summaryReq}）
-【评论】（${commentaryStyle}风格，${lengthRequirement}，${commentaryReq}）`;
+${skipSummary ? '【摘要】（跳过此项，请返回空字符串）' : `【摘要】（${summaryReq}）`}
+${skipCommentaryOnly ? '【评论】（跳过此项，请返回空字符串）' : `【评论】（${commentaryStyle}风格，${lengthRequirement}，${commentaryReq}）`}`;
 
 
   try {
@@ -204,9 +213,12 @@ ${filterRulesList}
     const summaryMatch = response.match(/【摘要】\s*([\s\S]*?)\s*【评论】/);
     const commentaryMatch = response.match(/【评论】\s*([\s\S]*)/);
 
+    const summary = summaryMatch ? summaryMatch[1].trim() : response.slice(0, 200);
+    const commentary = commentaryMatch ? commentaryMatch[1].trim() : '暂无评论';
+
     return {
-      summary: summaryMatch ? summaryMatch[1].trim() : response.slice(0, 200),
-      commentary: commentaryMatch ? commentaryMatch[1].trim() : '暂无评论',
+      summary: (skipSummary || summary.includes('跳过')) ? '' : summary,
+      commentary: (skipCommentaryOnly || commentary.includes('跳过')) ? '' : commentary,
       translatedTitle: titleMatch ? titleMatch[1].trim() : undefined,
       shouldSkip: false,
     };

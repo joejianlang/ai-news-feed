@@ -43,7 +43,7 @@ export default function SourcesPage() {
     url: '',
     source_type: 'rss',
     fetch_interval: 3600,
-    commentary_style: '专业分析',
+    commentary_style: '',
     is_active: true,
     youtube_channel_id: '',
     category_id: undefined,
@@ -175,7 +175,7 @@ export default function SourcesPage() {
           url: '',
           source_type: 'rss',
           fetch_interval: 3600,
-          commentary_style: '专业分析',
+          commentary_style: '',
           is_active: true,
           youtube_channel_id: '',
           category_id: undefined,
@@ -215,7 +215,7 @@ export default function SourcesPage() {
       url: '',
       source_type: 'rss',
       fetch_interval: 3600,
-      commentary_style: '专业分析',
+      commentary_style: '',
       is_active: true,
       youtube_channel_id: '',
       category_id: undefined,
@@ -641,6 +641,9 @@ export default function SourcesPage() {
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 font-medium placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                   placeholder="例如：专业分析、幽默讽刺、简洁犀利等"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  💡 留空则该来源的新闻将<b>不生成</b>“内容摘要”和“专业解读”模块
+                </p>
               </div>
             </div>
 
@@ -850,13 +853,15 @@ export default function SourcesPage() {
         </div>
       </div>
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-    </div>
+      {
+        toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )
+      }
+    </div >
   );
 }

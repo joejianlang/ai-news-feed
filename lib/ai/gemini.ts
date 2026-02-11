@@ -49,6 +49,9 @@ export interface AnalysisResult {
   translatedTitle?: string;
   shouldSkip?: boolean;
   skipReason?: string;
+  category?: string;
+  tags?: string[];
+  location?: string | null;
 }
 
 // 根据内容类型获取评论字数要求
@@ -61,6 +64,13 @@ async function getCommentaryLength(contentType: string, isDeepDive: boolean, dbC
   }
   return dbConfig['commentary_length_article'] || '300-500字';
 }
+
+const DEFAULT_CATEGORIES = `本地、热点、政治、科技、财经、文化娱乐、体育、深度`;
+const DEFAULT_CITIES = `Ontario: Toronto, Mississauga, Brampton, Markham, Richmond Hill, Vaughan, Oakville, Burlington, Hamilton, Ottawa, Guelph, Waterloo, London, Kitchener, Cambridge
+BC: Vancouver, Richmond, Burnaby, Surrey, Coquitlam, Victoria, Kelowna
+Quebec: Montreal, Quebec City, Laval, Gatineau
+Alberta: Calgary, Edmonton
+Others: Winnipeg, Halifax, Saskatoon, Regina`;
 
 export async function analyzeContentWithGemini(
   content: string,
@@ -83,33 +93,63 @@ export async function analyzeContentWithGemini(
 纯粹的广告或促销内容
 天气预报、体育比分列表等纯信息罗列`;
 
+  const categories = dbConfig['classification_categories'] || DEFAULT_CATEGORIES;
+  const cities = dbConfig['canadian_cities'] || DEFAULT_CITIES;
+
   const summaryReq = dbConfig['summary_requirements'] || '80-150字，以叙述性的语言概括核心新闻内容（需包含时间、地点、人物、起因、经过、结果等要素，但禁止出现"【时间】"、"[地点]"等此类显式的标注词），全部使用中文简体。';
   const commentaryReq = dbConfig['commentary_requirements'] || '幽默犀利，有深度有趣味，全部使用中文简体，不要出现任何英文词汇或缩写';
 
-  const prompt = `分析新闻并输出以下部分（全部使用中文简体，禁止出现任何英文）：
+  // 逻辑：如果 commentaryStyle 为空，则摘要和评论都不生成
+  // 逻辑：如果是视频，即使有 commentaryStyle，也只生成摘要，不生成评论
+  const skipAllAI = !commentaryStyle || commentaryStyle.trim() === '';
+  const skipCommentaryOnly = contentType === 'video' || skipAllAI;
+  const skipSummary = skipAllAI;
 
+  const prompt = `你是一个多功能新闻专家，负责翻译、总结、评论和分类新闻。
+
+分析以下新闻：
 标题：${title}
 内容：${truncatedContent}
 
-**首先判断**：这是否是以下类型的"服务类/概括性内容"？
+**任务 1: 过滤判断**
+判断这是否是以下类型的"服务类/概括性内容"？
 ${filterRules}
 
-**如果是上述类型**，只需输出：
-【跳过】是
-【原因】（简短说明原因，如：直播安排、广告等）
+**任务 2: 翻译与内容生成**
+如果不是过滤内容，请生成：
+1. 建议的中文标题
+${skipSummary ? '2. 【跳过任务】摘要（请在JSON中保持summary为空字符串）' : `2. 摘要（${summaryReq}）`}
+${skipCommentaryOnly ? '3. 【跳过任务】评论（请在JSON中保持commentary为空字符串）' : `3. 评论（${commentaryStyle}风格，${lengthRequirement}，${commentaryReq}）`}
 
-**如果是真正的新闻报道**，输出：
-【跳过】否
-【翻译标题】${title.match(/[a-zA-Z]/) ? '（翻译成中文简体）' : '（保持原样）'}
-【摘要】（${summaryReq}）
-【评论】（${commentaryStyle}风格，${lengthRequirement}，${commentaryReq}）`;
+**任务 3: 分类与地理识别**
+1. 分类：必须从以下列表中选择一个最合适的：${categories}
+   - 特别注意：如果提到加拿大城市、省份或特有事物，分类必须为"本地"。
+2. 标签：生成 2-4 个以 # 开头的标签。
+   - 如果分类是"本地"，必须包含英文城市名标签（如 #Toronto）。
+3. 地点：识别到的加拿大英文城市名（属于此列表：${cities}），如无则返回 null。
+
+**强制要求**：
+- 请严格按照以下 JSON 格式返回，不要包含任何说明文字：
+{
+  "shouldSkip": true/false,
+  "skipReason": "原因",
+  "translatedTitle": "中文标题",
+  "summary": "${skipSummary ? '' : '摘要内容'}",
+  "commentary": "${skipCommentaryOnly ? '' : '评论内容'}",
+  "category": "分类名称",
+  "tags": ["#标签1", "#标签2"],
+  "location": "English City Name or null"
+}
+
+注意：如果 shouldSkip 为 true，则其他字段可以为空。`;
 
   try {
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.0-flash',
       generationConfig: {
-        maxOutputTokens: 2048,
+        maxOutputTokens: 2500,
         temperature: 0.7,
+        responseMimeType: "application/json"
       },
       safetySettings: [
         { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
@@ -121,28 +161,25 @@ ${filterRules}
 
     const result = await model.generateContent(prompt);
     const response = result.response.text();
+    const parsed = JSON.parse(response);
 
-    const skipMatch = response.match(/【跳过】\s*(是|否)/);
-    const reasonMatch = response.match(/【原因】\s*([\s\S]*?)(?=\n|【|$)/);
-
-    if (skipMatch && skipMatch[1] === '是') {
+    if (parsed.shouldSkip) {
       return {
         summary: '',
         commentary: '',
         shouldSkip: true,
-        skipReason: reasonMatch ? reasonMatch[1].trim() : '服务类内容',
+        skipReason: parsed.skipReason || '服务类内容',
       };
     }
 
-    const titleMatch = response.match(/【翻译标题】\s*([\s\S]*?)\s*【摘要】/);
-    const summaryMatch = response.match(/【摘要】\s*([\s\S]*?)\s*【评论】/);
-    const commentaryMatch = response.match(/【评论】\s*([\s\S]*)/);
-
     return {
-      summary: summaryMatch ? summaryMatch[1].trim() : response.slice(0, 200),
-      commentary: commentaryMatch ? commentaryMatch[1].trim() : '暂无评论',
-      translatedTitle: titleMatch ? titleMatch[1].trim() : undefined,
+      summary: parsed.summary || '',
+      commentary: parsed.commentary || '',
+      translatedTitle: parsed.translatedTitle,
       shouldSkip: false,
+      category: parsed.category,
+      tags: parsed.tags,
+      location: parsed.location
     };
   } catch (error) {
     console.error('Gemini analysis failed:', error);
