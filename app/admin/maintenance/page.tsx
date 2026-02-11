@@ -62,36 +62,50 @@ export default function MaintenancePage() {
         }
     };
 
+    const [confirmDelete, setConfirmDelete] = useState(false);
+
     const handleManualCleanup = async () => {
         if (!manualRange.start || !manualRange.end) {
             setToast({ message: '请选择起始和结束时间', type: 'error' });
             return;
         }
 
-        if (!confirm(`确定要彻底删除 ${manualRange.start} 到 ${manualRange.end} 期间的所有新闻吗？此操作不可逆！`)) {
+        if (!confirmDelete) {
+            setConfirmDelete(true);
+            // 3秒后自动取消确认状态
+            setTimeout(() => setConfirmDelete(false), 3000);
             return;
         }
 
         try {
             setIsCleaning(true);
+            setConfirmDelete(false);
+
+            const startDate = new Date(manualRange.start).toISOString();
+            const endDate = new Date(manualRange.end).toISOString();
+
             const res = await fetch('/api/admin/maintenance', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'manual_cleanup',
-                    start_date: new Date(manualRange.start).toISOString(),
-                    end_date: new Date(manualRange.end).toISOString()
+                    start_date: startDate,
+                    end_date: endDate
                 })
             });
+
             const data = await res.json();
+
             if (res.ok) {
-                setToast({ message: data.message, type: 'success' });
-                loadData(true);
+                setToast({ message: `🧹 ${data.message}`, type: 'success' });
+                // 延迟一秒刷新，确保数据库索引更新
+                setTimeout(() => loadData(true), 1000);
             } else {
-                setToast({ message: data.error, type: 'error' });
+                setToast({ message: `❌ ${data.error || '清理失败'}`, type: 'error' });
             }
         } catch (error) {
-            setToast({ message: '操作失败', type: 'error' });
+            setToast({ message: '网络异常，请稍后重试', type: 'error' });
+            console.error(error);
         } finally {
             setIsCleaning(false);
         }
@@ -229,13 +243,15 @@ export default function MaintenancePage() {
                             <button
                                 onClick={handleManualCleanup}
                                 disabled={isCleaning}
-                                className={`w-full py-2.5 rounded-xl font-black italic uppercase italic transition-all flex items-center justify-center gap-2 border-2 ${isCleaning
+                                className={`w-full py-2.5 rounded-xl font-black italic uppercase transition-all flex items-center justify-center gap-2 border-2 ${isCleaning
                                     ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                                    : 'bg-red-50 text-red-600 border-red-200 hover:bg-red-600 hover:text-white'
+                                    : confirmDelete
+                                        ? 'bg-red-600 text-white border-red-700 animate-pulse'
+                                        : 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
                                     }`}
                             >
                                 {isCleaning ? <RefreshCw className="animate-spin" size={18} /> : <Trash2 size={18} />}
-                                {isCleaning ? '正在清理中...' : '立即执行区间清空'}
+                                {isCleaning ? '正在清理中...' : confirmDelete ? '确认删除吗？再次点击' : '立即执行区间清空'}
                             </button>
                         </div>
                     </section>
