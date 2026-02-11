@@ -128,6 +128,12 @@ export default function Navbar() {
                 >
                   管理源
                 </Link>
+                <Link
+                  href="/admin/fetch-stats"
+                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
+                >
+                  抓取统计
+                </Link>
               </>
             )}
           </div>
@@ -234,6 +240,13 @@ export default function Navbar() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     管理源
+                  </Link>
+                  <Link
+                    href="/admin/fetch-stats"
+                    className="py-2 text-white hover:text-teal-100 font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    抓取统计
                   </Link>
                 </>
               )}

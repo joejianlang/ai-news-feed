@@ -42,7 +42,39 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export async function runFetchPipeline(specificSourceId?: string) {
+    const batchId = crypto.randomUUID();
+    const startedAt = new Date().toISOString();
+    let logId: string | null = null;
+
+    // Initialize stats
+    const statsDetail = {
+        total_scraped: 0,
+        skipped_duplicate: 0,
+        ai_processed: 0,
+        ai_skipped: 0,
+        ai_failed: 0,
+        published_count: 0,
+        reasons: {} as Record<string, number>
+    };
+
+    const addReason = (reason: string) => {
+        statsDetail.reasons[reason] = (statsDetail.reasons[reason] || 0) + 1;
+    };
+
     try {
+        // Create initial log entry
+        const { data: logData, error: logError } = await supabaseAdmin
+            .from('fetch_logs')
+            .insert([{
+                batch_id: batchId,
+                started_at: startedAt,
+                status: 'running'
+            }])
+            .select()
+            .single();
+
+        if (logData) logId = logData.id;
+
         const sources = await getActiveNewsSources();
         const targetSources = specificSourceId
             ? sources.filter(s => s.id === specificSourceId)
@@ -53,7 +85,6 @@ export async function runFetchPipeline(specificSourceId?: string) {
         const categoryMap: Record<string, string> = {};
         categoriesData?.forEach(c => categoryMap[c.name] = c.id);
 
-        const batchId = crypto.randomUUID();
         const batchTime = new Date().toISOString();
 
         // Initialize status
@@ -68,13 +99,13 @@ export async function runFetchPipeline(specificSourceId?: string) {
         console.log(`🚀 开始抓取阶段: 共 ${targetSources.length} 个源`);
 
         // --- STAGE 1: 快速抓取并存为草稿 ---
-        let totalScraped = 0;
         for (let i = 0; i < targetSources.length; i++) {
             const source = targetSources[i];
             await updateFetchStatus({ is_running: true, current_source: `抓取中: ${source.name}`, progress: i, total: targetSources.length });
 
             try {
                 const scrapedItems = await scrapeContent(source.url, source.source_type, source.youtube_channel_id);
+                statsDetail.total_scraped += scrapedItems.length;
 
                 for (const item of scrapedItems) {
                     // 检查去重
@@ -85,10 +116,14 @@ export async function runFetchPipeline(specificSourceId?: string) {
                         similarity_threshold: 0.8
                     });
 
-                    if (exists && exists.length > 0) continue;
+                    if (exists && exists.length > 0) {
+                        statsDetail.skipped_duplicate++;
+                        addReason('Duplicate (Similarity Check)');
+                        continue;
+                    }
 
                     // 存为草稿
-                    await supabaseAdmin.from('news_items').insert([{
+                    const { error: insertError } = await supabaseAdmin.from('news_items').insert([{
                         source_id: source.id,
                         original_url: item.url,
                         title: item.title,
@@ -98,36 +133,51 @@ export async function runFetchPipeline(specificSourceId?: string) {
                         video_id: item.videoId,
                         image_url: item.imageUrl,
                         fetch_batch_id: batchId,
-                        is_published: false, // 初始为草稿
+                        is_published: false,
                     }]);
-                    totalScraped++;
+
+                    if (insertError) {
+                        statsDetail.ai_failed++;
+                        addReason(`Insert Error: ${insertError.message}`);
+                    }
                 }
 
                 await updateLastFetchedTime(source.id);
             } catch (err) {
                 console.error(`Failed to scrape ${source.name}:`, err);
+                addReason(`Scrape Failed (${source.name})`);
             }
         }
 
-        console.log(`✅ 阶段 1 完成: 抓取到 ${totalScraped} 条新内容。准备进入阶段 2 混合处理...`);
+        console.log(`✅ 阶段 1 完成: 抓取到 ${statsDetail.total_scraped} 条内容。准备进入流程处理...`);
 
         // --- STAGE 2: 优先处理积压的旧草稿 ---
-        // 获取所有未发布的条目，按时间顺序排列（最老的优先），以清理积压
         const { data: drafts } = await supabaseAdmin
             .from('news_items')
             .select('*, source:news_sources(commentary_style)')
             .eq('is_published', false)
             .order('created_at', { ascending: true })
-            .limit(200); // 增加批次大小
+            .limit(200);
 
         if (!drafts || drafts.length === 0) {
             await updateFetchStatus({ is_running: false, current_source: '无新内容需处理', progress: targetSources.length, total: targetSources.length });
+
+            if (logId) {
+                await supabaseAdmin.from('fetch_logs').update({
+                    status: 'completed',
+                    completed_at: new Date().toISOString(),
+                    total_scraped: statsDetail.total_scraped,
+                    skipped_duplicate: statsDetail.skipped_duplicate,
+                    published_count: 0
+                }).eq('id', logId);
+            }
+
             return { success: true, newItems: 0 };
         }
 
-        console.log(`🧠 开始 AI 处理阶段: 待处理 ${drafts.length} 条新闻 (优先处理最早入库的内容)`);
+        console.log(`🧠 开始 AI 处理阶段: 待处理 ${drafts.length} 条新闻`);
+        statsDetail.ai_processed = drafts.length;
 
-        let successCount = 0;
         for (let i = 0; i < drafts.length; i++) {
             const news = drafts[i];
 
@@ -139,7 +189,6 @@ export async function runFetchPipeline(specificSourceId?: string) {
             });
 
             try {
-                // 调用合并后的 AI 接口（包含翻译、摘要、评论、分类、标签、地点）
                 const analysis = await analyzeContent(
                     news.content,
                     news.title,
@@ -148,13 +197,13 @@ export async function runFetchPipeline(specificSourceId?: string) {
                 );
 
                 if (analysis.shouldSkip) {
+                    statsDetail.ai_skipped++;
+                    addReason(`AI Filtered: ${analysis.skipReason || 'Quality'}`);
                     await supabaseAdmin.from('news_items').delete().eq('id', news.id);
                     continue;
                 }
 
-                // 鲁棒的分类映射
                 let categoryName = analysis.category || '热点';
-                // 常见的 AI 变体处理
                 if (categoryName.includes('本地')) categoryName = '本地';
                 else if (categoryName.includes('热点')) categoryName = '热点';
                 else if (categoryName.includes('科技')) categoryName = '科技';
@@ -163,9 +212,6 @@ export async function runFetchPipeline(specificSourceId?: string) {
 
                 const catId = categoryMap[categoryName] || categoryMap['热点'] || Object.values(categoryMap)[0];
 
-                console.log(`[AI结果] 标题: ${analysis.translatedTitle?.substring(0, 20)}..., 分类: ${categoryName}, 标签: ${JSON.stringify(analysis.tags)}`);
-
-                // 立即更新并发布
                 const { error: updateError } = await supabaseAdmin.from('news_items').update({
                     title: analysis.translatedTitle || news.title,
                     ai_summary: analysis.summary,
@@ -179,33 +225,57 @@ export async function runFetchPipeline(specificSourceId?: string) {
                 }).eq('id', news.id);
 
                 if (updateError) {
-                    throw new Error(`更新数据库失败: ${updateError.message}`);
+                    statsDetail.ai_failed++;
+                    addReason(`DB Update Error: ${updateError.message}`);
+                } else {
+                    statsDetail.published_count++;
                 }
 
-                successCount++;
-                console.log(`[OK] 已发布 (${i + 1}/${drafts.length}): ${analysis.translatedTitle || news.title}`);
-
-                // 稍微延迟，保护 API
                 await new Promise(r => setTimeout(r, 500));
             } catch (err) {
                 console.error(`AI 阶段处理失败 [${news.id}]:`, err);
+                statsDetail.ai_failed++;
+                addReason(`AI Process Crash: ${String(err)}`);
             }
         }
 
-        // Final Status
+        // --- FINAL LOG UPDATE ---
+        if (logId) {
+            await supabaseAdmin.from('fetch_logs').update({
+                status: 'completed',
+                completed_at: new Date().toISOString(),
+                total_scraped: statsDetail.total_scraped,
+                skipped_duplicate: statsDetail.skipped_duplicate,
+                ai_processed: statsDetail.ai_processed,
+                ai_skipped: statsDetail.ai_skipped,
+                ai_failed: statsDetail.ai_failed,
+                published_count: statsDetail.published_count,
+                failure_reasons: statsDetail.reasons
+            }).eq('id', logId);
+        }
+
         await updateFetchStatus({
             is_running: false,
-            current_source: `处理完成: 新发布 ${successCount} 条`,
+            current_source: `处理完成: 新发布 ${statsDetail.published_count} 条`,
             progress: drafts.length,
             total: drafts.length,
             last_completed_at: new Date().toISOString()
         });
 
-        return { success: true, newItems: successCount };
+        return { success: true, newItems: statsDetail.published_count, stats: statsDetail };
 
     } catch (error) {
         console.error('Error in fetch pipeline:', error);
         await updateFetchStatus({ is_running: false, error: String(error) });
+
+        if (logId) {
+            await supabaseAdmin.from('fetch_logs').update({
+                status: 'failed',
+                completed_at: new Date().toISOString(),
+                failure_reasons: { ...statsDetail.reasons, critical_error: String(error) }
+            }).eq('id', logId);
+        }
+
         throw error;
     }
 }
