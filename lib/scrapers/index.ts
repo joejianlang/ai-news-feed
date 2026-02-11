@@ -2,7 +2,7 @@ import Parser from 'rss-parser';
 import { YoutubeTranscript } from 'youtube-transcript';
 import * as cheerio from 'cheerio';
 import type { ScrapedContent, SourceType } from '@/types';
-import { getChannelVideos, extractChannelId, getChannelIdByUsername, getVideoDetails } from './youtube-channel';
+import { getChannelVideos, extractChannelId, getChannelIdByUsername, getVideoDetails, getTrendingVideos } from './youtube-channel';
 import { extractImageFromHTML } from '../images/extractor';
 
 const rssParser = new Parser({
@@ -258,6 +258,32 @@ export async function scrapeYouTubeChannel(
   }
 }
 
+// YouTube 趋势/热门视频抓取
+export async function scrapeYouTubeTrending(regionCode: string = 'US'): Promise<ScrapedContent[]> {
+  try {
+    console.log(`[YouTube Trending] Starting search for region: ${regionCode}`);
+    const videos = await getTrendingVideos(regionCode, 10);
+
+    const scrapedContents: ScrapedContent[] = [];
+
+    for (const video of videos) {
+      scrapedContents.push({
+        title: video.title,
+        content: video.content || video.description,
+        url: `https://www.youtube.com/watch?v=${video.id}`,
+        publishedAt: new Date(video.publishedAt),
+        contentType: 'video' as const,
+        videoId: video.id,
+      });
+    }
+
+    return scrapedContents;
+  } catch (error) {
+    console.error('YouTube trending scraping failed:', error);
+    return [];
+  }
+}
+
 // 网页抓取（使用cheerio进行HTML解析）
 export async function scrapeWebPage(url: string): Promise<ScrapedContent | null> {
   try {
@@ -315,6 +341,12 @@ export async function scrapeContent(
   sourceType: SourceType,
   channelId?: string
 ): Promise<ScrapedContent[]> {
+  // 处理 YouTube 热门趋势的特殊 URL 格式
+  if (url && url.startsWith('youtube_trending://')) {
+    const region = url.replace('youtube_trending://', '') || 'US';
+    return await scrapeYouTubeTrending(region);
+  }
+
   switch (sourceType) {
     case 'rss':
       return await scrapeRSS(url);
@@ -324,6 +356,8 @@ export async function scrapeContent(
     }
     case 'youtube_channel':
       return await scrapeYouTubeChannel(url, channelId);
+    case 'youtube_trending':
+      return await scrapeYouTubeTrending(url || 'US'); // 使用 URL 字段作为区域代码，默认 US
     case 'web': {
       const result = await scrapeWebPage(url);
       return result ? [result] : [];

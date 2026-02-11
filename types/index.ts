@@ -1,4 +1,4 @@
-export type SourceType = 'web' | 'youtube' | 'youtube_channel' | 'rss';
+export type SourceType = 'web' | 'youtube' | 'youtube_channel' | 'rss' | 'youtube_trending';
 export type ContentType = 'article' | 'video';
 
 export interface Category {

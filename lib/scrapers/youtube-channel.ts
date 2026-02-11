@@ -13,10 +13,12 @@ if (process.env.YOUTUBE_API_KEY) {
 }
 console.log('------------------------------------');
 
-const youtube = google.youtube({
-  version: 'v3',
-  auth: process.env.YOUTUBE_API_KEY,
-});
+function getYoutubeClient() {
+  return google.youtube({
+    version: 'v3',
+    auth: process.env.YOUTUBE_API_KEY,
+  });
+}
 
 /**
  * 从 YouTube URL 提取频道 ID
@@ -51,7 +53,7 @@ export async function getChannelIdByUsername(username: string): Promise<string |
     const cleanUsername = username.replace('@', '');
     console.log('Looking up channel ID for username:', cleanUsername);
 
-    const response = await youtube.channels.list({
+    const response = await getYoutubeClient().channels.list({
       part: ['id'],
       forHandle: cleanUsername,
     });
@@ -65,7 +67,7 @@ export async function getChannelIdByUsername(username: string): Promise<string |
     }
 
     // 如果用 forHandle 找不到，尝试用 forUsername
-    const response2 = await youtube.channels.list({
+    const response2 = await getYoutubeClient().channels.list({
       part: ['id'],
       forUsername: cleanUsername,
     });
@@ -87,6 +89,62 @@ export async function getChannelIdByUsername(username: string): Promise<string |
 }
 
 /**
+ * 获取热门视频 (Trending)
+ */
+export async function getTrendingVideos(
+  regionCode: string = 'US',
+  maxResults: number = 10,
+  videoCategoryId?: string
+): Promise<YouTubeVideo[]> {
+  try {
+    console.log(`[YouTube Trending] Fetching top ${maxResults} videos for region: ${regionCode}`);
+
+    const response = await getYoutubeClient().videos.list({
+      part: ['snippet', 'contentDetails'],
+      chart: 'mostPopular',
+      regionCode,
+      videoCategoryId,
+      maxResults,
+    });
+
+    const videos: YouTubeVideo[] = [];
+
+    for (const item of response.data.items || []) {
+      const videoId = item.id || '';
+      if (videoId) {
+        // 尝试获取视频字幕
+        let transcriptContent = '';
+        try {
+          const transcript = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'zh' });
+          transcriptContent = transcript.map(t => t.text).join(' ');
+        } catch (zhError) {
+          try {
+            const transcript = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' });
+            transcriptContent = transcript.map(t => t.text).join(' ');
+          } catch (enError) {
+            // 忽略错误
+          }
+        }
+
+        videos.push({
+          id: videoId,
+          title: item.snippet?.title || 'Untitled',
+          description: item.snippet?.description || '',
+          content: transcriptContent || item.snippet?.description || '',
+          publishedAt: item.snippet?.publishedAt || new Date().toISOString(),
+          thumbnailUrl: item.snippet?.thumbnails?.high?.url || item.snippet?.thumbnails?.default?.url || undefined,
+        });
+      }
+    }
+
+    return videos;
+  } catch (error) {
+    console.error('Failed to fetch trending videos:', error);
+    throw error;
+  }
+}
+
+/**
  * 获取频道的最新视频
  */
 export async function getChannelVideos(
@@ -95,7 +153,7 @@ export async function getChannelVideos(
 ): Promise<YouTubeVideo[]> {
   try {
     // 获取频道的上传播放列表 ID
-    const channelResponse = await youtube.channels.list({
+    const channelResponse = await getYoutubeClient().channels.list({
       part: ['contentDetails'],
       id: [channelId],
     });
@@ -112,7 +170,7 @@ export async function getChannelVideos(
     }
 
     // 获取播放列表中的视频
-    const playlistResponse = await youtube.playlistItems.list({
+    const playlistResponse = await getYoutubeClient().playlistItems.list({
       part: ['snippet', 'contentDetails'],
       playlistId: uploadsPlaylistId,
       maxResults,
@@ -160,7 +218,7 @@ export async function getChannelVideos(
  */
 export async function getVideoDetails(videoId: string) {
   try {
-    const response = await youtube.videos.list({
+    const response = await getYoutubeClient().videos.list({
       part: ['snippet', 'contentDetails'],
       id: [videoId],
     });
