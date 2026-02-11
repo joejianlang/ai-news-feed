@@ -1,0 +1,1 @@
+INSERT INTO system_settings (key, value) VALUES ('ad_pricing', '{"scope": {"local": 50, "city": 100, "province": 200, "national": 500}, "duration": {"1": 10, "3": 25, "7": 50, "14": 80, "30": 150}}') ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;

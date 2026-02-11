@@ -604,3 +604,14 @@ export async function updateAdStatus(id: string, status: AdItem['status'], reaso
   if (error) throw error;
   return data as AdItem;
 }
+
+export async function getSystemSetting(key: string) {
+  const { data, error } = await supabase
+    .from('system_settings')
+    .select('value')
+    .eq('key', key)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data?.value;
+}

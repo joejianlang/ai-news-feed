@@ -37,17 +37,33 @@ export default function AdCreatePage() {
     const [linkUrl, setLinkUrl] = useState('');
     const [price, setPrice] = useState(0);
 
-    // Pricing (Static for now, can be moved to config)
-    const PRICING = {
+    // State for pricing (fetched from API)
+    const [pricing, setPricing] = useState<{
+        scope: Record<string, number>;
+        duration: Record<string, number>;
+    }>({
         scope: { local: 50, city: 100, province: 200, national: 500 },
         duration: { '1': 10, '3': 25, '7': 50, '14': 80, '30': 150 }
-    };
+    });
 
     useEffect(() => {
-        const sPrice = PRICING.scope[scope as keyof typeof PRICING.scope] || 0;
-        const dPrice = PRICING.duration[duration as keyof typeof PRICING.duration] || 0;
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch('/api/ads/settings');
+                const data = await res.json();
+                if (data.pricing) setPricing(data.pricing);
+            } catch (err) {
+                console.error('Failed to fetch pricing:', err);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    useEffect(() => {
+        const sPrice = pricing.scope[scope] || 0;
+        const dPrice = pricing.duration[duration] || 0;
         setPrice(sPrice + dPrice);
-    }, [scope, duration]);
+    }, [scope, duration, pricing]);
 
     useEffect(() => {
         if (!isUserLoading && !user) {
@@ -350,18 +366,23 @@ export default function AdCreatePage() {
                                     <button
                                         key={s}
                                         onClick={() => setScope(s as any)}
-                                        className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-1 \${
-                      scope === s 
-                        ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/10 text-teal-700 dark:text-teal-400' 
-                        : 'border-card-border bg-card text-text-muted'
-                    }`}
+                                        className={`p-5 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-1.5 \${
+                                            scope === s 
+                                                ? 'border-teal-600 bg-teal-600 text-white shadow-xl shadow-teal-500/20 scale-[1.02]' 
+                                                : 'border-card-border bg-card text-text-muted hover:border-teal-500/50'
+                                        }`}
                                     >
-                                        <span className="font-black text-sm uppercase">
-                                            {s === 'local' ? '本地周边' : s === 'city' ? '全市投放' : s === 'province' ? '全省范围' : '全国范围'}
+                                        <span className={`font-black tracking-tight text-sm uppercase \${scope === s ? 'text-white' : 'text-foreground'}`}>
+                                            {s === 'local' ? '本地周边' : s === 'city' ? '全市投放' : s === 'province' ? '全省范围' : s === 'national' ? '全国范围' : s}
                                         </span>
-                                        <span className="text-xs opacity-60">
-                                            ${PRICING.scope[s as keyof typeof PRICING.scope]} 起
+                                        <span className={`text-xs \${scope === s ? 'text-white/80' : 'opacity-60'}`}>
+                                            ${pricing.scope[s]} 起
                                         </span>
+                                        {scope === s && (
+                                            <div className="mt-1 bg-white/20 rounded-full p-1">
+                                                <CheckCircle size={12} className="text-white" />
+                                            </div>
+                                        )}
                                     </button>
                                 ))}
                             </div>
@@ -374,14 +395,14 @@ export default function AdCreatePage() {
                                     <button
                                         key={d}
                                         onClick={() => setDuration(d)}
-                                        className={`min-w-[70px] p-3 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 flex-shrink-0 \${
-                      duration === d 
-                        ? 'border-teal-600 bg-teal-50 dark:bg-teal-900/10 text-teal-700 dark:text-teal-400' 
-                        : 'border-card-border bg-card text-text-muted'
-                    }`}
+                                        className={`min-w-[80px] p-4 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 flex-shrink-0 \${
+                                            duration === d 
+                                                ? 'border-teal-600 bg-teal-600 text-white shadow-lg shadow-teal-500/20' 
+                                                : 'border-card-border bg-card text-text-muted hover:border-teal-500/50'
+                                        }`}
                                     >
-                                        <span className="font-black text-sm">{d}天</span>
-                                        <span className="text-[10px] opacity-60">${PRICING.duration[d as keyof typeof PRICING.duration]}</span>
+                                        <span className={`font-black text-sm \${duration === d ? 'text-white' : 'text-foreground'}`}>{d}天</span>
+                                        <span className={`text-[10px] \${duration === d ? 'text-white/80' : 'opacity-60'}`}>${pricing.duration[d]}</span>
                                     </button>
                                 ))}
                             </div>
@@ -413,7 +434,7 @@ export default function AdCreatePage() {
                         <div className="bg-foreground text-background dark:bg-foreground dark:text-background p-6 rounded-3xl shadow-xl flex items-center justify-between">
                             <div>
                                 <p className="opacity-60 text-xs font-bold uppercase tracking-widest">预估总费用</p>
-                                <p className="text-4xl font-black">$\${price}</p>
+                                <p className="text-4xl font-black">${price}</p>
                             </div>
                             <button
                                 onClick={handlePublish}
