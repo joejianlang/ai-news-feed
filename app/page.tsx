@@ -480,7 +480,7 @@ export default function Home() {
                                 </div>
 
                                 <div className="relative pt-1 px-1">
-                                  <div className={`prose prose-sm sm:prose-base dark:prose-invert max-w-none text-foreground transition-all duration-300 ${isFullExpanded ? '' : 'line-clamp-6 text-transparent bg-clip-text bg-gradient-to-b from-foreground via-foreground/90 to-foreground/10'}`}>
+                                  <div className={`prose prose-sm sm:prose-base dark:prose-invert max-w-none text-foreground transition-all duration-300 ${isFullExpanded ? '' : 'line-clamp-1 text-transparent bg-clip-text bg-gradient-to-b from-foreground via-foreground/90 to-foreground/10'}`}>
                                     {content && content.split('\n').map((paragraph, idx) => (
                                       <p key={idx} className={`${activeTab === 'commentary' ? 'leading-relaxed italic text-foreground/90' : 'leading-relaxed'} mb-3`}>
                                         {paragraph}

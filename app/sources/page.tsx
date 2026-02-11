@@ -604,6 +604,20 @@ export default function SourcesPage() {
                 </select>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">分类</label>
+                <select
+                  value={formData.category_id || ''}
+                  onChange={e => setFormData({ ...formData, category_id: e.target.value || undefined })}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                >
+                  <option value="">未分类</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+
               {formData.source_type === 'youtube_channel' && (
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium mb-2 text-gray-700">频道 URL</label>
@@ -722,6 +736,19 @@ export default function SourcesPage() {
                         <option value="youtube">YouTube 单个视频</option>
                         <option value="youtube_channel">YouTube 频道</option>
                         <option value="web">网页</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-gray-500 mb-1">分类</label>
+                      <select
+                        value={formData.category_id || ''}
+                        onChange={e => setFormData({ ...formData, category_id: e.target.value || undefined })}
+                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 focus:border-yellow-500 outline-none transition-all"
+                      >
+                        <option value="">未分类</option>
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
                       </select>
                     </div>
                     <div>

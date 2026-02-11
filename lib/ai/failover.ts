@@ -135,7 +135,8 @@ export async function analyzeContentWithFailover(
         translatedTitle: title,
         category: '热点',
         tags: ['#无服务'],
-        location: null
+        location: null,
+        isError: true
       };
     }
   }

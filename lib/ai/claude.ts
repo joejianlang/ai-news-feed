@@ -91,6 +91,7 @@ export interface AnalysisResult {
   category?: string;
   tags?: string[];
   location?: string | null;
+  isError?: boolean;
 }
 
 // 根据内容类型获取评论字数要求（使用数据库配置）

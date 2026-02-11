@@ -173,7 +173,7 @@ export async function runFetchPipeline(specificSourceId?: string) {
         // --- STAGE 2: 优先处理积压的旧草稿 ---
         const { data: drafts } = await supabaseAdmin
             .from('news_items')
-            .select('*, source:news_sources(commentary_style)')
+            .select('*, source:news_sources(commentary_style, category_id)')
             .eq('is_published', false)
             .order('created_at', { ascending: true })
             .limit(200);
@@ -229,6 +229,15 @@ export async function runFetchPipeline(specificSourceId?: string) {
                     news.content_type || 'article'
                 );
 
+                if (analysis.isError) {
+                    console.error(`[AI Error] Skipping publication due to AI failure for: ${news.title}`);
+                    statsDetail.ai_failed++;
+                    addReason('AI Service Error');
+                    // 删除草稿，避免堆积
+                    await supabaseAdmin.from('news_items').delete().eq('id', news.id);
+                    continue;
+                }
+
                 if (analysis.shouldSkip) {
                     statsDetail.ai_skipped++;
                     addReason(`AI Filtered: ${analysis.skipReason || 'Quality'}`);
@@ -236,14 +245,19 @@ export async function runFetchPipeline(specificSourceId?: string) {
                     continue;
                 }
 
-                let categoryName = analysis.category || '热点';
-                if (categoryName.includes('本地')) categoryName = '本地';
-                else if (categoryName.includes('热点')) categoryName = '热点';
-                else if (categoryName.includes('科技')) categoryName = '科技';
-                else if (categoryName.includes('财经')) categoryName = '财经';
-                else if (categoryName.includes('深度')) categoryName = '深度';
+                // 确定分类：优先使用源指定的分类，如果没有则使用 AI 建议的分类
+                let catId = (news.source as any)?.category_id;
 
-                const catId = categoryMap[categoryName] || categoryMap['热点'] || Object.values(categoryMap)[0];
+                if (!catId) {
+                    let categoryName = analysis.category || '热点';
+                    if (categoryName.includes('本地')) categoryName = '本地';
+                    else if (categoryName.includes('热点')) categoryName = '热点';
+                    else if (categoryName.includes('科技')) categoryName = '科技';
+                    else if (categoryName.includes('财经')) categoryName = '财经';
+                    else if (categoryName.includes('深度')) categoryName = '深度';
+
+                    catId = categoryMap[categoryName] || categoryMap['热点'] || Object.values(categoryMap)[0];
+                }
 
                 const updatePayload: any = {
                     title: analysis.translatedTitle || news.title,

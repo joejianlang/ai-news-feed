@@ -25,6 +25,7 @@ export async function analyzeContent(
       summary: '（AI 分析已禁用）' + content.substring(0, 100),
       commentary: '（AI 评论已禁用）',
       translatedTitle: title,
+      isError: true
     };
   }
 
