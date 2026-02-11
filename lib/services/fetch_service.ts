@@ -108,7 +108,20 @@ export async function runFetchPipeline(specificSourceId?: string) {
                 statsDetail.total_scraped += scrapedItems.length;
 
                 for (const item of scrapedItems) {
-                    // 检查去重
+                    // 1. 严格检查 URL 是否完全重复（全局）
+                    const { data: exactUrlMatch } = await supabaseAdmin
+                        .from('news_items')
+                        .select('id')
+                        .eq('original_url', item.url)
+                        .maybeSingle();
+
+                    if (exactUrlMatch) {
+                        statsDetail.skipped_duplicate++;
+                        addReason('Duplicate (Global URL Match)');
+                        continue;
+                    }
+
+                    // 2. 检查标题/内容的相似度（48小时窗口）
                     const { data: exists } = await supabaseAdmin.rpc('find_similar_news', {
                         check_title: item.title,
                         check_url: item.url,
@@ -137,8 +150,14 @@ export async function runFetchPipeline(specificSourceId?: string) {
                     }]);
 
                     if (insertError) {
-                        statsDetail.ai_failed++;
-                        addReason(`Insert Error: ${insertError.message}`);
+                        // 如果依然报唯一性冲突错误，按重复处理
+                        if (insertError.code === '23505') {
+                            statsDetail.skipped_duplicate++;
+                            addReason('Duplicate (Insert Race Condition)');
+                        } else {
+                            statsDetail.ai_failed++;
+                            addReason(`Insert Error: ${insertError.message}`);
+                        }
                     }
                 }
 
@@ -226,17 +245,27 @@ export async function runFetchPipeline(specificSourceId?: string) {
 
                 const catId = categoryMap[categoryName] || categoryMap['热点'] || Object.values(categoryMap)[0];
 
-                const { error: updateError } = await supabaseAdmin.from('news_items').update({
+                const updatePayload: any = {
                     title: analysis.translatedTitle || news.title,
                     ai_summary: analysis.summary,
                     ai_commentary: analysis.commentary,
                     category_id: catId,
                     tags: Array.isArray(analysis.tags) ? analysis.tags : [],
-                    location: analysis.location,
+                    location: analysis.location, // 尝试包含位置信息
                     is_published: true,
                     batch_completed_at: batchTime,
                     updated_at: new Date().toISOString()
-                }).eq('id', news.id);
+                };
+
+                let { error: updateError } = await supabaseAdmin.from('news_items').update(updatePayload).eq('id', news.id);
+
+                // 🛑 如果报错“找不到 location 列”，则剔除该列重新尝试
+                if (updateError && (updateError.message.includes('column "location" of relation "news_items" does not exist') || updateError.message.includes('Could not find the \'location\' column'))) {
+                    console.warn('⚠️ 数据库缺少 location 列，正在剔除该列重试...');
+                    delete updatePayload.location;
+                    const { error: retryError } = await supabaseAdmin.from('news_items').update(updatePayload).eq('id', news.id);
+                    updateError = retryError;
+                }
 
                 if (updateError) {
                     statsDetail.ai_failed++;
