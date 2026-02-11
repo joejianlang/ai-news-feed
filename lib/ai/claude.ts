@@ -153,6 +153,10 @@ export async function analyzeContent(
   const skipCommentaryOnly = contentType === 'video' || skipAllAI;
   const skipSummary = skipAllAI;
 
+  // 获取分类和地点参考
+  const categoriesList = dbConfig['classification_categories'] || '本地、热点、政治、科技、财经、文化娱乐、体育、深度';
+  const citiesList = dbConfig['canadian_cities'] || 'Toronto, Vancouver, Montreal, Calgary, Edmonton, Ottawa, Winnipeg, Quebec City, Hamilton, Kitchener';
+
   // 动态生成 Prompt
   const prompt = `分析新闻并输出以下部分（全部使用中文简体，禁止出现任何英文）：
 
@@ -169,7 +173,10 @@ ${filterRulesList}
 【跳过】否
 【翻译标题】${title.match(/[a-zA-Z]/) ? '（翻译成中文简体）' : '（保持原样）'}
 ${skipSummary ? '【摘要】（跳过此项，请返回空字符串）' : `【摘要】（${summaryReq}）`}
-${skipCommentaryOnly ? '【评论】（跳过此项，请返回空字符串）' : `【评论】（${commentaryStyle}风格，${lengthRequirement}，${commentaryReq}）`}`;
+${skipCommentaryOnly ? '【评论】（跳过此项，请返回空字符串）' : `【评论】（${commentaryStyle}风格，${lengthRequirement}，${commentaryReq}）`}
+【分类】（必须从以下列表中选择一个：${categoriesList}。如果是加拿大本地新闻，必须选"本地"）
+【标签】（生成 2-4 个以 # 开头的标签）
+【地点】（识别到的加拿大英文城市名，属于此列表：${citiesList}。如无则返回 null）`;
 
 
   try {
@@ -211,16 +218,27 @@ ${skipCommentaryOnly ? '【评论】（跳过此项，请返回空字符串）' 
 
     const titleMatch = response.match(/【翻译标题】\s*([\s\S]*?)\s*【摘要】/);
     const summaryMatch = response.match(/【摘要】\s*([\s\S]*?)\s*【评论】/);
-    const commentaryMatch = response.match(/【评论】\s*([\s\S]*)/);
+    const commentaryMatch = response.match(/【评论】\s*([\s\S]*?)\s*【分类】/);
+    const categoryMatch = response.match(/【分类】\s*([\s\S]*?)\s*【标签】/);
+    const tagsMatch = response.match(/【标签】\s*([\s\S]*?)\s*【地点】/);
+    const locationMatch = response.match(/【地点】\s*([\s\S]*)/);
 
-    const summary = summaryMatch ? summaryMatch[1].trim() : response.slice(0, 200);
-    const commentary = commentaryMatch ? commentaryMatch[1].trim() : '暂无评论';
+    const summary = summaryMatch ? summaryMatch[1].trim() : '';
+    const commentary = commentaryMatch ? commentaryMatch[1].trim() : '';
+    const category = categoryMatch ? categoryMatch[1].trim() : '热点';
+    const tagsStr = tagsMatch ? tagsMatch[1].trim() : '';
+    const tags = tagsStr.split(/[,\s，、]+/).filter(t => t.startsWith('#')).slice(0, 4);
+    const locationRaw = locationMatch ? locationMatch[1].trim() : 'null';
+    const location = (locationRaw.toLowerCase() === 'null' || locationRaw === '无') ? null : locationRaw;
 
     return {
       summary: (skipSummary || summary.includes('跳过')) ? '' : summary,
       commentary: (skipCommentaryOnly || commentary.includes('跳过')) ? '' : commentary,
       translatedTitle: titleMatch ? titleMatch[1].trim() : undefined,
       shouldSkip: false,
+      category,
+      tags,
+      location
     };
 
   } catch (error) {

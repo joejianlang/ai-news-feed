@@ -111,32 +111,31 @@ export async function runFetchPipeline(specificSourceId?: string) {
 
         console.log(`✅ 阶段 1 完成: 抓取到 ${totalScraped} 条新内容。准备进入阶段 2 混合处理...`);
 
-        // --- STAGE 2: 混合打乱并 AI 处理 ---
-        // 获取所有未发布的条目（包括之前可能卡住的）
+        // --- STAGE 2: 优先处理积压的旧草稿 ---
+        // 获取所有未发布的条目，按时间顺序排列（最老的优先），以清理积压
         const { data: drafts } = await supabaseAdmin
             .from('news_items')
             .select('*, source:news_sources(commentary_style)')
             .eq('is_published', false)
-            .limit(100);
+            .order('created_at', { ascending: true })
+            .limit(200); // 增加批次大小
 
         if (!drafts || drafts.length === 0) {
             await updateFetchStatus({ is_running: false, current_source: '无新内容需处理', progress: targetSources.length, total: targetSources.length });
             return { success: true, newItems: 0 };
         }
 
-        // 随机打乱，打破来源聚集
-        const shuffledDrafts = shuffleArray(drafts);
-        console.log(`🧠 开始 AI 处理阶段: 待处理 ${shuffledDrafts.length} 条新闻 (已打乱重排)`);
+        console.log(`🧠 开始 AI 处理阶段: 待处理 ${drafts.length} 条新闻 (优先处理最早入库的内容)`);
 
         let successCount = 0;
-        for (let i = 0; i < shuffledDrafts.length; i++) {
-            const news = shuffledDrafts[i];
+        for (let i = 0; i < drafts.length; i++) {
+            const news = drafts[i];
 
             await updateFetchStatus({
                 is_running: true,
-                current_source: `AI 分析中 (${i + 1}/${shuffledDrafts.length}): ${news.title.substring(0, 20)}...`,
+                current_source: `AI 分析中 (${i + 1}/${drafts.length}): ${news.title.substring(0, 20)}...`,
                 progress: i,
-                total: shuffledDrafts.length
+                total: drafts.length
             });
 
             try {
@@ -153,23 +152,38 @@ export async function runFetchPipeline(specificSourceId?: string) {
                     continue;
                 }
 
-                const catId = categoryMap[analysis.category || ''] || categoryMap['热点'];
+                // 鲁棒的分类映射
+                let categoryName = analysis.category || '热点';
+                // 常见的 AI 变体处理
+                if (categoryName.includes('本地')) categoryName = '本地';
+                else if (categoryName.includes('热点')) categoryName = '热点';
+                else if (categoryName.includes('科技')) categoryName = '科技';
+                else if (categoryName.includes('财经')) categoryName = '财经';
+                else if (categoryName.includes('深度')) categoryName = '深度';
+
+                const catId = categoryMap[categoryName] || categoryMap['热点'] || Object.values(categoryMap)[0];
+
+                console.log(`[AI结果] 标题: ${analysis.translatedTitle?.substring(0, 20)}..., 分类: ${categoryName}, 标签: ${JSON.stringify(analysis.tags)}`);
 
                 // 立即更新并发布
-                await supabaseAdmin.from('news_items').update({
+                const { error: updateError } = await supabaseAdmin.from('news_items').update({
                     title: analysis.translatedTitle || news.title,
                     ai_summary: analysis.summary,
                     ai_commentary: analysis.commentary,
                     category_id: catId,
-                    tags: analysis.tags,
+                    tags: Array.isArray(analysis.tags) ? analysis.tags : [],
                     location: analysis.location,
-                    is_published: true, // 处理完一条发一条，绝不卡死
-                    batch_completed_at: batchTime, // 保持同一批次的时间聚合
+                    is_published: true,
+                    batch_completed_at: batchTime,
                     updated_at: new Date().toISOString()
                 }).eq('id', news.id);
 
+                if (updateError) {
+                    throw new Error(`更新数据库失败: ${updateError.message}`);
+                }
+
                 successCount++;
-                console.log(`[OK] 已发布 (${i + 1}/${shuffledDrafts.length}): ${analysis.translatedTitle || news.title}`);
+                console.log(`[OK] 已发布 (${i + 1}/${drafts.length}): ${analysis.translatedTitle || news.title}`);
 
                 // 稍微延迟，保护 API
                 await new Promise(r => setTimeout(r, 500));
@@ -182,8 +196,8 @@ export async function runFetchPipeline(specificSourceId?: string) {
         await updateFetchStatus({
             is_running: false,
             current_source: `处理完成: 新发布 ${successCount} 条`,
-            progress: shuffledDrafts.length,
-            total: shuffledDrafts.length,
+            progress: drafts.length,
+            total: drafts.length,
             last_completed_at: new Date().toISOString()
         });
 
