@@ -134,6 +134,12 @@ export default function Navbar() {
                 >
                   抓取统计
                 </Link>
+                <Link
+                  href="/admin/maintenance"
+                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
+                >
+                  库维护
+                </Link>
               </>
             )}
           </div>
@@ -247,6 +253,13 @@ export default function Navbar() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     抓取统计
+                  </Link>
+                  <Link
+                    href="/admin/maintenance"
+                    className="py-2 text-white hover:text-teal-100 font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    库维护
                   </Link>
                 </>
               )}
