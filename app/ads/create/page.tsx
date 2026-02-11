@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/lib/contexts/UserContext';
 import { createAd } from '@/lib/supabase/queries';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import AdCard from '@/components/AdCard';
 import Navbar from '@/components/Navbar';
 import {
@@ -53,6 +54,45 @@ export default function AdCreatePage() {
             router.push('/login?redirect=/ads/create');
         }
     }, [user, isUserLoading, router]);
+
+    const [isUploading, setIsUploading] = useState(false);
+    const supabase = createSupabaseBrowserClient();
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Size check: 5MB
+        if (file.size > 5 * 1024 * 1024) {
+            alert('图片不能超过 5MB');
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${user?.id}-${Math.random()}.${fileExt}`;
+            const filePath = `uploads/${fileName}`;
+
+            const { data, error } = await supabase.storage
+                .from('ad-images')
+                .upload(filePath, file);
+
+            if (error) throw error;
+
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('ad-images')
+                .getPublicUrl(filePath);
+
+            setImageUrl(publicUrl);
+        } catch (err) {
+            console.error('Upload failed:', err);
+            alert('上传失败，请重试');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const handleAIOptimize = async () => {
         if (!productName || !rawContent) {
@@ -129,9 +169,8 @@ export default function AdCreatePage() {
                     {[1, 2, 3].map((i) => (
                         <div
                             key={i}
-                            className={`h-1.5 flex-1 rounded-full mx-1 transition-all duration-500 \${
-                i <= step ? 'bg-teal-600' : 'bg-card-border'
-              }`}
+                            className={`h-1.5 flex-1 rounded-full mx-1 transition-all duration-500 ${i <= step ? 'bg-teal-600' : 'bg-card-border'
+                                }`}
                         />
                     ))}
                 </div>
@@ -174,15 +213,62 @@ export default function AdCreatePage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-black mb-2 uppercase tracking-wider text-text-muted">广告图片链接 (URL)</label>
-                                <input
-                                    type="text"
-                                    value={imageUrl}
-                                    onChange={(e) => setImageUrl(e.target.value)}
-                                    placeholder="https://example.com/image.jpg"
-                                    className="w-full bg-card border border-card-border rounded-2xl p-4 focus:ring-2 focus:ring-teal-500/50 outline-none transition-all"
-                                />
-                                <p className="text-[10px] text-text-muted mt-1 px-1">目前仅支持输入图片 URL 地址</p>
+                                <label className="block text-sm font-black mb-2 uppercase tracking-wider text-text-muted">广告图片</label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div
+                                        className="relative group border-2 border-dashed border-card-border hover:border-teal-500/50 rounded-2xl p-4 transition-all cursor-pointer overflow-hidden aspect-video flex flex-col items-center justify-center bg-card/30"
+                                        onClick={() => document.getElementById('image-upload')?.click()}
+                                    >
+                                        {imageUrl ? (
+                                            <>
+                                                <img src={imageUrl} alt="Preview" className="absolute inset-0 w-full h-full object-cover group-hover:opacity-70 transition-opacity" />
+                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="bg-black/60 text-white rounded-full p-2">
+                                                        <Upload size={20} />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="text-center space-y-2">
+                                                <div className="w-12 h-12 bg-card-border rounded-full flex items-center justify-center mx-auto text-text-muted group-hover:text-teal-600 transition-colors">
+                                                    {isUploading ? (
+                                                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-teal-600/30 border-t-teal-600"></div>
+                                                    ) : (
+                                                        <Upload size={24} />
+                                                    )}
+                                                </div>
+                                                <div className="text-xs font-bold text-text-muted uppercase">点击上传图片</div>
+                                                <div className="text-[10px] text-text-muted">支持 JPG/PNG, 最大 5MB</div>
+                                            </div>
+                                        )}
+                                        <input
+                                            id="image-upload"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageUpload}
+                                            className="hidden"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <div className="text-[10px] font-black text-text-muted uppercase tracking-wider">或输入图片 URL</div>
+                                        <input
+                                            type="text"
+                                            value={imageUrl}
+                                            onChange={(e) => setImageUrl(e.target.value)}
+                                            placeholder="https://example.com/image.jpg"
+                                            className="w-full bg-card/50 border border-card-border rounded-xl p-3 text-xs focus:ring-2 focus:ring-teal-500/50 outline-none transition-all"
+                                        />
+                                        <div className="p-3 bg-teal-50 dark:bg-teal-950/20 rounded-xl border border-teal-100 dark:border-teal-900/30">
+                                            <div className="flex gap-2">
+                                                <Sparkles size={14} className="text-teal-600 shrink-0" />
+                                                <p className="text-[10px] leading-relaxed text-teal-800 dark:text-teal-300">
+                                                    AI 提示：带有精美图片的广告，转化率通常比纯文字高出 3 倍以上。
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
