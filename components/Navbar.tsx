@@ -150,9 +150,15 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/admin/ads"
-                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors bg-white/10 px-2 py-1 rounded"
+                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
                 >
                   广告审核
+                </Link>
+                <Link
+                  href="/admin/settings"
+                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors bg-white/10 px-2 py-1 rounded"
+                >
+                  系统设置
                 </Link>
               </>
             )}
@@ -274,6 +280,13 @@ export default function Navbar() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     库维护
+                  </Link>
+                  <Link
+                    href="/admin/settings"
+                    className="py-2 text-white hover:text-teal-100 font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    系统设置
                   </Link>
                 </>
               )}
