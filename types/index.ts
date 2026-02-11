@@ -143,3 +143,30 @@ export interface CommentLike {
 export interface CommentWithReplies extends Comment {
   replies: CommentWithReplies[];
 }
+
+// 广告相关类型
+export type AdScope = 'local' | 'city' | 'province' | 'national';
+export type AdStatus = 'pending' | 'active' | 'expired' | 'rejected' | 'unpaid';
+
+export interface AdItem {
+  id: string;
+  user_id: string;
+  title: string;
+  content: string;
+  raw_content?: string;
+  image_url?: string;
+  link_url?: string;
+  contact_info?: string;
+  scope: AdScope;
+  target_city?: string;
+  target_province?: string;
+  duration_days: number;
+  price_total: number;
+  status: AdStatus;
+  payment_status: 'unpaid' | 'paid';
+  rejection_reason?: string;
+  created_at: string;
+  updated_at: string;
+  start_date?: string;
+  end_date?: string;
+}

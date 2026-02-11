@@ -33,36 +33,11 @@ function groupNewsByBatch(news: NewsItem[]) {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '100');
+    const limit = parseInt(searchParams.get('limit') || '300');
     const categoryId = searchParams.get('categoryId') || undefined;
     const cityTag = searchParams.get('city') || undefined;
 
-    // 检查用户登录状态以进行个性化过滤
-    let excludeSourceIds: string[] = [];
-
-    // 从请求中获取 cookie
-    const cookieHeader = request.headers.get('cookie') || '';
-    const token = cookieHeader
-      .split('; ')
-      .find(row => row.startsWith('auth_token='))
-      ?.split('=')[1];
-
-    if (token) {
-      try {
-        const payload = verifyToken(token);
-        if (payload && payload.userId) {
-          const follows = await getUserFollows(payload.userId);
-          if (follows && follows.length > 0) {
-            // 类型断言或检查以确保 source_id 存在
-            excludeSourceIds = (follows as any[]).map(f => f.source_id);
-          }
-        }
-      } catch (e) {
-        console.error('Token verification failed in news route:', e);
-      }
-    }
-
-    const news = await getNewsItemsByBatch(limit, categoryId, cityTag, excludeSourceIds);
+    const news = await getNewsItemsByBatch(limit, categoryId, cityTag);
     const groupedNews = groupNewsByBatch(news);
 
     return NextResponse.json(groupedNews);

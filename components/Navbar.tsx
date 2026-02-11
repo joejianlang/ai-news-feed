@@ -107,12 +107,20 @@ export default function Navbar() {
           {/* 桌面端导航 */}
           <div className="hidden md:flex items-center gap-6">
             {user && (
-              <Link
-                href="/following"
-                className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
-              >
-                我的关注
-              </Link>
+              <>
+                <Link
+                  href="/following"
+                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
+                >
+                  我的关注
+                </Link>
+                <Link
+                  href="/ads/create"
+                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors border border-white/20 px-3 py-1 rounded-full hover:bg-white/10"
+                >
+                  投放广告
+                </Link>
+              </>
             )}
             {user?.role === 'admin' && (
               <>
@@ -139,6 +147,12 @@ export default function Navbar() {
                   className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
                 >
                   库维护
+                </Link>
+                <Link
+                  href="/admin/ads"
+                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors bg-white/10 px-2 py-1 rounded"
+                >
+                  广告审核
                 </Link>
               </>
             )}

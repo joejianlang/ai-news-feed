@@ -71,7 +71,7 @@ export async function getNewsItems(limit = 50) {
 }
 
 // 按批次分组获取新闻（用于前端按"更新时间"分组显示）
-export async function getNewsItemsByBatch(limit = 50, categoryId?: string, cityTag?: string, excludeSourceIds?: string[]) {
+export async function getNewsItemsByBatch(limit = 300, categoryId?: string, cityTag?: string, excludeSourceIds?: string[]) {
   let query = supabase
     .from('news_items')
     .select(`
@@ -283,7 +283,7 @@ export async function isFollowing(userId: string, sourceId: string) {
   return !!data;
 }
 
-export async function getFollowingNewsItems(userId: string, limit = 50) {
+export async function getFollowingNewsItems(userId: string, limit = 300) {
   // 先获取用户关注的source_id列表
   const { data: follows, error: followError } = await supabase
     .from('user_source_follows')
@@ -307,6 +307,7 @@ export async function getFollowingNewsItems(userId: string, limit = 50) {
       source:news_sources(*)
     `)
     .in('source_id', sourceIds)
+    .eq('is_published', true)
     .order('published_at', { ascending: false, nullsFirst: false })
     .limit(limit);
 
@@ -516,4 +517,90 @@ export async function verifyRegistrationCode(email: string, code: string) {
     .eq('id', data.id);
 
   return true;
+}
+
+// ============================================
+// 广告相关查询
+// ============================================
+
+import type { AdItem } from '@/types';
+
+export async function getActiveAds() {
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from('ads')
+    .select('*')
+    .eq('status', 'active')
+    .lte('start_date', now)
+    .gte('end_date', now)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data as AdItem[];
+}
+
+export async function getUserAds(userId: string) {
+  const { data, error } = await supabase
+    .from('ads')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data as AdItem[];
+}
+
+export async function getPendingAds() {
+  const { data, error } = await supabase
+    .from('ads')
+    .select('*')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: true });
+
+  if (error) throw error;
+  return data as AdItem[];
+}
+
+export async function createAd(ad: Omit<AdItem, 'id' | 'created_at' | 'updated_at'>) {
+  const { data, error } = await supabase
+    .from('ads')
+    .insert([ad])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as AdItem;
+}
+
+export async function updateAdStatus(id: string, status: AdItem['status'], reason?: string) {
+  const updates: any = { status };
+  if (reason) updates.rejection_reason = reason;
+
+  if (status === 'active') {
+    const now = new Date();
+    updates.start_date = now.toISOString();
+
+    // 自动计算结束日期
+    const { data: adData } = await supabase
+      .from('ads')
+      .select('duration_days')
+      .eq('id', id)
+      .single();
+
+    if (adData?.duration_days) {
+      const endDate = new Date(now);
+      endDate.setDate(endDate.getDate() + adData.duration_days);
+      updates.end_date = endDate.toISOString();
+    }
+  }
+
+  const { data, error } = await supabase
+    .from('ads')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as AdItem;
 }
