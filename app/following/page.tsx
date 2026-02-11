@@ -158,38 +158,34 @@ export default function FollowingPage() {
               <article
                 key={item.id}
                 id={`article-${item.id}`}
-                className={`bg-white dark:bg-card transition-all duration-500 border-b border-card-border last:border-0 rounded-2xl mb-4 sm:mb-8 shadow-sm ring-1 ring-card-border overflow-hidden ${isFullExpanded ? 'ring-teal-500/30 shadow-xl scale-[1.01]' : ''}`}
+                className={`bg-card transition-all duration-500 border-b border-card-border last:border-0 rounded-2xl mb-4 sm:mb-8 shadow-sm ring-1 ring-card-border overflow-hidden ${isFullExpanded ? 'ring-teal-500/30 shadow-xl scale-[1.01]' : ''}`}
               >
                 {/* 头部信息 - 全文模式下隐藏 */}
                 {!isFullExpanded && (
-                  <>
-                    <div className="px-4 pt-3 sm:pt-4 pb-2">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center text-white font-extrabold text-sm sm:text-base flex-shrink-0 shadow-inner">
-                          {item.source?.name.charAt(0) || 'N'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col">
-                            <span className="font-extrabold text-text-accent text-[15px] sm:text-[17px] truncate leading-tight">
-                              {item.source?.name || '未知来源'}
-                            </span>
-                            <span className="text-text-muted text-[12px] sm:text-[13px] font-medium opacity-80 uppercase tracking-wider">
-                              {item.published_at ? new Date(item.published_at).toLocaleString('zh-CN') : '刚刚'}
-                            </span>
-                          </div>
+                  <div className="px-4 pt-4 pb-2 sm:pb-3">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center text-white font-extrabold text-sm sm:text-base flex-shrink-0 shadow-inner">
+                        {item.source?.name.charAt(0) || 'N'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col">
+                          <span className="font-extrabold text-text-accent text-[15px] sm:text-[17px] truncate leading-tight">
+                            {item.source?.name || '未知来源'}
+                          </span>
+                          <span className="text-text-muted text-[12px] sm:text-[13px] font-medium opacity-80 uppercase tracking-wider">
+                            {item.published_at ? new Date(item.published_at).toLocaleString('zh-CN') : '刚刚'}
+                          </span>
                         </div>
                       </div>
                     </div>
-                    <div className="px-4 mb-2">
-                      <h2 className="text-xl sm:text-2xl font-black text-foreground leading-[1.3] group-hover:text-teal-600 transition-colors mb-1">
-                        {item.title}
-                      </h2>
-                    </div>
-                  </>
+                    <h2 className="text-xl sm:text-2xl font-black text-foreground leading-[1.3] tracking-tight hover:text-teal-600 transition-colors mb-2">
+                      {item.title}
+                    </h2>
+                  </div>
                 )}
 
                 {/* 整合容器：包含操控栏、图片、Tab 和内容 */}
-                <div className={`mx-0 mb-2 bg-transparent dark:bg-black rounded-none border-y border-card-border/50 ${isFullExpanded ? 'mt-0 pt-0' : '-mt-2.5'}`}>
+                <div className={`mx-0 mb-2 bg-transparent dark:bg-black rounded-none border-y border-card-border/50 ${isFullExpanded ? 'mt-0 pt-0' : 'mt-0'}`}>
                   {/* 展开后的顶部操控栏 */}
                   {isFullExpanded && (
                     <div id={`reading-bar-${item.id}`} className="z-20 bg-background/95 backdrop-blur-md px-4 pt-3 pb-0 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
@@ -311,7 +307,7 @@ export default function FollowingPage() {
                         </div>
 
                         <div className="relative pt-1 px-1">
-                          <div className={`prose prose-sm sm:prose-base dark:prose-invert max-w-none text-foreground transition-all duration-300 ${isFullExpanded ? '' : 'line-clamp-1 text-transparent bg-clip-text bg-gradient-to-b from-foreground via-foreground/90 to-foreground/10'}`}>
+                          <div className={`prose prose-sm sm:prose-base dark:prose-invert max-w-none text-foreground transition-all duration-300 ${isFullExpanded ? '' : 'line-clamp-2 text-foreground/80'}`}>
                             {content && content.split('\n').map((paragraph, idx) => (
                               <p key={idx} className={`${activeTab === 'commentary' ? 'leading-relaxed italic text-foreground/90' : 'leading-relaxed'} mb-3`}>
                                 {paragraph}
