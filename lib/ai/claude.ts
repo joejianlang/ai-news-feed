@@ -1,32 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
-import * as fs from 'fs';
-import * as path from 'path';
 import { createClient } from '@supabase/supabase-js';
 import { CURRENT_AI_CONFIG, estimateCost } from './config';
-
-// 加载环境变量
-function loadEnvFile() {
-  const envPath = path.resolve(process.cwd(), '.env.local');
-  try {
-    const envContent = fs.readFileSync(envPath, 'utf8');
-    const lines = envContent.split('\n');
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('#')) continue;
-      const match = trimmed.match(/^([^=]+)=(.*)$/);
-      if (match) {
-        const key = match[1].trim();
-        const value = match[2].trim().replace(/^["'](.*)["']$/, '$1'); // 也去除引号
-        if (!process.env[key]) {
-          process.env[key] = value;
-        }
-      }
-    }
-  } catch (error) {
-    // Silence error if file not found in some environments
-  }
-}
-loadEnvFile();
 
 // 创建 Supabase 客户端用于读取配置
 const supabaseAdmin = createClient(

@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/lib/contexts/UserContext';
 import { createAd } from '@/lib/supabase/queries';
-import { polishAdContent } from '@/lib/ai/ad';
 import AdCard from '@/components/AdCard';
 import Navbar from '@/components/Navbar';
 import {
@@ -62,7 +61,15 @@ export default function AdCreatePage() {
         }
         setIsLoading(true);
         try {
-            const polished = await polishAdContent(productName, rawContent);
+            const response = await fetch('/api/ads/polish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productName, rawDescription: rawContent })
+            });
+
+            if (!response.ok) throw new Error('Failed to polish');
+
+            const polished = await response.json();
             setAdTitle(polished.title);
             setFinalContent(polished.content);
             setStep(2);
