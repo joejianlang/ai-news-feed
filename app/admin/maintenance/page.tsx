@@ -33,9 +33,9 @@ export default function MaintenancePage() {
         loadData();
     }, [user]);
 
-    const loadData = async () => {
+    const loadData = async (silent = false) => {
         try {
-            setLoading(true);
+            if (!silent) setLoading(true);
             const res = await fetch('/api/admin/maintenance');
             const data = await res.json();
             if (data.settings) setSettings(data.settings);
@@ -43,7 +43,7 @@ export default function MaintenancePage() {
         } catch (error) {
             console.error('Failed to load maintenance data:', error);
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
 
@@ -86,7 +86,7 @@ export default function MaintenancePage() {
             const data = await res.json();
             if (res.ok) {
                 setToast({ message: data.message, type: 'success' });
-                loadData();
+                loadData(true);
             } else {
                 setToast({ message: data.error, type: 'error' });
             }
@@ -133,7 +133,7 @@ export default function MaintenancePage() {
                         </div>
                     </div>
                     <button
-                        onClick={loadData}
+                        onClick={() => loadData(true)}
                         className="p-2 hover:bg-background rounded-full transition-colors text-text-muted"
                     >
                         <RefreshCw size={20} />
@@ -230,8 +230,8 @@ export default function MaintenancePage() {
                                 onClick={handleManualCleanup}
                                 disabled={isCleaning}
                                 className={`w-full py-2.5 rounded-xl font-black italic uppercase italic transition-all flex items-center justify-center gap-2 border-2 ${isCleaning
-                                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                                        : 'bg-red-50 text-red-600 border-red-200 hover:bg-red-600 hover:text-white'
+                                    ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                    : 'bg-red-50 text-red-600 border-red-200 hover:bg-red-600 hover:text-white'
                                     }`}
                             >
                                 {isCleaning ? <RefreshCw className="animate-spin" size={18} /> : <Trash2 size={18} />}
