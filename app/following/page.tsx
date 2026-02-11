@@ -196,18 +196,20 @@ export default function FollowingPage() {
                       <span className="text-teal-600 font-extrabold text-sm uppercase tracking-widest">
                         正在阅读
                       </span>
-                      <a
-                        href={item.original_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-text-muted hover:text-teal-600 text-sm font-bold flex items-center gap-1"
-                      >
-                        <span>打开原文</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                        </svg>
-                      </a>
+                      {item.content_type !== 'video' && (
+                        <a
+                          href={item.original_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-text-muted hover:text-teal-600 text-sm font-bold flex items-center gap-1"
+                        >
+                          <span>打开原文</span>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                          </svg>
+                        </a>
+                      )}
                     </div>
                   )}
 
@@ -355,17 +357,19 @@ export default function FollowingPage() {
                   <div className="px-4 pb-5 pt-1 flex flex-col gap-2">
                     {/* 第一行：原文与分享 */}
                     <div className="flex justify-between items-center">
-                      <a
-                        href={item.original_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-teal-600 dark:text-teal-400 text-[15px] font-black hover:opacity-80 transition-all flex items-center gap-1.5"
-                      >
-                        <span>原文</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="m9 18 6-6-6-6" />
-                        </svg>
-                      </a>
+                      {item.content_type !== 'video' && (
+                        <a
+                          href={item.original_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-teal-600 dark:text-teal-400 text-[15px] font-black hover:opacity-80 transition-all flex items-center gap-1.5"
+                        >
+                          <span>原文</span>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="m9 18 6-6-6-6" />
+                          </svg>
+                        </a>
+                      )}
 
                       <button
                         onClick={() => {
