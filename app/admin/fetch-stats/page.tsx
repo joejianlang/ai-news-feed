@@ -110,9 +110,9 @@ export default function FetchStatsPage() {
                     </div>
                     <div className="bg-card p-6 rounded-2xl border border-card-border shadow-sm">
                         <p className="text-text-muted text-xs font-bold uppercase tracking-wider mb-1">最近批次成功率</p>
-                        <h3 className="text-3xl font-black text-cyan-600">
-                            {stats?.recentLogs?.[0] ? ((stats.recentLogs[0].published_count / stats.recentLogs[0].total_scraped) * 100).toFixed(1) + '%' : '0%'}
-                        </h3>
+                        {stats?.recentLogs?.[0] && stats.recentLogs[0].total_scraped > 0
+                            ? ((stats.recentLogs[0].published_count / stats.recentLogs[0].total_scraped) * 100).toFixed(1) + '%'
+                            : '0.0%'}
                     </div>
                 </div>
 
@@ -180,9 +180,16 @@ export default function FetchStatsPage() {
                                                 <span className="text-xs font-bold text-text-muted">
                                                     {new Date(log.started_at).toLocaleString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                                                 </span>
-                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${log.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${log.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                                        log.status === 'running' ? (
+                                                            (new Date().getTime() - new Date(log.started_at).getTime()) > 30 * 60 * 1000
+                                                                ? 'bg-red-100 text-red-700 animate-pulse'
+                                                                : 'bg-yellow-100 text-yellow-700 animate-pulse'
+                                                        ) : 'bg-red-100 text-red-700'
                                                     }`}>
-                                                    {log.status}
+                                                    {log.status === 'running' && (new Date().getTime() - new Date(log.started_at).getTime()) > 30 * 60 * 1000
+                                                        ? 'STUCK / TIMEOUT'
+                                                        : log.status}
                                                 </span>
                                             </div>
                                             <div className="flex items-center gap-4">

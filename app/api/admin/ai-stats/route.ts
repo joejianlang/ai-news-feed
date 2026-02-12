@@ -16,8 +16,8 @@ export async function GET() {
 
   try {
     const now = new Date();
-    const today = new Date(now);
-    today.setHours(0, 0, 0, 0);
+    const utcTodayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const today = new Date(utcTodayStr + 'T00:00:00.000Z');
 
     const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
 
