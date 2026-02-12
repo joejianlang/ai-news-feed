@@ -98,6 +98,34 @@ export default function FollowingPage() {
     }
   };
 
+  // 自动收起已离开屏幕的展开条目
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            const itemId = entry.target.id.replace('article-', '');
+            setExpansionStates((prev) => {
+              if (prev[itemId] === 'full') {
+                return { ...prev, [itemId]: 'preview' };
+              }
+              return prev;
+            });
+          }
+        });
+      },
+      {
+        threshold: 0,
+        rootMargin: '400px 0px 400px 0px',
+      }
+    );
+
+    const articles = document.querySelectorAll('article[id^="article-"]');
+    articles.forEach((article) => observer.observe(article));
+
+    return () => observer.disconnect();
+  }, [news, expansionStates]);
+
   const extractYouTubeVideoId = (url: string): string | null => {
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
     return match ? match[1] : null;

@@ -136,6 +136,35 @@ export default function Home() {
     return null;
   };
 
+  // 自动收起已离开屏幕的展开条目
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            const itemId = entry.target.id.replace('article-', '');
+            setExpansionStates((prev) => {
+              if (prev[itemId] === 'full') {
+                return { ...prev, [itemId]: 'preview' };
+              }
+              return prev;
+            });
+          }
+        });
+      },
+      {
+        threshold: 0,
+        rootMargin: '400px 0px 400px 0px', // 给予较大的上下缓冲空间，确保用户只是稍微划过时不会断开阅读
+      }
+    );
+
+    // 监听所有带 article id 的元素
+    const articles = document.querySelectorAll('article[id^="article-"]');
+    articles.forEach((article) => observer.observe(article));
+
+    return () => observer.disconnect();
+  }, [newsBatches, expansionStates]); // 当新闻列表或展开状态变化时，确保观察者保持最新状态
+
   const toggleCommentary = (itemId: string) => {
     setExpandedCommentary(prev => {
       const newSet = new Set(prev);
