@@ -38,7 +38,7 @@ async function verifyAdmin(request: NextRequest): Promise<{ valid: boolean; user
 
 // 获取或创建"原创文章"来源
 async function getOrCreateOriginalSource(): Promise<string> {
-    const sourceName = '原创文章';
+    const sourceName = '数位 Buffet';
 
     // 检查是否已存在
     const { data: existingSource } = await supabase

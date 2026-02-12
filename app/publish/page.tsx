@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@/lib/contexts/UserContext';
 import Navbar from '@/components/Navbar';
 
+import { renderMarkdown } from '@/lib/utils/markdown';
+
 // YouTube URL 解析
 function extractYouTubeId(url: string): string | null {
     const patterns = [
@@ -16,55 +18,6 @@ function extractYouTubeId(url: string): string | null {
         if (match) return match[1];
     }
     return null;
-}
-
-// Markdown 渲染（简单版本）
-function renderMarkdown(content: string): string {
-    let html = content;
-
-    // YouTube 嵌入 - 检测 YouTube URL 并转换为 iframe
-    html = html.replace(
-        /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&\n\s]+)/g,
-        (match, videoId) => `<div class="my-4"><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen class="max-w-full rounded-lg"></iframe></div>`
-    );
-
-    // 图片
-    html = html.replace(
-        /!\[([^\]]*)\]\(([^)]+)\)/g,
-        '<img src="$2" alt="$1" class="max-w-full rounded-lg my-4" />'
-    );
-
-    // 链接
-    html = html.replace(
-        /\[([^\]]+)\]\(([^)]+)\)/g,
-        '<a href="$2" target="_blank" class="text-blue-600 hover:underline">$1</a>'
-    );
-
-    // 标题
-    html = html.replace(/^### (.+)$/gm, '<h3 class="text-xl font-bold mt-6 mb-2">$1</h3>');
-    html = html.replace(/^## (.+)$/gm, '<h2 class="text-2xl font-bold mt-8 mb-3">$1</h2>');
-    html = html.replace(/^# (.+)$/gm, '<h1 class="text-3xl font-bold mt-8 mb-4">$1</h1>');
-
-    // 粗体和斜体
-    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-
-    // 代码块
-    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="bg-gray-800 text-gray-100 p-4 rounded-lg my-4 overflow-x-auto"><code>$2</code></pre>');
-    html = html.replace(/`([^`]+)`/g, '<code class="bg-gray-100 text-red-600 px-1 py-0.5 rounded">$1</code>');
-
-    // 引用
-    html = html.replace(/^> (.+)$/gm, '<blockquote class="border-l-4 border-gray-300 pl-4 my-4 italic text-gray-600">$1</blockquote>');
-
-    // 列表
-    html = html.replace(/^- (.+)$/gm, '<li class="ml-4">$1</li>');
-    html = html.replace(/^(\d+)\. (.+)$/gm, '<li class="ml-4">$2</li>');
-
-    // 段落
-    html = html.replace(/\n\n/g, '</p><p class="my-4">');
-    html = '<p class="my-4">' + html + '</p>';
-
-    return html;
 }
 
 export default function PublishPage() {

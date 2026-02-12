@@ -10,6 +10,7 @@ import FollowButton from '@/components/FollowButton';
 import CommentSection from '@/components/comments/CommentSection';
 import Toast from '@/components/Toast';
 import AdCard from '@/components/AdCard';
+import { renderMarkdown } from '@/lib/utils/markdown';
 
 interface NewsBatch {
   batchTime: string;
@@ -313,7 +314,22 @@ export default function Home() {
                     globalItemIndex++;
                     const activeTab = activeTabs[item.id] || (item.ai_summary ? 'summary' : 'commentary');
                     const isFullExpanded = expansionStates[item.id] === 'full';
-                    const content = activeTab === 'summary' ? item.ai_summary : item.ai_commentary;
+
+                    // 判断是否为内部/原创文章
+                    const isInternal = item.source?.name === '原创文章' ||
+                      item.source?.name === '数位 Buffet' ||
+                      (item.original_url && (
+                        item.original_url.includes('/article/') ||
+                        item.original_url.startsWith('#')
+                      ));
+
+                    // 核心内容展示逻辑：
+                    // 1. 如果在“内容摘要”标签下且已展开，且有正文，展示全文 (item.content)
+                    // 2. 否则按标签展示对应内容 (摘要或解读)
+                    const displayContent = activeTab === 'summary'
+                      ? (isFullExpanded && item.content ? item.content : item.ai_summary)
+                      : item.ai_commentary;
+
                     const ad = activeAds.length > 0 && globalItemIndex % 5 === 0
                       ? activeAds[Math.floor(globalItemIndex / 5 - 1) % activeAds.length]
                       : null;
@@ -363,7 +379,7 @@ export default function Home() {
                                   <span className="text-teal-600 font-extrabold text-sm uppercase tracking-widest">
                                     正在阅读
                                   </span>
-                                  {item.content_type !== 'video' && (
+                                  {item.content_type !== 'video' && !isInternal && (
                                     <a
                                       href={item.original_url}
                                       target="_blank"
@@ -497,11 +513,18 @@ export default function Home() {
 
                                   <div className="relative pt-1 px-1">
                                     <div className={`prose prose-sm sm:prose-base dark:prose-invert max-w-none text-foreground transition-all duration-300 ${isFullExpanded ? '' : 'line-clamp-2'}`}>
-                                      {content && content.split('\n').map((paragraph, idx) => (
-                                        <p key={idx} className={`${activeTab === 'commentary' ? 'leading-relaxed italic text-foreground' : 'leading-relaxed text-foreground'} mb-3 font-medium`}>
-                                          {paragraph}
-                                        </p>
-                                      ))}
+                                      {displayContent && (isInternal || displayContent.includes('**') || displayContent.includes('# ') || displayContent.includes('- ')) ? (
+                                        <div
+                                          className="markdown-content"
+                                          dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent) }}
+                                        />
+                                      ) : (
+                                        displayContent?.split('\n').map((paragraph, idx) => (
+                                          <p key={idx} className={`${activeTab === 'commentary' ? 'leading-relaxed italic text-foreground' : 'leading-relaxed text-foreground'} mb-3 font-medium`}>
+                                            {paragraph}
+                                          </p>
+                                        ))
+                                      )}
                                     </div>
 
                                     {!isFullExpanded && (
@@ -541,7 +564,7 @@ export default function Home() {
                           {!isFullExpanded && (
                             <div className="px-4 pb-5 pt-1 flex flex-col gap-2">
                               <div className="flex justify-between items-center">
-                                {item.content_type !== 'video' && (
+                                {item.content_type !== 'video' && !isInternal && (
                                   <a
                                     href={item.original_url}
                                     target="_blank"
