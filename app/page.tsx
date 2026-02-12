@@ -402,94 +402,83 @@ export default function Home() {
                                 {item.title}
                               </h2>
 
-                              {/* 4. AI Tabs */}
+                              {/* 4. AI Section */}
                               {(item.ai_summary || item.ai_commentary) && (
                                 <div className="mb-0">
-                                  <div className="flex gap-8 border-b border-slate-100 dark:border-slate-800 mb-2 px-1">
-                                    {/* Summary Tab */}
-                                    <button
-                                      onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'summary'); }}
-                                      className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'summary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
-                                    >
-                                      内容摘要
-                                      {activeTab === 'summary' && (
-                                        <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full shadow-[0_-2px_6px_rgba(20,184,166,0.2)]"></div>
-                                      )}
-                                    </button>
-
-                                    {/* Analysis Tab */}
-                                    {item.ai_commentary && (
+                                  {!isFullExpanded ? (
+                                    /* Collapsed: Show only "Details" button */
+                                    <div className="flex justify-center py-4">
                                       <button
-                                        onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'commentary'); }}
-                                        className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'commentary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                                        onClick={(e) => { e.stopPropagation(); toggleExpansion(item.id, 'full'); }}
+                                        className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 px-8 py-2.5 rounded-full border border-slate-100 dark:border-slate-700 hover:bg-teal-50 dark:hover:bg-teal-900/20 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-200 dark:hover:border-teal-800 transition-all font-black text-[14px] group shadow-sm active:scale-95"
                                       >
-                                        专业解读
-                                        {activeTab === 'commentary' && (
-                                          <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full shadow-[0_-2px_6px_rgba(20,184,166,0.2)]"></div>
-                                        )}
+                                        <span>详情</span>
+                                        <svg className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                                       </button>
-                                    )}
-                                  </div>
-
-                                  {/* Content Area */}
-                                  <div className="relative min-h-[100px] mb-2">
-                                    <div
-                                      className={`prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed font-medium transition-all duration-500 ${isFullExpanded ? '' : 'line-clamp-3 max-h-[4.5em] overflow-hidden'}`}
-                                    >
-                                      {displayContent ? (
-                                        activeTab === 'summary' ? (
-                                          <div dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent) }} />
-                                        ) : (
-                                          <div className="italic text-text-primary bg-background p-4 rounded-xl border border-card-border">
-                                            {displayContent}
-                                          </div>
-                                        )
-                                      ) : (
-                                        <p className="italic text-slate-400 dark:text-slate-600 text-center py-4">暂无摘要内容...</p>
-                                      )}
                                     </div>
-
-                                    {/* Gradient Overlay & Continue Reading Button */}
-                                    {!isFullExpanded && (
-                                      <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-card via-card/90 to-transparent flex items-end justify-center pb-2 z-10 pointer-events-none">
+                                  ) : (
+                                    /* Expanded: Show Tabs and Full Content */
+                                    <div className="mb-4 animate-in fade-in slide-in-from-top-1 duration-300">
+                                      <div className="flex gap-8 border-b border-card-border mb-3 px-1">
+                                        {/* Summary Tab */}
                                         <button
-                                          onClick={(e) => { e.stopPropagation(); toggleExpansion(item.id, 'full'); }}
-                                          className="pointer-events-auto flex items-center gap-2 bg-teal-600 text-white px-6 py-2.5 rounded-full shadow-[0_8px_16px_-4px_rgba(13,148,136,0.3)] hover:bg-teal-700 hover:shadow-[0_12px_20px_-4px_rgba(13,148,136,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all group"
+                                          onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'summary'); }}
+                                          className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'summary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
                                         >
-                                          <span className="text-[14px] font-black tracking-wide">继续阅读</span>
-                                          <svg className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                                          内容摘要
+                                          {activeTab === 'summary' && (
+                                            <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full shadow-[0_-2px_6px_rgba(20,184,166,0.2)]"></div>
+                                          )}
+                                        </button>
+
+                                        {/* Analysis Tab */}
+                                        {item.ai_commentary && (
+                                          <button
+                                            onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'commentary'); }}
+                                            className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'commentary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                                          >
+                                            专业解读
+                                            {activeTab === 'commentary' && (
+                                              <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full shadow-[0_-2px_6px_rgba(20,184,166,0.2)]"></div>
+                                            )}
+                                          </button>
+                                        )}
+                                      </div>
+
+                                      <div className="relative min-h-[60px] mb-4">
+                                        <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed font-medium">
+                                          {displayContent ? (
+                                            activeTab === 'summary' ? (
+                                              <div dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent) }} />
+                                            ) : (
+                                              <div className="italic text-text-primary bg-background p-4 rounded-xl border border-card-border">
+                                                {displayContent}
+                                              </div>
+                                            )
+                                          ) : (
+                                            <p className="italic text-slate-400 dark:text-slate-600 text-center py-4">暂无摘要内容...</p>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Collapse Button */}
+                                      <div className="flex justify-center mb-2">
+                                        <button
+                                          onClick={() => toggleExpansion(item.id, 'preview')}
+                                          className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 px-8 py-2 rounded-full border border-slate-100 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-black text-[13px] group shadow-sm active:scale-95"
+                                        >
+                                          <svg className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg>
+                                          收起全文
                                         </button>
                                       </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Collapse Button (shown when expanded) */}
-                              {isFullExpanded && (
-                                <div className="flex justify-center mt-4 mb-2">
-                                  <button
-                                    onClick={() => toggleExpansion(item.id, 'preview')}
-                                    className="px-8 py-2.5 bg-slate-100 text-slate-500 rounded-full text-xs font-black uppercase tracking-wider hover:bg-slate-200 hover:text-slate-700 transition-all flex items-center gap-2 shadow-sm"
-                                  >
-                                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg>
-                                    收起全文
-                                  </button>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
 
-                            {/* 5. Footer Level 1: Actions */}
-                            <div className="px-5 sm:px-6 py-1.5 flex items-center justify-between border-t border-slate-50 mt-1">
+                            <div className="px-5 sm:px-6 py-1.5 flex items-center justify-between border-t border-card-border mt-1">
                               <div className="flex items-center gap-6">
-                                <button
-                                  onClick={() => toggleExpansion(item.id, isFullExpanded ? 'preview' : 'full')}
-                                  className="flex items-center gap-1.5 text-slate-500 hover:text-slate-800 transition-colors group"
-                                >
-                                  <span className="text-[13px] font-extrabold group-hover:text-teal-600 transition-colors">{isFullExpanded ? '收起' : '展开'}</span>
-                                  <svg className={`w-3.5 h-3.5 transition-transform duration-300 group-hover:text-teal-600 ${isFullExpanded ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                                </button>
-
                                 {!isInternal && (
                                   <a
                                     href={item.original_url}
