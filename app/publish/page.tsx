@@ -19,7 +19,7 @@ import {
     ChevronRight,
     Loader2
 } from 'lucide-react';
-import { formatTime } from '@/app/page';
+import { formatTime } from '@/lib/utils/format';
 
 interface Article {
     id: string;
@@ -191,8 +191,8 @@ export default function ArticleManagementPage() {
                                                     <button
                                                         onClick={() => handleTogglePublish(article.id, article.is_published)}
                                                         className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black transition-all ${article.is_published
-                                                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                                : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                                                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                                            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
                                                             }`}
                                                     >
                                                         {article.is_published ? (
@@ -208,8 +208,8 @@ export default function ArticleManagementPage() {
                                                     <button
                                                         onClick={() => handleTogglePin(article.id, article.is_pinned)}
                                                         className={`p-2 rounded-lg transition-all ${article.is_pinned
-                                                                ? 'text-orange-500 bg-orange-100 dark:bg-orange-900/30'
-                                                                : 'text-text-muted hover:bg-background'
+                                                            ? 'text-orange-500 bg-orange-100 dark:bg-orange-900/30'
+                                                            : 'text-text-muted hover:bg-background'
                                                             }`}
                                                         title={article.is_pinned ? "取消顶置" : "标记顶置"}
                                                     >
