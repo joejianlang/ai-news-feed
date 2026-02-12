@@ -272,7 +272,7 @@ export default function Home() {
       </div>
 
       {/* 时间线 */}
-      <main className="max-w-2xl mx-auto">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 pt-6">
         {isLoading && newsBatches.length === 0 ? (
           <div className="flex justify-center items-center py-20">
             <div className="text-gray-500">加载中...</div>
@@ -312,10 +312,10 @@ export default function Home() {
                       <React.Fragment key={item.id}>
                         <article
                           id={`article-${item.id}`}
-                          className="bg-white rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-8 transition-all duration-300 border border-slate-100/50"
+                          className="bg-white dark:bg-slate-900 rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-8 transition-all duration-300 border border-slate-100/50 dark:border-slate-800/50"
                         >
                           {/* 1. Image Area (Top) */}
-                          <div className="relative mx-[10px] mt-[10px] rounded-[16px] aspect-[16/10] bg-slate-100 overflow-hidden group">
+                          <div className="relative mx-[10px] mt-[10px] rounded-[16px] aspect-[16/10] bg-slate-100 dark:bg-slate-800 overflow-hidden group">
                             {item.content_type === 'video' && videoId ? (
                               <div className="absolute inset-0 bg-black">
                                 {playingVideoId === videoId ? (
@@ -375,11 +375,11 @@ export default function Home() {
                             {/* 2. Meta Row: Source & Follow */}
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-2.5 overflow-hidden">
-                                <span className="text-blue-600 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">
+                                <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">
                                   {item.source?.name || 'Unknown Source'}
                                 </span>
-                                <span className="text-slate-300 font-black">·</span>
-                                <span className="text-slate-400 text-[12px] font-bold uppercase whitespace-nowrap">
+                                <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
+                                <span className="text-slate-400 dark:text-slate-500 text-[12px] font-bold uppercase whitespace-nowrap">
                                   {formatTime(item.created_at)}
                                 </span>
                               </div>
@@ -392,7 +392,7 @@ export default function Home() {
 
                             {/* 3. Title */}
                             <h2
-                              className="text-[22px] sm:text-[24px] font-black text-slate-900 leading-[1.3] tracking-tight mb-3 hover:text-teal-700 transition-colors cursor-pointer line-clamp-3"
+                              className="text-[22px] sm:text-[24px] font-black text-slate-900 dark:text-slate-100 leading-[1.3] tracking-tight mb-3 hover:text-teal-700 dark:hover:text-teal-400 transition-colors cursor-pointer line-clamp-3"
                               onClick={() => !isFullExpanded && toggleExpansion(item.id, 'full')}
                             >
                               {item.title}
@@ -401,11 +401,11 @@ export default function Home() {
                             {/* 4. AI Tabs */}
                             {(item.ai_summary || item.ai_commentary) && (
                               <div className="mb-0">
-                                <div className="flex gap-8 border-b border-slate-100 mb-2 px-1">
+                                <div className="flex gap-8 border-b border-slate-100 dark:border-slate-800 mb-2 px-1">
                                   {/* Summary Tab */}
                                   <button
                                     onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'summary'); }}
-                                    className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'summary' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'summary' ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
                                   >
                                     内容摘要
                                     {activeTab === 'summary' && (
@@ -417,7 +417,7 @@ export default function Home() {
                                   {item.ai_commentary && (
                                     <button
                                       onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'commentary'); }}
-                                      className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'commentary' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+                                      className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'commentary' ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
                                     >
                                       专业解读
                                       {activeTab === 'commentary' && (
@@ -430,18 +430,18 @@ export default function Home() {
                                 {/* Content Area */}
                                 <div className="relative min-h-[100px] mb-2">
                                   <div
-                                    className={`prose prose-slate prose-sm sm:prose-base max-w-none text-slate-600 leading-relaxed font-medium transition-all duration-500 ${isFullExpanded ? '' : 'line-clamp-3 max-h-[4.5em] overflow-hidden'}`}
+                                    className={`prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed font-medium transition-all duration-500 ${isFullExpanded ? '' : 'line-clamp-3 max-h-[4.5em] overflow-hidden'}`}
                                   >
                                     {displayContent ? (
                                       activeTab === 'summary' ? (
                                         <div dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent) }} />
                                       ) : (
-                                        <div className="italic text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        <div className="italic text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
                                           {displayContent}
                                         </div>
                                       )
                                     ) : (
-                                      <p className="italic text-slate-400 text-center py-4">暂无摘要内容...</p>
+                                      <p className="italic text-slate-400 dark:text-slate-600 text-center py-4">暂无摘要内容...</p>
                                     )}
                                   </div>
 
