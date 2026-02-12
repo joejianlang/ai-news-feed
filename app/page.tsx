@@ -338,7 +338,7 @@ export default function Home() {
                       <React.Fragment key={item.id}>
                         <article
                           id={`article-${item.id}`}
-                          className={`bg-card transition-all duration-500 border-b border-card-border last:border-0 sm:rounded-2xl mb-4 sm:mb-8 shadow-sm ring-1 ring-card-border overflow-hidden ${isFullExpanded ? 'ring-teal-500/30 shadow-xl' : ''}`}
+                          className={`bg-card transition-all duration-500 border-b border-card-border last:border-0 sm:rounded-2xl mb-4 sm:mb-8 shadow-sm ring-1 ring-card-border ${isFullExpanded ? 'ring-teal-500/30 shadow-xl overflow-visible' : 'overflow-hidden'}`}
                         >
                           {/* 头部信息 - 全文模式下隐藏 */}
                           {!isFullExpanded && (
@@ -374,7 +374,7 @@ export default function Home() {
                           <div className={`mx-0 mb-2 bg-transparent rounded-none border-y border-card-border/50 ${isFullExpanded ? 'mt-0 pt-0' : 'mt-0'}`}>
                             {/* 展开后的顶部操控栏 */}
                             {isFullExpanded && (
-                              <div id={`reading-bar-${item.id}`} className="z-20 bg-background/95 backdrop-blur-md px-4 pt-2 pb-2 flex items-center justify-between animate-in fade-in slide-in-from-top-1 sticky top-[96px] sm:top-[112px]">
+                              <div id={`reading-bar-${item.id}`} className="bg-background px-4 py-3 border-b border-card-border/50 flex items-center justify-between animate-in fade-in">
                                 <div className="flex items-center gap-4">
                                   <span className="text-teal-600 font-extrabold text-sm uppercase tracking-widest">
                                     正在阅读

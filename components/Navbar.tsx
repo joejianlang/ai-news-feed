@@ -41,7 +41,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 bg-nav border-b border-teal-700 dark:border-slate-800 z-20 shadow-md transition-colors">
+    <nav className="sticky top-0 bg-nav border-b border-teal-700 dark:border-slate-800 z-40 shadow-md transition-colors">
       <div className="max-w-6xl mx-auto px-4 py-1.5 sm:py-2">
         <div className="flex items-center justify-between gap-4">
           {/* Logo & Location Container */}
