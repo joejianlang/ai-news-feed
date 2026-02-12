@@ -6,6 +6,8 @@ import type { NewsItem } from '@/types';
 import Navbar from '@/components/Navbar';
 import FollowButton from '@/components/FollowButton';
 import CommentSection from '@/components/comments/CommentSection';
+import { renderMarkdown } from '@/lib/utils/markdown';
+import { formatTime } from '@/lib/utils/format';
 
 export default function FollowingPage() {
   const router = useRouter();
@@ -153,265 +155,143 @@ export default function FollowingPage() {
           {news.map((item) => {
             const activeTab = activeTabs[item.id] || (item.ai_summary ? 'summary' : 'commentary');
             const isFullExpanded = expansionStates[item.id] === 'full';
-            const content = activeTab === 'summary' ? item.ai_summary : item.ai_commentary;
+            const displayContent = activeTab === 'summary' ? (item.ai_summary || item.content) : item.ai_commentary;
+            const videoId = item.content_type === 'video' ? (item.video_id || extractYouTubeVideoId(item.original_url)) : null;
 
             return (
               <article
                 key={item.id}
                 id={`article-${item.id}`}
-                className={`bg-card transition-all duration-500 border-b border-card-border last:border-0 rounded-2xl mb-4 sm:mb-8 shadow-sm ring-1 ring-card-border overflow-hidden ${isFullExpanded ? 'ring-teal-500/30 shadow-xl scale-[1.01]' : ''}`}
+                className="bg-card rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-5 transition-all duration-300 border border-card-border"
               >
-                {/* 头部信息 - 全文模式下隐藏 */}
-                {!isFullExpanded && (
-                  <div className="px-4 pt-4 pb-2 sm:pb-3">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center text-white font-extrabold text-sm sm:text-base flex-shrink-0 shadow-inner">
-                        {item.source?.name.charAt(0) || 'N'}
+                {!isFullExpanded ? (
+                  /* 1. Collapsed Scanning Layout: List Style */
+                  <div
+                    className="flex gap-4 p-4 items-center cursor-pointer active:bg-slate-50/50 dark:active:bg-white/5 transition-colors"
+                    onClick={() => toggleExpansion(item.id, 'full')}
+                  >
+                    {/* Left: Thumbnail */}
+                    {(videoId || (item.image_url && item.image_url !== '')) && (
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 rounded-2xl bg-slate-100 dark:bg-white/5 overflow-hidden">
+                        <img
+                          src={item.content_type === 'video' && videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : item.image_url!}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-col">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-extrabold text-text-accent text-[15px] sm:text-[17px] truncate leading-tight">
-                              {item.source?.name || '未知来源'}
-                            </span>
-                            {item.is_pinned && (
-                              <span className="flex items-center gap-0.5 px-1 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded text-[9px] font-black uppercase tracking-tighter shadow-sm">
-                                <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                                  <line x1="12" y1="5" x2="12" y2="19" />
-                                  <line x1="5" y1="12" x2="19" y2="12" />
-                                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-                                </svg>
-                                顶置
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-text-muted text-[12px] sm:text-[13px] font-medium opacity-80 uppercase tracking-wider">
-                            {item.published_at ? new Date(item.published_at).toLocaleString('zh-CN') : '刚刚'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <h2 className="text-xl sm:text-2xl font-black text-foreground leading-[1.3] tracking-tight hover:text-teal-600 transition-colors mb-2">
-                      {item.title}
-                    </h2>
-                  </div>
-                )}
+                    )}
 
-                {/* 整合容器：包含操控栏、图片、Tab 和内容 */}
-                <div className={`mx-0 mb-2 bg-transparent dark:bg-black rounded-none border-y border-card-border/50 ${isFullExpanded ? 'mt-0 pt-0' : 'mt-0'}`}>
-                  {/* 展开后的顶部操控栏 */}
-                  {isFullExpanded && (
-                    <div id={`reading-bar-${item.id}`} className="z-20 bg-background/95 backdrop-blur-md px-4 pt-3 pb-0 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
-                      <span className="text-teal-600 font-extrabold text-sm uppercase tracking-widest">
-                        正在阅读
-                      </span>
-                      {item.content_type !== 'video' && (
-                        <a
-                          href={item.original_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-text-muted hover:text-teal-600 text-sm font-bold flex items-center gap-1"
+                    {/* Right: Meta & Title & Details Button */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5 overflow-hidden">
+                        <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[11px] uppercase tracking-tight truncate max-w-[120px]">
+                          {item.source?.name || 'Unknown Source'}
+                        </span>
+                        <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
+                        <span className="text-text-muted text-[11px] font-bold uppercase whitespace-nowrap">
+                          {formatTime(item.created_at)}
+                        </span>
+                      </div>
+                      <h2 className="text-[16px] sm:text-[17px] font-black text-text-primary leading-[1.4] tracking-tight line-clamp-2">
+                        {item.title}
+                        <span
+                          className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[13px] whitespace-nowrap"
                         >
-                          <span>打开原文</span>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                          </svg>
-                        </a>
-                      )}
+                          详情
+                          <svg className="w-3 h-3 translate-y-px" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                        </span>
+                      </h2>
                     </div>
-                  )}
-
-                  <div className={`px-4 ${isFullExpanded ? 'pt-0 pb-3 sm:pt-0 sm:pb-4' : 'pt-1.5 pb-3 sm:pt-2 sm:pb-4'}`}>
-                    {/* 文章配图 / 视频 */}
-                    {!(isFullExpanded && activeTab === 'commentary') && (
-                      <div className="mb-2 rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5 transition-all duration-300">
-                        {item.content_type === 'article' && item.image_url && (
-                          <div className="relative group overflow-hidden">
-                            <img
-                              src={item.image_url}
-                              alt={item.title}
-                              className="w-full h-auto max-h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
-                              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                            />
-                            {item.location && (
-                              <div className="absolute top-3 left-3 bg-black/80 text-white text-[10px] font-black px-2 py-1 rounded flex items-center gap-1.5 shadow-lg backdrop-blur-sm border border-white/10 tracking-widest uppercase">
-                                <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse"></span>
-                                {item.location}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {item.content_type === 'video' && (() => {
-                          const videoId = item.video_id || extractYouTubeVideoId(item.original_url);
-                          if (!videoId) return null;
-                          const isPlaying = playingVideoId === videoId;
-
-                          return (
-                            <div className="relative overflow-hidden">
-                              <div className="relative" style={{ paddingBottom: '56.25%' }}>
-                                {isPlaying ? (
-                                  <iframe
-                                    className="absolute top-0 left-0 w-full h-full"
-                                    src={`https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`}
-                                    title={item.title}
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                  />
-                                ) : (
-                                  <div
-                                    className="absolute top-0 left-0 w-full h-full cursor-pointer group"
-                                    onClick={() => setPlayingVideoId(videoId)}
-                                  >
-                                    <img
-                                      src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
-                                      alt={item.title}
-                                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                      onError={(e) => {
-                                        const target = e.currentTarget;
-                                        if (target.src.includes('maxresdefault')) {
-                                          target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                                        }
-                                      }}
-                                    />
-                                    <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/30 transition-all">
-                                      <div className="w-14 h-14 bg-red-600/90 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                                        <svg className="w-7 h-7 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                          <path d="M8 5v14l11-7z" />
-                                        </svg>
-                                      </div>
-                                    </div>
+                  </div>
+                ) : (
+                  /* 2. Expanded Layout (Card Style) */
+                  <>
+                    {/* Image Area */}
+                    {(videoId || (item.image_url && item.image_url !== '')) && (
+                      <div className="relative mx-[10px] mt-[10px] rounded-[16px] aspect-[16/10] bg-slate-100 dark:bg-slate-800/50 overflow-hidden group">
+                        {item.content_type === 'video' && videoId ? (
+                          <div className="absolute inset-0 bg-black">
+                            {playingVideoId === videoId ? (
+                              <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`} title={item.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                            ) : (
+                              <div className="absolute inset-0 cursor-pointer" onClick={() => setPlayingVideoId(videoId)}>
+                                <img src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`} alt={item.title} className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105" onError={(e) => { e.currentTarget.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; }} />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                                  <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300">
+                                    <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                                   </div>
-                                )}
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    )}
-
-                    {/* 交互式内容区 - 仅当有总结或评论时显示 */}
-                    {(item.ai_summary || item.ai_commentary) && (
-                      <div className="mt-4">
-                        <div className="flex border-b border-card-border/50 mb-3">
-                          {item.ai_summary && (
-                            <button
-                              onClick={() => toggleTab(item.id, 'summary')}
-                              className={`flex-1 py-3 text-[16px] font-black uppercase tracking-widest transition-all ${activeTab === 'summary'
-                                ? 'text-teal-600 border-b-2 sm:border-b-4 border-teal-600'
-                                : 'text-text-muted opacity-60'
-                                }`}
-                            >
-                              内容摘要
-                            </button>
-                          )}
-                          {item.ai_commentary && (
-                            <button
-                              onClick={() => toggleTab(item.id, 'commentary')}
-                              className={`flex-1 py-3 text-[16px] font-black uppercase tracking-widest transition-all ${activeTab === 'commentary'
-                                ? 'text-cyan-600 border-b-2 sm:border-b-4 border-cyan-600'
-                                : 'text-text-muted opacity-60'
-                                }`}
-                            >
-                              专业解读
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="relative pt-1 px-1">
-                          <div className={`prose prose-sm sm:prose-base dark:prose-invert max-w-none text-foreground transition-all duration-300 ${isFullExpanded ? '' : 'line-clamp-2 text-foreground/80'}`}>
-                            {content && content.split('\n').map((paragraph, idx) => (
-                              <p key={idx} className={`${activeTab === 'commentary' ? 'leading-relaxed italic text-foreground/90' : 'leading-relaxed'} mb-1`}>
-                                {paragraph}
-                              </p>
-                            ))}
+                            )}
                           </div>
-
-                          {!isFullExpanded && (
-                            <div className="absolute bottom-0 left-0 right-0 h-10 flex items-end justify-center pb-0">
-                              <button
-                                onClick={() => toggleExpansion(item.id, 'full')}
-                                className="px-6 py-2 bg-teal-600 text-white rounded-full font-black text-xs shadow-xl hover:bg-teal-700 transition-all flex items-center gap-1.5"
-                              >
-                                <span>继续阅读</span>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="m6 9 6 6 6-6" />
-                                </svg>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-
-                        {isFullExpanded && (
-                          <div className="mt-8 pt-4 border-t border-card-border/30 flex justify-center pb-4">
-                            <button
-                              onClick={() => toggleExpansion(item.id, 'preview')}
-                              className="px-8 py-2.5 bg-gray-100 dark:bg-gray-800 text-text-muted dark:text-gray-300 rounded-full font-black text-xs hover:bg-gray-200 dark:hover:bg-gray-700 transition-all flex items-center gap-2"
-                            >
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="m18 15-6-6-6 6" />
-                              </svg>
-                              <span>收起全文内容</span>
-                            </button>
-                          </div>
+                        ) : (
+                          <img src={item.image_url!} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }} />
                         )}
                       </div>
                     )}
-                  </div>
-                </div>
 
-                {/* 底部功能栏 */}
-                {!isFullExpanded && (
-                  <div className="px-4 pb-4 pt-0 flex flex-col gap-1">
-                    {/* 第一行：原文与分享 */}
-                    <div className="flex justify-between items-center">
-                      {item.content_type !== 'video' && (
-                        <a
-                          href={item.original_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-teal-600 dark:text-teal-400 text-[15px] font-black hover:opacity-80 transition-all flex items-center gap-1.5"
+                    <div className="px-5 pt-3 sm:px-6 sm:pt-3 pb-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2.5 overflow-hidden">
+                          <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">{item.source?.name}</span>
+                          <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
+                          <span className="text-text-muted text-[12px] font-bold uppercase whitespace-nowrap">{formatTime(item.created_at)}</span>
+                        </div>
+                        <FollowButton sourceId={item.source_id} />
+                      </div>
+
+                      <h2 className="text-[18px] sm:text-[20px] font-black text-text-primary leading-[1.3] tracking-tight mb-3 line-clamp-3">{item.title}</h2>
+
+                      <div className="mb-4 animate-in fade-in slide-in-from-top-1 duration-300">
+                        <div className="flex gap-8 border-b border-card-border mb-3 px-1">
+                          <button onClick={() => toggleTab(item.id, 'summary')} className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'summary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}>内容摘要{activeTab === 'summary' && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full"></div>}</button>
+                          {item.ai_commentary && <button onClick={() => toggleTab(item.id, 'commentary')} className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'commentary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}>专业解读{activeTab === 'commentary' && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full"></div>}</button>}
+                        </div>
+
+                        <div className="relative min-h-[60px] mb-4">
+                          <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed font-medium">
+                            {displayContent ? <div dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent) }} /> : <p className="italic text-slate-400 text-center py-4">暂无内容...</p>}
+                          </div>
+                        </div>
+
+                        <div className="flex justify-center mb-2">
+                          <button onClick={() => toggleExpansion(item.id, 'preview')} className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 text-slate-400 px-8 py-2 rounded-full border border-slate-100 transition-all font-black text-[13px] group shadow-sm active:scale-95">
+                            <svg className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg>
+                            收起全文
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="px-5 sm:px-6 py-1.5 flex items-center justify-between border-t border-card-border mt-1">
+                      <a href={item.original_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700 font-extrabold text-[13px] flex items-center gap-1.5 group">阅读原文<svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg></a>
+                      <div className="flex items-center gap-2 text-slate-400">
+                        <button
+                          onClick={() => {
+                            const shareData = {
+                              title: item.title,
+                              text: item.ai_summary || item.title,
+                              url: window.location.origin + `?item=${item.id}`,
+                            };
+                            if (navigator.share) {
+                              navigator.share(shareData);
+                            } else {
+                              navigator.clipboard.writeText(`${item.title}\n${item.original_url}`);
+                            }
+                          }}
+                          className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-50 transition-all"
                         >
-                          <span>原文</span>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </a>
-                      )}
-
-                      <button
-                        onClick={() => {
-                          const shareData = {
-                            title: item.title,
-                            text: item.ai_summary || item.title,
-                            url: window.location.origin + `?item=${item.id}`,
-                          };
-                          if (navigator.share) {
-                            navigator.share(shareData);
-                          } else {
-                            navigator.clipboard.writeText(`${item.title}\n${item.original_url}`);
-                          }
-                        }}
-                        className="p-2 text-text-muted hover:text-teal-600 hover:bg-teal-500/10 rounded-full transition-all"
-                        aria-label="分享"
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-                          <polyline points="16 6 12 2 8 6" />
-                          <line x1="12" y1="2" x2="12" y2="15" />
-                        </svg>
-                      </button>
+                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
+                        </button>
+                      </div>
                     </div>
 
-                    {/* 第二行：评论区 */}
-                    <div className="w-full">
-                      <CommentSection
-                        newsItemId={item.id}
-                        initialCommentCount={item.comment_count || 0}
-                      />
+                    <div className="border-t border-slate-100 bg-slate-50/30">
+                      <div className="px-5 sm:px-6 py-2">
+                        <CommentSection newsItemId={item.id} initialCommentCount={item.comment_count || 0} />
+                      </div>
                     </div>
-                  </div>
+                  </>
                 )}
               </article>
             );

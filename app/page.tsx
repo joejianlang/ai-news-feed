@@ -442,23 +442,20 @@ export default function Home() {
                                     onClick={() => !isFullExpanded && toggleExpansion(item.id, 'full')}
                                   >
                                     {item.title}
+                                    {!isFullExpanded && (
+                                      <span
+                                        className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[14px] whitespace-nowrap"
+                                      >
+                                        详情
+                                        <svg className="w-3.5 h-3.5 translate-y-px" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                                      </span>
+                                    )}
                                   </h2>
 
                                   {/* 4. AI Section */}
                                   {(item.ai_summary || item.ai_commentary) && (
                                     <div className="mb-0">
-                                      {!isFullExpanded ? (
-                                        /* Collapsed: Show only "Details" button */
-                                        <div className="flex justify-center pt-1 pb-4">
-                                          <button
-                                            onClick={(e) => { e.stopPropagation(); toggleExpansion(item.id, 'full'); }}
-                                            className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 px-8 py-2.5 rounded-full border border-slate-100 dark:border-slate-700 hover:bg-teal-50 dark:hover:bg-teal-900/20 hover:text-teal-600 dark:hover:text-teal-400 hover:border-teal-200 dark:hover:border-teal-800 transition-all font-black text-[14px] group shadow-sm active:scale-95"
-                                          >
-                                            <span>详情</span>
-                                            <svg className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                                          </button>
-                                        </div>
-                                      ) : (
+                                      {!isFullExpanded ? null : (
                                         /* Expanded: Show Tabs and Full Content */
                                         <div className="mb-4 animate-in fade-in slide-in-from-top-1 duration-300">
                                           <div className="flex gap-8 border-b border-card-border mb-3 px-1">
