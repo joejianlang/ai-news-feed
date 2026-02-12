@@ -322,14 +322,14 @@ export default function FollowingPage() {
                         <div className="relative pt-1 px-1">
                           <div className={`prose prose-sm sm:prose-base dark:prose-invert max-w-none text-foreground transition-all duration-300 ${isFullExpanded ? '' : 'line-clamp-2 text-foreground/80'}`}>
                             {content && content.split('\n').map((paragraph, idx) => (
-                              <p key={idx} className={`${activeTab === 'commentary' ? 'leading-relaxed italic text-foreground/90' : 'leading-relaxed'} mb-3`}>
+                              <p key={idx} className={`${activeTab === 'commentary' ? 'leading-relaxed italic text-foreground/90' : 'leading-relaxed'} mb-1`}>
                                 {paragraph}
                               </p>
                             ))}
                           </div>
 
                           {!isFullExpanded && (
-                            <div className="absolute bottom-0 left-0 right-0 h-16 flex items-end justify-center pb-1">
+                            <div className="absolute bottom-0 left-0 right-0 h-10 flex items-end justify-center pb-0">
                               <button
                                 onClick={() => toggleExpansion(item.id, 'full')}
                                 className="px-6 py-2 bg-teal-600 text-white rounded-full font-black text-xs shadow-xl hover:bg-teal-700 transition-all flex items-center gap-1.5"
@@ -363,7 +363,7 @@ export default function FollowingPage() {
 
                 {/* 底部功能栏 */}
                 {!isFullExpanded && (
-                  <div className="px-4 pb-5 pt-1 flex flex-col gap-2">
+                  <div className="px-4 pb-4 pt-0 flex flex-col gap-1">
                     {/* 第一行：原文与分享 */}
                     <div className="flex justify-between items-center">
                       {item.content_type !== 'video' && (

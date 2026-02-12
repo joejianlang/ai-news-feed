@@ -397,7 +397,7 @@ export default function Home() {
                               </div>
                             )}
 
-                            <div className={`px-4 ${isFullExpanded ? 'pt-1 pb-1 sm:pt-2 sm:pb-1' : 'pt-1.5 pb-3 sm:pt-2 sm:pb-4'}`}>
+                            <div className={`px-4 ${isFullExpanded ? 'pt-1 pb-1 sm:pt-2 sm:pb-1' : 'pt-1.5 pb-2 sm:pt-2 sm:pb-2'}`}>
                               {/* 文章配图 / 视频 */}
                               {!(isFullExpanded && activeTab === 'commentary') && (
                                 <div className="mb-2 rounded-xl overflow-hidden shadow-sm ring-1 ring-card-border/50 transition-all duration-300">
@@ -509,7 +509,7 @@ export default function Home() {
                                         />
                                       ) : (
                                         displayContent?.split('\n').map((paragraph, idx) => (
-                                          <p key={idx} className={`${activeTab === 'commentary' ? 'leading-relaxed italic text-foreground' : 'leading-relaxed text-foreground'} mb-3 font-medium`}>
+                                          <p key={idx} className={`${activeTab === 'commentary' ? 'leading-relaxed italic text-foreground' : 'leading-relaxed text-foreground'} mb-1 font-medium`}>
                                             {paragraph}
                                           </p>
                                         ))
@@ -517,7 +517,7 @@ export default function Home() {
                                     </div>
 
                                     {!isFullExpanded && (
-                                      <div className="absolute bottom-0 left-0 right-0 h-16 flex items-end justify-center pb-1">
+                                      <div className="absolute bottom-0 left-0 right-0 h-10 flex items-end justify-center pb-0">
                                         <button
                                           onClick={() => toggleExpansion(item.id, 'full')}
                                           className="px-6 py-2 bg-teal-600 text-white rounded-full font-black text-xs shadow-lg hover:bg-teal-700 transition-all flex items-center gap-1.5"
@@ -551,7 +551,7 @@ export default function Home() {
 
                           {/* 底部功能栏 */}
                           {!isFullExpanded && (
-                            <div className="px-4 pb-5 pt-1 flex flex-col gap-2">
+                            <div className="px-4 pb-4 pt-0 flex flex-col gap-1">
                               <div className="flex justify-between items-center">
                                 {item.content_type !== 'video' && !isInternal && (
                                   <a
