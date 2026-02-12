@@ -315,7 +315,7 @@ export default function Home() {
                           className="bg-white rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-8 transition-all duration-300 border border-slate-100/50"
                         >
                           {/* 1. Image Area (Top) */}
-                          <div className="relative w-full aspect-[16/10] bg-slate-100 overflow-hidden group">
+                          <div className="relative mx-[10px] mt-[10px] rounded-[16px] aspect-[16/10] bg-slate-100 overflow-hidden group">
                             {item.content_type === 'video' && videoId ? (
                               <div className="absolute inset-0 bg-black">
                                 {playingVideoId === videoId ? (
@@ -371,9 +371,9 @@ export default function Home() {
                           </div>
 
                           {/* Card Body */}
-                          <div className="p-5 sm:p-6 pb-0">
+                          <div className="px-5 pt-3 sm:px-6 sm:pt-3 pb-0">
                             {/* 2. Meta Row: Source & Follow */}
-                            <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-2.5 overflow-hidden">
                                 <span className="text-blue-600 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">
                                   {item.source?.name || 'Unknown Source'}
@@ -392,7 +392,7 @@ export default function Home() {
 
                             {/* 3. Title */}
                             <h2
-                              className="text-[22px] sm:text-[24px] font-black text-slate-900 leading-[1.3] tracking-tight mb-6 hover:text-teal-700 transition-colors cursor-pointer line-clamp-3"
+                              className="text-[22px] sm:text-[24px] font-black text-slate-900 leading-[1.3] tracking-tight mb-3 hover:text-teal-700 transition-colors cursor-pointer line-clamp-3"
                               onClick={() => !isFullExpanded && toggleExpansion(item.id, 'full')}
                             >
                               {item.title}
@@ -401,7 +401,7 @@ export default function Home() {
                             {/* 4. AI Tabs */}
                             {(item.ai_summary || item.ai_commentary) && (
                               <div className="mb-0">
-                                <div className="flex gap-8 border-b border-slate-100 mb-4 px-1">
+                                <div className="flex gap-8 border-b border-slate-100 mb-2 px-1">
                                   {/* Summary Tab */}
                                   <button
                                     onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'summary'); }}
@@ -463,7 +463,7 @@ export default function Home() {
 
                             {/* Collapse Button (shown when expanded) */}
                             {isFullExpanded && (
-                              <div className="flex justify-center mt-8 mb-4">
+                              <div className="flex justify-center mt-4 mb-2">
                                 <button
                                   onClick={() => toggleExpansion(item.id, 'preview')}
                                   className="px-8 py-2.5 bg-slate-100 text-slate-500 rounded-full text-xs font-black uppercase tracking-wider hover:bg-slate-200 hover:text-slate-700 transition-all flex items-center gap-2 shadow-sm"
@@ -476,7 +476,7 @@ export default function Home() {
                           </div>
 
                           {/* 5. Footer Level 1: Actions */}
-                          <div className="px-5 sm:px-6 py-3 flex items-center justify-between border-t border-slate-50 mt-2">
+                          <div className="px-5 sm:px-6 py-1.5 flex items-center justify-between border-t border-slate-50 mt-1">
                             <div className="flex items-center gap-6">
                               <button
                                 onClick={() => toggleExpansion(item.id, isFullExpanded ? 'preview' : 'full')}
@@ -514,7 +514,7 @@ export default function Home() {
 
                           {/* 6. Footer Level 2: Comments (Integrated) */}
                           <div className="border-t border-slate-100 bg-slate-50/30">
-                            <div className="px-5 sm:px-6 py-4">
+                            <div className="px-5 sm:px-6 py-2">
                               <CommentSection
                                 newsItemId={item.id}
                                 initialCommentCount={item.comment_count || 0}
