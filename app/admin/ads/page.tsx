@@ -51,13 +51,26 @@ export default function AdminAdsPage() {
         }
     };
 
-    const handleApprove = async (id: string) => {
-        if (!confirm('确定通过该广告申请吗？')) return;
+    const handleConfirmPayment = async (id: string) => {
+        if (!confirm('已确认收到客户转账，现在让广告立即上线吗？')) return;
         try {
             await updateAdStatus(id, 'active');
             setAds(ads.filter(a => a.id !== id));
             setSelectedAd(null);
-            alert('广告已通过并上线');
+            alert('广告已通过并正式上线');
+        } catch (err) {
+            console.error(err);
+            alert('操作失败');
+        }
+    };
+
+    const handleApproveForPayment = async (id: string) => {
+        if (!confirm('确定内容合规，通知用户进行支付吗？')) return;
+        try {
+            await updateAdStatus(id, 'unpaid');
+            setAds(ads.filter(a => a.id !== id));
+            setSelectedAd(null);
+            alert('审核已通过，状态已更新为“待支付”');
         } catch (err) {
             console.error(err);
             alert('操作失败');
@@ -139,7 +152,13 @@ export default function AdminAdsPage() {
                                     </div>
                                 </div>
                                 <div className="p-4">
-                                    <h3 className="font-black text-lg truncate mb-1">{ad.title}</h3>
+                                    <div className="flex justify-between items-start mb-1">
+                                        <h3 className="font-black text-lg truncate flex-1">{ad.title}</h3>
+                                        <span className={`text-[10px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter ${ad.status === 'pending' ? 'bg-teal-100 text-teal-700' : 'bg-blue-100 text-blue-700'
+                                            }`}>
+                                            {ad.status === 'pending' ? '待审核' : '待支付'}
+                                        </span>
+                                    </div>
                                     <div className="flex items-center justify-between text-xs text-text-muted font-bold">
                                         <span className="flex items-center gap-1">
                                             <DollarSign size={12} />
@@ -248,12 +267,23 @@ export default function AdminAdsPage() {
                                 >
                                     拒绝申请
                                 </button>
-                                <button
-                                    onClick={() => handleApprove(selectedAd.id)}
-                                    className="px-12 py-4 bg-teal-600 hover:bg-teal-700 text-white font-black rounded-2xl shadow-xl shadow-teal-500/20 transition-all active:scale-95"
-                                >
-                                    通过审核并上线
-                                </button>
+                                {selectedAd.status === 'pending' ? (
+                                    <button
+                                        onClick={() => handleApproveForPayment(selectedAd.id)}
+                                        className="px-12 py-4 bg-teal-600 hover:bg-teal-700 text-white font-black rounded-2xl shadow-xl shadow-teal-500/20 transition-all active:scale-95 flex items-center gap-2"
+                                    >
+                                        <CheckCircle size={20} />
+                                        内容合规，去收费
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => handleConfirmPayment(selectedAd.id)}
+                                        className="px-12 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center gap-2"
+                                    >
+                                        <DollarSign size={20} />
+                                        确认收妥，立即上线
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>

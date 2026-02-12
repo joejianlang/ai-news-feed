@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/lib/contexts/UserContext';
-import { createAd } from '@/lib/supabase/queries';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import AdCard from '@/components/AdCard';
 import Navbar from '@/components/Navbar';
@@ -78,7 +77,6 @@ export default function AdCreatePage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Size check: 5MB
         if (file.size > 5 * 1024 * 1024) {
             alert('图片不能超过 5MB');
             return;
@@ -96,7 +94,6 @@ export default function AdCreatePage() {
 
             if (error) throw error;
 
-            // Get public URL
             const { data: { publicUrl } } = supabase.storage
                 .from('ad-images')
                 .getPublicUrl(filePath);
@@ -144,20 +141,23 @@ export default function AdCreatePage() {
         if (!user) return;
         setIsLoading(true);
         try {
-            await createAd({
-                user_id: user.id,
-                title: adTitle,
-                content: finalContent,
-                raw_content: rawContent,
-                image_url: imageUrl,
-                link_url: linkUrl,
-                contact_info: contactInfo,
-                scope: scope,
-                duration_days: parseInt(duration),
-                price_total: price,
-                status: 'pending',
-                payment_status: 'paid', // Simulate payment as successful
+            const res = await fetch('/api/ads/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: adTitle,
+                    content: finalContent,
+                    raw_content: rawContent,
+                    image_url: imageUrl,
+                    link_url: linkUrl,
+                    contact_info: contactInfo,
+                    scope: scope,
+                    duration_days: parseInt(duration),
+                    price_total: price
+                })
             });
+
+            if (!res.ok) throw new Error('Post failed');
             setStep(4);
         } catch (err) {
             console.error(err);
@@ -356,7 +356,7 @@ export default function AdCreatePage() {
                     </div>
                 )}
 
-                {/* Step 3: Settings & Payment */}
+                {/* Step 3: Settings & Submit */}
                 {step === 3 && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
                         <section className="space-y-4">
@@ -366,16 +366,15 @@ export default function AdCreatePage() {
                                     <button
                                         key={s}
                                         onClick={() => setScope(s as any)}
-                                        className={`p-5 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-1.5 \${
-                                            scope === s 
-                                                ? 'border-teal-600 bg-teal-600 text-white shadow-xl shadow-teal-500/20 scale-[1.02]' 
+                                        className={`p-5 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-1.5 ${scope === s
+                                                ? 'border-teal-600 bg-teal-600 text-white shadow-xl shadow-teal-500/20 scale-[1.02]'
                                                 : 'border-card-border bg-card text-text-muted hover:border-teal-500/50'
-                                        }`}
+                                            }`}
                                     >
-                                        <span className={`font-black tracking-tight text-sm uppercase \${scope === s ? 'text-white' : 'text-foreground'}`}>
+                                        <span className={`font-black tracking-tight text-sm uppercase ${scope === s ? 'text-white' : 'text-foreground'}`}>
                                             {s === 'local' ? '本地周边' : s === 'city' ? '全市投放' : s === 'province' ? '全省范围' : s === 'national' ? '全国范围' : s}
                                         </span>
-                                        <span className={`text-xs \${scope === s ? 'text-white/80' : 'opacity-60'}`}>
+                                        <span className={`text-xs ${scope === s ? 'text-white/80' : 'opacity-60'}`}>
                                             ${pricing.scope[s]} 起
                                         </span>
                                         {scope === s && (
@@ -395,14 +394,13 @@ export default function AdCreatePage() {
                                     <button
                                         key={d}
                                         onClick={() => setDuration(d)}
-                                        className={`min-w-[80px] p-4 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 flex-shrink-0 \${
-                                            duration === d 
-                                                ? 'border-teal-600 bg-teal-600 text-white shadow-lg shadow-teal-500/20' 
+                                        className={`min-w-[80px] p-4 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 flex-shrink-0 ${duration === d
+                                                ? 'border-teal-600 bg-teal-600 text-white shadow-lg shadow-teal-500/20'
                                                 : 'border-card-border bg-card text-text-muted hover:border-teal-500/50'
-                                        }`}
+                                            }`}
                                     >
-                                        <span className={`font-black text-sm \${duration === d ? 'text-white' : 'text-foreground'}`}>{d}天</span>
-                                        <span className={`text-[10px] \${duration === d ? 'text-white/80' : 'opacity-60'}`}>${pricing.duration[d]}</span>
+                                        <span className={`font-black text-sm ${duration === d ? 'text-white' : 'text-foreground'}`}>{d}天</span>
+                                        <span className={`text-[10px] ${duration === d ? 'text-white/80' : 'opacity-60'}`}>${pricing.duration[d]}</span>
                                     </button>
                                 ))}
                             </div>
@@ -445,8 +443,8 @@ export default function AdCreatePage() {
                                     <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
                                 ) : (
                                     <>
-                                        <CreditCard size={20} />
-                                        确认支付并发布
+                                        <Sparkles size={20} />
+                                        提交审核
                                     </>
                                 )}
                             </button>
@@ -460,9 +458,9 @@ export default function AdCreatePage() {
                         <div className="w-24 h-24 bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner ring-4 ring-green-50 dark:ring-green-900/10">
                             <Check size={48} strokeWidth={3} />
                         </div>
-                        <h2 className="text-3xl font-black tracking-tight mb-3">提交成功！</h2>
-                        <p className="text-text-muted font-medium mb-10 max-w-sm mx-auto">
-                            您的赞助内容已提交审核，通常在 24 小时内完成。您可以在用户中心查看进度。
+                        <h2 className="text-3xl font-black tracking-tight mb-3">申请已提交！</h2>
+                        <p className="text-text-muted font-medium mb-10 max-w-sm mx-auto text-sm">
+                            您的广告申请已进入审核队列。审核通过后，您将收到支付通知，上传支付证明后即可正式上线。
                         </p>
                         <button
                             onClick={() => router.push('/')}

@@ -355,10 +355,10 @@ export default function Home() {
                           )}
 
                           {/* 整合容器：包含操控栏、图片、Tab 和内容 */}
-                          <div className={`mx-0 mb-2 bg-transparent dark:bg-black rounded-none border-y border-card-border/50 ${isFullExpanded ? 'mt-0 pt-0' : 'mt-0'}`}>
+                          <div className={`mx-0 mb-2 bg-transparent rounded-none border-y border-card-border/50 ${isFullExpanded ? 'mt-0 pt-0' : 'mt-0'}`}>
                             {/* 展开后的顶部操控栏 */}
                             {isFullExpanded && (
-                              <div id={`reading-bar-${item.id}`} className="z-20 bg-background/95 backdrop-blur-md px-4 pt-2 pb-0 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
+                              <div id={`reading-bar-${item.id}`} className="z-20 bg-background/95 backdrop-blur-md px-4 pt-2 pb-2 flex items-center justify-between animate-in fade-in slide-in-from-top-1 sticky top-[96px] sm:top-[112px]">
                                 <div className="flex items-center gap-4">
                                   <span className="text-teal-600 font-extrabold text-sm uppercase tracking-widest">
                                     正在阅读
@@ -381,7 +381,7 @@ export default function Home() {
                                 </div>
                                 <button
                                   onClick={() => handleShare(item)}
-                                  className="p-2 text-text-muted hover:text-teal-600 font-bold"
+                                  className="p-2 text-text-muted hover:text-teal-600"
                                 >
                                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
@@ -392,10 +392,10 @@ export default function Home() {
                               </div>
                             )}
 
-                            <div className={`px-4 ${isFullExpanded ? 'pt-0 pb-3 sm:pt-0 sm:pb-4' : 'pt-1.5 pb-3 sm:pt-2 sm:pb-4'}`}>
+                            <div className={`px-4 ${isFullExpanded ? 'pt-2 pb-3 sm:pt-4 sm:pb-4' : 'pt-1.5 pb-3 sm:pt-2 sm:pb-4'}`}>
                               {/* 文章配图 / 视频 */}
                               {!(isFullExpanded && activeTab === 'commentary') && (
-                                <div className="mb-2 rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5 transition-all duration-300">
+                                <div className="mb-2 rounded-xl overflow-hidden shadow-sm ring-1 ring-card-border/50 transition-all duration-300">
                                   {item.content_type === 'article' && item.image_url && (
                                     <div className="relative group overflow-hidden">
                                       <img
@@ -470,13 +470,13 @@ export default function Home() {
                               {/* 交互式内容区 - 仅当有总结或评论时显示 */}
                               {(item.ai_summary || item.ai_commentary) && (
                                 <div className="mt-4">
-                                  <div className="flex border-b border-card-border/50 mb-3">
+                                  <div className="flex border-b border-card-border mb-3">
                                     {item.ai_summary && (
                                       <button
                                         onClick={() => toggleTab(item.id, 'summary')}
                                         className={`flex-1 py-3 text-[14px] sm:text-[16px] font-black uppercase tracking-widest transition-all ${activeTab === 'summary'
                                           ? 'text-teal-600 border-b-2 sm:border-b-4 border-teal-600'
-                                          : 'text-text-muted opacity-60'
+                                          : 'text-text-muted'
                                           }`}
                                       >
                                         内容摘要
@@ -487,7 +487,7 @@ export default function Home() {
                                         onClick={() => toggleTab(item.id, 'commentary')}
                                         className={`flex-1 py-3 text-[14px] sm:text-[16px] font-black uppercase tracking-widest transition-all ${activeTab === 'commentary'
                                           ? 'text-cyan-600 border-b-2 sm:border-b-4 border-cyan-600'
-                                          : 'text-text-muted opacity-60'
+                                          : 'text-text-muted'
                                           }`}
                                       >
                                         专业解读
@@ -496,9 +496,9 @@ export default function Home() {
                                   </div>
 
                                   <div className="relative pt-1 px-1">
-                                    <div className={`prose prose-sm sm:prose-base dark:prose-invert max-w-none text-foreground transition-all duration-300 ${isFullExpanded ? '' : 'line-clamp-2 text-foreground/80'}`}>
+                                    <div className={`prose prose-sm sm:prose-base dark:prose-invert max-w-none text-foreground transition-all duration-300 ${isFullExpanded ? '' : 'line-clamp-2'}`}>
                                       {content && content.split('\n').map((paragraph, idx) => (
-                                        <p key={idx} className={`${activeTab === 'commentary' ? 'leading-relaxed italic text-foreground/90' : 'leading-relaxed'} mb-3`}>
+                                        <p key={idx} className={`${activeTab === 'commentary' ? 'leading-relaxed italic text-foreground' : 'leading-relaxed text-foreground'} mb-3 font-medium`}>
                                           {paragraph}
                                         </p>
                                       ))}

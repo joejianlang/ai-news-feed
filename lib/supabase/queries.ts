@@ -554,7 +554,7 @@ export async function getPendingAds() {
   const { data, error } = await supabase
     .from('ads')
     .select('*')
-    .eq('status', 'pending')
+    .in('status', ['pending', 'unpaid'])
     .order('created_at', { ascending: true });
 
   if (error) throw error;
@@ -576,9 +576,11 @@ export async function updateAdStatus(id: string, status: AdItem['status'], reaso
   const updates: any = { status };
   if (reason) updates.rejection_reason = reason;
 
+  // 当移动到支付成功(active)状态时，设置开始和结束日期
   if (status === 'active') {
     const now = new Date();
     updates.start_date = now.toISOString();
+    updates.payment_status = 'paid';
 
     // 自动计算结束日期
     const { data: adData } = await supabase
