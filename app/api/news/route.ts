@@ -42,7 +42,9 @@ export async function GET(request: Request) {
 
     return NextResponse.json(groupedNews);
   } catch (error) {
-    console.error('Error fetching news:', error);
-    return NextResponse.json({ error: 'Failed to fetch news' }, { status: 500 });
+    return NextResponse.json({
+      error: 'Failed to fetch news',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }

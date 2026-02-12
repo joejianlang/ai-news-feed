@@ -163,7 +163,10 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ articles });
     } catch (error) {
         return NextResponse.json(
-            { error: error instanceof Error ? error.message : '未知错误' },
+            {
+                error: '获取文章列表失败',
+                details: error instanceof Error ? error.message : '未知错误'
+            },
             { status: 500 }
         );
     }
