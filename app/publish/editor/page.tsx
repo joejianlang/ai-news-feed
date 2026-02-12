@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/lib/contexts/UserContext';
 import Navbar from '@/components/Navbar';
 import { renderMarkdown } from '@/lib/utils/markdown';
-import { Loader2, ArrowLeft, Image as ImageIcon, Youtube, Send, Eye, Edit } from 'lucide-react';
+import { Loader2, ArrowLeft, Image as ImageIcon, Youtube, Send, Eye, Edit, Upload } from 'lucide-react';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
 // YouTube URL 解析
 function extractYouTubeId(url: string): string | null {
@@ -36,6 +37,59 @@ function EditorContent() {
     const [showPreview, setShowPreview] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
     const [isFetching, setIsFetching] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const supabase = createSupabaseBrowserClient();
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // 限制文件类型
+        if (!file.type.startsWith('image/')) {
+            alert('请选择图片文件');
+            return;
+        }
+
+        // 限制文件大小 (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('图片大小不能超过 5MB');
+            return;
+        }
+
+        try {
+            setIsUploading(true);
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+            const filePath = `articles/${fileName}`;
+
+            // 上传到 ad-images bucket (暂时共用，或你可以新建 article-images)
+            const { error: uploadError } = await supabase.storage
+                .from('ad-images')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            // 获取公共 URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('ad-images')
+                .getPublicUrl(filePath);
+
+            setImageUrl(publicUrl);
+            const markdown = `\n![图片](${publicUrl})\n`;
+            insertAtCursor(markdown);
+            setImageUrl('');
+
+            // 清除 input
+            if (fileInputRef.current) fileInputRef.current.value = '';
+
+        } catch (error) {
+            console.error('上传失败:', error);
+            alert('上传失败，请检查数据库权限或存储桶配置');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     // 权限检查
     useEffect(() => {
@@ -247,17 +301,34 @@ function EditorContent() {
                         <div className="px-4 py-2 border-b border-card-border flex items-center gap-4 bg-background/50">
                             <div className="flex items-center gap-2">
                                 <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleImageUpload}
+                                    className="hidden"
+                                    accept="image/*"
+                                />
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={isUploading}
+                                    className="p-1.5 bg-teal-600/10 text-teal-600 rounded-lg hover:bg-teal-600/20 disabled:opacity-30 transition-all flex items-center gap-1 text-[10px] font-bold"
+                                    title="上传并插入图片"
+                                >
+                                    {isUploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                                    {isUploading ? '上传中...' : '上传图片'}
+                                </button>
+                                <div className="w-[1px] h-4 bg-card-border mx-1" />
+                                <input
                                     type="text"
                                     value={imageUrl}
                                     onChange={e => setImageUrl(e.target.value)}
-                                    placeholder="图片 URL..."
-                                    className="px-3 py-1 bg-background border border-card-border rounded-lg text-xs w-48 focus:outline-none focus:ring-1 focus:ring-teal-500/50"
+                                    placeholder="或输入图片 URL..."
+                                    className="px-3 py-1 bg-background border border-card-border rounded-lg text-xs w-32 focus:outline-none focus:ring-1 focus:ring-teal-500/50"
                                 />
                                 <button
                                     onClick={insertImage}
                                     disabled={!imageUrl}
                                     className="p-1.5 bg-teal-600/10 text-teal-600 rounded-lg hover:bg-teal-600/20 disabled:opacity-30 transition-all"
-                                    title="插入图片"
+                                    title="插入 URL 图片"
                                 >
                                     <ImageIcon size={16} />
                                 </button>
