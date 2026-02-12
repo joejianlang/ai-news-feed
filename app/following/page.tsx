@@ -170,9 +170,21 @@ export default function FollowingPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col">
-                          <span className="font-extrabold text-text-accent text-[15px] sm:text-[17px] truncate leading-tight">
-                            {item.source?.name || '未知来源'}
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-extrabold text-text-accent text-[15px] sm:text-[17px] truncate leading-tight">
+                              {item.source?.name || '未知来源'}
+                            </span>
+                            {item.is_pinned && (
+                              <span className="flex items-center gap-0.5 px-1 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded text-[9px] font-black uppercase tracking-tighter shadow-sm">
+                                <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                  <line x1="12" y1="5" x2="12" y2="19" />
+                                  <line x1="5" y1="12" x2="19" y2="12" />
+                                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                                </svg>
+                                顶置
+                              </span>
+                            )}
+                          </div>
                           <span className="text-text-muted text-[12px] sm:text-[13px] font-medium opacity-80 uppercase tracking-wider">
                             {item.published_at ? new Date(item.published_at).toLocaleString('zh-CN') : '刚刚'}
                           </span>

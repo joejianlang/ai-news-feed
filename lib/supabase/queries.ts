@@ -97,6 +97,7 @@ export async function getNewsItemsByBatch(limit = 300, categoryId?: string, city
   }
 
   const { data, error } = await query
+    .order('is_pinned', { ascending: false })
     .order('batch_completed_at', { ascending: false, nullsFirst: false })
     .order('published_at', { ascending: false, nullsFirst: false })
     .limit(limit);

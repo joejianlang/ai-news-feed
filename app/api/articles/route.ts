@@ -153,6 +153,7 @@ export async function GET(request: NextRequest) {
             .from('news_items')
             .select('*')
             .eq('source_id', sourceId)
+            .order('is_pinned', { ascending: false })
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -161,6 +162,88 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({ articles });
     } catch (error) {
+        return NextResponse.json(
+            { error: error instanceof Error ? error.message : '未知错误' },
+            { status: 500 }
+        );
+    }
+}
+
+// PUT: 更新文章
+export async function PUT(request: NextRequest) {
+    const auth = await verifyAdmin(request);
+    if (!auth.valid) {
+        return NextResponse.json({ error: '未授权' }, { status: 401 });
+    }
+
+    try {
+        const body = await request.json();
+        const { id, title, content, summary, imageUrl, isPublished, isPinned } = body;
+
+        if (!id) {
+            return NextResponse.json({ error: '缺少文章 ID' }, { status: 400 });
+        }
+
+        const updates: any = {};
+        if (title !== undefined) updates.title = title;
+        if (content !== undefined) updates.content = content;
+        if (summary !== undefined) updates.ai_summary = summary;
+        if (imageUrl !== undefined) updates.image_url = imageUrl;
+        if (isPublished !== undefined) updates.is_published = isPublished;
+        if (isPinned !== undefined) updates.is_pinned = isPinned;
+
+        updates.updated_at = new Date().toISOString();
+
+        const { data: article, error } = await supabase
+            .from('news_items')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('更新文章失败:', error);
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+
+        return NextResponse.json({ success: true, article });
+    } catch (error) {
+        console.error('更新文章异常:', error);
+        return NextResponse.json(
+            { error: error instanceof Error ? error.message : '未知错误' },
+            { status: 500 }
+        );
+    }
+}
+
+// DELETE: 删除文章
+export async function DELETE(request: NextRequest) {
+    const auth = await verifyAdmin(request);
+    if (!auth.valid) {
+        return NextResponse.json({ error: '未授权' }, { status: 401 });
+    }
+
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+
+        if (!id) {
+            return NextResponse.json({ error: '缺少文章 ID' }, { status: 400 });
+        }
+
+        const { error } = await supabase
+            .from('news_items')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('删除文章失败:', error);
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('删除文章异常:', error);
         return NextResponse.json(
             { error: error instanceof Error ? error.message : '未知错误' },
             { status: 500 }

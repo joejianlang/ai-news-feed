@@ -349,9 +349,21 @@ export default function Home() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex flex-col">
-                                    <span className="font-extrabold text-text-accent text-[15px] sm:text-[17px] truncate leading-tight">
-                                      {item.source?.name || '未知来源'}
-                                    </span>
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-extrabold text-text-accent text-[15px] sm:text-[17px] truncate leading-tight">
+                                        {item.source?.name || '未知来源'}
+                                      </span>
+                                      {item.is_pinned && (
+                                        <span className="flex items-center gap-1 px-1.5 py-0.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded text-[10px] font-black uppercase tracking-tighter shadow-sm">
+                                          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                                            <line x1="12" y1="5" x2="12" y2="19" />
+                                            <line x1="5" y1="12" x2="19" y2="12" />
+                                            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                                          </svg>
+                                          顶置
+                                        </span>
+                                      )}
+                                    </div>
                                     <span className="text-text-muted text-[12px] sm:text-[13px] font-medium opacity-80 uppercase tracking-wider">
                                       {formatBatchTime(batch.batchTime)}
                                     </span>
@@ -374,7 +386,7 @@ export default function Home() {
                           <div className={`mx-0 mb-2 bg-transparent rounded-none border-y border-card-border/50 ${isFullExpanded ? 'mt-0 pt-0' : 'mt-0'}`}>
                             {/* 展开后的顶部操控栏 */}
                             {isFullExpanded && (
-                              <div id={`reading-bar-${item.id}`} className="bg-background px-4 py-3 border-b border-card-border/50 flex items-center justify-between animate-in fade-in">
+                              <div id={`reading-bar-${item.id}`} className="bg-background px-4 py-2 border-b border-card-border/50 flex items-center justify-between animate-in fade-in">
                                 <div className="flex items-center gap-4">
                                   <span className="text-teal-600 font-extrabold text-sm uppercase tracking-widest">
                                     正在阅读
@@ -408,7 +420,7 @@ export default function Home() {
                               </div>
                             )}
 
-                            <div className={`px-4 ${isFullExpanded ? 'pt-2 pb-3 sm:pt-4 sm:pb-4' : 'pt-1.5 pb-3 sm:pt-2 sm:pb-4'}`}>
+                            <div className={`px-4 ${isFullExpanded ? 'pt-1 pb-1 sm:pt-2 sm:pb-1' : 'pt-1.5 pb-3 sm:pt-2 sm:pb-4'}`}>
                               {/* 文章配图 / 视频 */}
                               {!(isFullExpanded && activeTab === 'commentary') && (
                                 <div className="mb-2 rounded-xl overflow-hidden shadow-sm ring-1 ring-card-border/50 transition-all duration-300">
@@ -485,12 +497,12 @@ export default function Home() {
 
                               {/* 交互式内容区 - 仅当有总结或评论时显示 */}
                               {(item.ai_summary || item.ai_commentary) && (
-                                <div className="mt-4">
+                                <div className="mt-1 text-foreground">
                                   <div className="flex border-b border-card-border mb-3">
                                     {item.ai_summary && (
                                       <button
                                         onClick={() => toggleTab(item.id, 'summary')}
-                                        className={`flex-1 py-3 text-[14px] sm:text-[16px] font-black uppercase tracking-widest transition-all ${activeTab === 'summary'
+                                        className={`flex-1 py-2 text-[14px] sm:text-[16px] font-black uppercase tracking-widest transition-all ${activeTab === 'summary'
                                           ? 'text-teal-600 border-b-2 sm:border-b-4 border-teal-600'
                                           : 'text-text-muted'
                                           }`}
@@ -501,7 +513,7 @@ export default function Home() {
                                     {item.ai_commentary && (
                                       <button
                                         onClick={() => toggleTab(item.id, 'commentary')}
-                                        className={`flex-1 py-3 text-[14px] sm:text-[16px] font-black uppercase tracking-widest transition-all ${activeTab === 'commentary'
+                                        className={`flex-1 py-2 text-[14px] sm:text-[16px] font-black uppercase tracking-widest transition-all ${activeTab === 'commentary'
                                           ? 'text-cyan-600 border-b-2 sm:border-b-4 border-cyan-600'
                                           : 'text-text-muted'
                                           }`}
@@ -543,7 +555,7 @@ export default function Home() {
                                   </div>
 
                                   {isFullExpanded && (
-                                    <div className="mt-8 pt-4 border-t border-card-border/30 flex justify-center pb-4">
+                                    <div className="mt-2 pt-2 border-t border-card-border/10 flex justify-center pb-1">
                                       <button
                                         onClick={() => toggleExpansion(item.id, 'preview')}
                                         className="px-8 py-2.5 bg-gray-200 dark:bg-gray-800 text-text-muted dark:text-gray-300 rounded-full font-black text-xs hover:bg-gray-300 dark:hover:bg-gray-700 transition-all flex items-center gap-2"
