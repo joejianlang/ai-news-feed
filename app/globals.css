@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f8fafc;
   --foreground: #171717;
   --card-bg: #ffffff;
   --card-border: #f1f5f9;
@@ -15,11 +15,11 @@
 }
 
 .dark {
-  --background: #1a1a1a;
+  --background: #000000;
   --foreground: #ffffff;
-  --card-bg: #262626;
-  --card-border: #333333;
-  --nav-bg: #1f1f1f;
+  --card-bg: #0a0a0a;
+  --card-border: #1a1a1a;
+  --nav-bg: #111111;
   --nav-text: #ffffff;
   --text-primary: #ffffff;
   --text-secondary: #cbd5e1;

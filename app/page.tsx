@@ -219,7 +219,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-black text-foreground transition-colors duration-300">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* 顶部导航 */}
       <Navbar />
 
@@ -314,11 +314,11 @@ export default function Home() {
                         <React.Fragment key={item.id}>
                           <article
                             id={`article-${item.id}`}
-                            className="bg-white dark:bg-black/90 rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-5 transition-all duration-300 border border-slate-100/50 dark:border-white/10"
+                            className="bg-card rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-5 transition-all duration-300 border border-card-border"
                           >
                             {/* 1. Image Area (Top) - Conditional Rendering */}
                             {(videoId || (item.image_url && item.image_url !== '')) && (
-                              <div className="relative mx-[10px] mt-[10px] rounded-[16px] aspect-[16/10] bg-slate-100 dark:bg-white/5 overflow-hidden group">
+                              <div className="relative mx-[10px] mt-[10px] rounded-[16px] aspect-[16/10] bg-slate-100 dark:bg-slate-800/50 overflow-hidden group">
                                 {item.content_type === 'video' && videoId ? (
                                   <div className="absolute inset-0 bg-black">
                                     {playingVideoId === videoId ? (
@@ -383,7 +383,7 @@ export default function Home() {
                                     {item.source?.name || 'Unknown Source'}
                                   </span>
                                   <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                  <span className="text-slate-400 dark:text-slate-500 text-[12px] font-bold uppercase whitespace-nowrap">
+                                  <span className="text-text-muted text-[12px] font-bold uppercase whitespace-nowrap">
                                     {formatTime(item.created_at)}
                                   </span>
                                 </div>
@@ -396,7 +396,7 @@ export default function Home() {
 
                               {/* 3. Title */}
                               <h2
-                                className="text-[18px] sm:text-[20px] font-black text-slate-900 dark:text-slate-100 leading-[1.3] tracking-tight mb-3 hover:text-teal-700 dark:hover:text-teal-400 transition-colors cursor-pointer line-clamp-3"
+                                className="text-[18px] sm:text-[20px] font-black text-text-primary leading-[1.3] tracking-tight mb-3 hover:text-teal-700 dark:hover:text-teal-400 transition-colors cursor-pointer line-clamp-3"
                                 onClick={() => !isFullExpanded && toggleExpansion(item.id, 'full')}
                               >
                                 {item.title}
@@ -409,7 +409,7 @@ export default function Home() {
                                     {/* Summary Tab */}
                                     <button
                                       onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'summary'); }}
-                                      className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'summary' ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                                      className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'summary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
                                     >
                                       内容摘要
                                       {activeTab === 'summary' && (
@@ -421,7 +421,7 @@ export default function Home() {
                                     {item.ai_commentary && (
                                       <button
                                         onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'commentary'); }}
-                                        className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'commentary' ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                                        className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'commentary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
                                       >
                                         专业解读
                                         {activeTab === 'commentary' && (
@@ -434,13 +434,13 @@ export default function Home() {
                                   {/* Content Area */}
                                   <div className="relative min-h-[100px] mb-2">
                                     <div
-                                      className={`prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 leading-relaxed font-medium transition-all duration-500 ${isFullExpanded ? '' : 'line-clamp-3 max-h-[4.5em] overflow-hidden'}`}
+                                      className={`prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed font-medium transition-all duration-500 ${isFullExpanded ? '' : 'line-clamp-3 max-h-[4.5em] overflow-hidden'}`}
                                     >
                                       {displayContent ? (
                                         activeTab === 'summary' ? (
                                           <div dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent) }} />
                                         ) : (
-                                          <div className="italic text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700">
+                                          <div className="italic text-text-primary bg-background p-4 rounded-xl border border-card-border">
                                             {displayContent}
                                           </div>
                                         )
@@ -451,7 +451,7 @@ export default function Home() {
 
                                     {/* Gradient Overlay & Continue Reading Button */}
                                     {!isFullExpanded && (
-                                      <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white via-white/90 to-transparent flex items-end justify-center pb-2 z-10 pointer-events-none">
+                                      <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-card via-card/90 to-transparent flex items-end justify-center pb-2 z-10 pointer-events-none">
                                         <button
                                           onClick={(e) => { e.stopPropagation(); toggleExpansion(item.id, 'full'); }}
                                           className="pointer-events-auto flex items-center gap-2 bg-teal-600 text-white px-6 py-2.5 rounded-full shadow-[0_8px_16px_-4px_rgba(13,148,136,0.3)] hover:bg-teal-700 hover:shadow-[0_12px_20px_-4px_rgba(13,148,136,0.4)] hover:-translate-y-0.5 active:translate-y-0 transition-all group"
