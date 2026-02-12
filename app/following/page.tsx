@@ -138,13 +138,14 @@ export default function FollowingPage() {
       <Navbar />
 
       <main className="max-w-6xl mx-auto py-8 px-4">
-        <div className="flex items-center justify-between mb-4 sm:mb-8">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">我的关注</h1>
+        <div className="sticky top-[48px] sm:top-[64px] z-10 bg-background/95 backdrop-blur-md -mt-8 pt-8 pb-4 mb-4 sm:mb-8 border-b border-card-border/50 flex items-center justify-between">
+          <h1 className="text-xl sm:text-2xl font-black text-foreground italic uppercase tracking-tighter">我的关注</h1>
           <button
             onClick={() => router.push('/')}
-            className="text-teal-600 hover:text-teal-700 active:text-teal-800 text-sm sm:text-base font-medium"
+            className="text-teal-600 hover:text-teal-700 active:text-teal-800 text-sm sm:text-base font-black flex items-center gap-1.5 group transition-all"
           >
-            ← 返回首页
+            <span className="group-hover:-translate-x-1 transition-transform">←</span>
+            <span>返回首页</span>
           </button>
         </div>
 
