@@ -91,7 +91,10 @@ export async function analyzeContentWithGemini(
 活动预告/观赛指南/购票指南
 周期性总结（如"本周回顾"、"今日要闻"、"每日简报"等汇总帖）
 纯粹的广告或促销内容
-天气预报、体育比分列表等纯信息罗列`;
+天气预报、体育比分列表等纯信息罗列
+频道介绍/平台介绍（如“关于我们”、“联系我们”、“官网介绍”等）
+社交媒体二维码引导/关注引导/点赞订阅提醒
+标题与内容均为宽泛的媒体品牌口号或介绍声明，无具体新闻事实的内容`;
 
   const categories = dbConfig['classification_categories'] || DEFAULT_CATEGORIES;
   const cities = dbConfig['canadian_cities'] || DEFAULT_CITIES;
