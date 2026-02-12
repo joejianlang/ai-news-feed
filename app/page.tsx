@@ -195,8 +195,11 @@ export default function Home() {
     }, 50);
   };
 
-  const toggleExpansion = (itemId: string, state: 'preview' | 'full') => {
+  const toggleExpansion = (itemId: string, state: 'preview' | 'full', videoId?: string | null) => {
     setExpansionStates(prev => ({ ...prev, [itemId]: state }));
+    if (state === 'full' && videoId) {
+      setPlayingVideoId(videoId);
+    }
 
     if (state === 'preview') {
       // 收起时滚动回条目顶部
@@ -349,7 +352,7 @@ export default function Home() {
                             {isAllCategory && !isFullExpanded ? (                                /* 1. Collapsed "All" Category Layout: List Style */
                               <div
                                 className="flex gap-4 p-4 items-center cursor-pointer active:bg-slate-50/50 dark:active:bg-white/5 transition-colors"
-                                onClick={() => toggleExpansion(item.id, 'full')}
+                                onClick={() => toggleExpansion(item.id, 'full', videoId)}
                               >
                                 {/* Left: Thumbnail */}
                                 {(videoId || (item.image_url && item.image_url !== '')) && (
@@ -403,7 +406,10 @@ export default function Home() {
                                         ) : (
                                           <div
                                             className="absolute inset-0 cursor-pointer"
-                                            onClick={() => setPlayingVideoId(videoId)}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setPlayingVideoId(videoId);
+                                            }}
                                           >
                                             <img
                                               src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
