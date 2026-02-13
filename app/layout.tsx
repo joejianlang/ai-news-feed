@@ -5,6 +5,7 @@ import { UserProvider } from "@/lib/contexts/UserContext";
 import { ThemeProvider } from "@/lib/contexts/ThemeContext";
 import { LocationProvider } from "@/lib/contexts/LocationContext";
 import BottomNav from "@/components/BottomNav";
+import BookmarkTip from "@/components/BookmarkTip";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,6 +59,20 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  manifest: "/manifest.ts",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
+  ],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "数位 Buffet",
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -75,6 +90,7 @@ export default function RootLayout({
             <LocationProvider>
               {children}
               <BottomNav />
+              <BookmarkTip />
             </LocationProvider>
           </ThemeProvider>
         </UserProvider>

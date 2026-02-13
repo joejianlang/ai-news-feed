@@ -17,7 +17,7 @@ export default function CommentList({
   onCommentUpdated,
 }: CommentListProps) {
   return (
-    <div className="divide-y divide-gray-100">
+    <div className="divide-y divide-card-border">
       {comments.map(comment => (
         <CommentItem
           key={comment.id}

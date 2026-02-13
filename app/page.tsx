@@ -646,9 +646,9 @@ function HomeContent() {
                                             href={item.original_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-center gap-1.5 text-blue-500 hover:text-blue-700 transition-colors group"
+                                            className="flex items-center gap-1.5 text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors group"
                                           >
-                                            <span className="text-[13px] font-extrabold group-hover:underline decoration-2 underline-offset-4 decoration-blue-200">阅读原文</span>
+                                            <span className="text-[13px] font-extrabold group-hover:underline decoration-2 underline-offset-4 decoration-teal-200/50">阅读原文</span>
                                             <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                                           </a>
                                         )}
@@ -657,18 +657,18 @@ function HomeContent() {
                                       <div className="flex items-center gap-2 text-slate-300">
                                         <button
                                           onClick={() => handleShare(item)}
-                                          className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-50 hover:text-slate-600 transition-all text-slate-400"
+                                          className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-secondary text-text-muted hover:text-text-primary transition-all"
                                         >
                                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
                                         </button>
-                                        <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-50 hover:text-slate-600 transition-all text-slate-400">
+                                        <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-secondary text-text-muted hover:text-text-primary transition-all">
                                           <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
                                         </button>
                                       </div>
                                     </div>
 
                                     {/* 6. Footer Level 2: Comments (Integrated) */}
-                                    <div className="border-t border-slate-100 bg-slate-50/30">
+                                    <div className="border-t border-card-border bg-secondary/5 dark:bg-white/5">
                                       <div className="px-5 sm:px-6 py-2">
                                         <CommentSection
                                           newsItemId={item.id}

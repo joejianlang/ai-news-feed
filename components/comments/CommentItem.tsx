@@ -92,24 +92,24 @@ export default function CommentItem({
 
   // 移动端减少嵌套缩进
   const indentClass = depth > 0
-    ? 'ml-4 sm:ml-8 pl-3 sm:pl-4 border-l-2 border-gray-100'
+    ? 'ml-4 sm:ml-10 pl-4 sm:pl-6 border-l border-card-border'
     : '';
 
   return (
     <div className={indentClass}>
       <div className="py-3">
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-bold flex-shrink-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-black flex-shrink-0 shadow-sm shadow-teal-500/20">
             {comment.user?.username?.charAt(0) || 'U'}
           </div>
-          <span className="font-medium text-gray-900 text-sm">
+          <span className="font-black text-text-primary text-[14px]">
             {comment.user?.username || '匿名用户'}
           </span>
-          <span className="text-gray-400 text-xs">
+          <span className="text-text-muted text-[11px] font-bold uppercase tracking-wider">
             {formatTime(comment.created_at)}
           </span>
           {comment.updated_at !== comment.created_at && (
-            <span className="text-gray-400 text-xs">(已编辑)</span>
+            <span className="text-text-muted text-[11px] font-bold">(已编辑)</span>
           )}
         </div>
 
@@ -118,14 +118,14 @@ export default function CommentItem({
             <textarea
               value={editContent}
               onChange={e => setEditContent(e.target.value)}
-              className="w-full p-2 border rounded-lg text-sm focus:outline-none focus:border-blue-400"
+              className="w-full p-2.5 bg-secondary/50 dark:bg-white/5 border border-card-border rounded-lg text-sm focus:outline-none focus:border-teal-500 text-text-primary resize-none"
               rows={3}
             />
             <div className="flex gap-2 mt-2">
               <button
                 onClick={handleEdit}
                 disabled={isSaving || !editContent.trim()}
-                className="px-3 py-1.5 bg-blue-500 text-white text-xs sm:text-sm rounded hover:bg-blue-600 disabled:opacity-50"
+                className="px-4 py-1.5 bg-teal-600 text-white text-xs sm:text-sm font-bold rounded-lg hover:bg-teal-700 disabled:opacity-50 transition-colors"
               >
                 {isSaving ? '保存中...' : '保存'}
               </button>
@@ -134,14 +134,14 @@ export default function CommentItem({
                   setIsEditing(false);
                   setEditContent(comment.content);
                 }}
-                className="px-3 py-1.5 bg-gray-200 text-gray-700 text-xs sm:text-sm rounded hover:bg-gray-300"
+                className="px-4 py-1.5 bg-secondary text-text-primary text-xs sm:text-sm font-bold rounded-lg hover:bg-card-border transition-colors"
               >
                 取消
               </button>
             </div>
           </div>
         ) : (
-          <p className="text-gray-700 text-sm leading-relaxed mb-2 break-words">
+          <p className="text-text-secondary text-[14px] leading-relaxed mb-3 break-words font-medium">
             {comment.content}
           </p>
         )}
@@ -156,7 +156,7 @@ export default function CommentItem({
           {user && depth < MAX_DEPTH && (
             <button
               onClick={() => setIsReplying(!isReplying)}
-              className="text-gray-500 hover:text-blue-500 active:text-blue-600 py-1"
+              className="text-text-muted hover:text-teal-600 dark:hover:text-teal-400 font-bold py-1 transition-colors"
             >
               回复
             </button>
@@ -166,14 +166,14 @@ export default function CommentItem({
             <>
               <button
                 onClick={() => setIsEditing(true)}
-                className="text-gray-500 hover:text-blue-500 active:text-blue-600 py-1"
+                className="text-text-muted hover:text-teal-600 dark:hover:text-teal-400 font-bold py-1 transition-colors"
               >
                 编辑
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="text-gray-500 hover:text-red-500 active:text-red-600 py-1"
+                className="text-text-muted hover:text-red-500 font-bold py-1 transition-colors"
               >
                 {isDeleting ? '删除中...' : '删除'}
               </button>

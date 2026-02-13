@@ -57,11 +57,10 @@ export default function LikeButton({
     <button
       onClick={handleLike}
       disabled={isLoading}
-      className={`flex items-center gap-1 transition-colors ${
-        isLiked
+      className={`flex items-center gap-1 transition-colors ${isLiked
           ? 'text-red-500'
-          : 'text-gray-500 hover:text-red-500'
-      } disabled:opacity-50`}
+          : 'text-text-muted hover:text-red-500'
+        } disabled:opacity-50`}
     >
       <span>{isLiked ? '❤️' : '🤍'}</span>
       <span>{likeCount > 0 ? likeCount : ''}</span>

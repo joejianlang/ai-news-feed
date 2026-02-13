@@ -66,13 +66,13 @@ export default function CommentSection({
     <div className="w-full">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-3 text-slate-400 hover:text-slate-600 font-bold transition-all py-1 group"
+        className="flex items-center gap-3 text-text-muted hover:text-text-secondary font-bold transition-all py-1 group"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:text-teal-500 transition-colors">
           <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-11.7 8.38 8.38 0 0 1 3.8.9L21 3z" />
         </svg>
         <span className="text-[14px] font-bold">评论 ({commentCount})</span>
-        <div className={`w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-400 group-hover:bg-teal-50 group-hover:text-teal-500 transition-all duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+        <div className={`w-8 h-8 flex items-center justify-center rounded-lg bg-secondary text-text-muted group-hover:bg-teal-50 dark:group-hover:bg-teal-900/30 group-hover:text-teal-500 transition-all duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
           <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" className="opacity-80">
             <path d="M12 21l-12-18h24z" />
           </svg>
@@ -87,8 +87,8 @@ export default function CommentSection({
               onCommentAdded={handleCommentAdded}
             />
           ) : (
-            <p className="text-sm text-gray-500 mb-4">
-              <a href="/login" className="text-blue-500 hover:underline">
+            <p className="text-sm text-text-muted mb-4">
+              <a href="/login" className="text-teal-600 dark:text-teal-400 hover:underline">
                 登录
               </a>
               后参与评论
@@ -96,9 +96,9 @@ export default function CommentSection({
           )}
 
           {isLoading ? (
-            <div className="text-center py-4 text-gray-500">加载中...</div>
+            <div className="text-center py-4 text-text-muted">加载中...</div>
           ) : comments.length === 0 ? (
-            <div className="text-center py-4 text-gray-500">暂无评论</div>
+            <div className="text-center py-4 text-text-muted italic">暂无评论</div>
           ) : (
             <CommentList
               comments={comments}

@@ -56,12 +56,12 @@ export default function CommentForm({
         value={content}
         onChange={e => setContent(e.target.value)}
         placeholder={placeholder}
-        className="w-full p-2.5 sm:p-3 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:border-blue-400"
+        className="w-full p-3 bg-secondary/50 dark:bg-white/5 border border-card-border rounded-xl text-[14px] resize-none focus:outline-none focus:border-teal-500 dark:focus:border-teal-400 text-text-primary placeholder:text-text-muted transition-all"
         rows={3}
         maxLength={2000}
       />
       <div className="flex justify-between items-center mt-2">
-        <span className="text-xs text-gray-400">
+        <span className="text-xs text-text-muted">
           {content.length}/2000
         </span>
         <div className="flex gap-2">
@@ -77,7 +77,7 @@ export default function CommentForm({
           <button
             type="submit"
             disabled={!content.trim() || isSubmitting}
-            className="px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-500 text-white text-xs sm:text-sm rounded-lg hover:bg-blue-600 active:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-2 bg-teal-600 dark:bg-teal-500 text-white text-sm font-black rounded-lg hover:bg-teal-700 dark:hover:bg-teal-600 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md shadow-teal-500/10"
           >
             {isSubmitting ? '发表中...' : '发表'}
           </button>

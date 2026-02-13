@@ -210,6 +210,20 @@ export default function Navbar() {
 
           {/* 移动端菜单按钮 */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                if (isMobile) {
+                  alert("点击浏览器菜单底部的“分享”图标，然后选择“添加到主屏幕”即可收藏本站。");
+                } else {
+                  alert("按下 Ctrl+D (Windows) 或 Cmd+D (Mac) 即可将本站加入收藏夹。");
+                }
+              }}
+              className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-all"
+              title="收藏本站"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg>
+            </button>
             <ThemeToggle />
             <button
               className="md:hidden p-2 text-white"
