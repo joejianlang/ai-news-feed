@@ -179,7 +179,7 @@ export default function FollowingPage() {
           </button>
         </div>
 
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-2.5">
           {news.map((item) => {
             const activeTab = activeTabs[item.id] || (item.ai_summary ? 'summary' : 'commentary');
             const isFullExpanded = expansionStates[item.id] === 'full';
@@ -190,17 +190,17 @@ export default function FollowingPage() {
               <article
                 key={item.id}
                 id={`article-${item.id}`}
-                className="bg-card rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-5 transition-all duration-300 border border-card-border"
+                className="bg-card rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-3 transition-all duration-300 border border-card-border"
               >
                 {!isFullExpanded ? (
                   /* 1. Collapsed Scanning Layout: List Style */
                   <div
-                    className="flex gap-4 p-4 items-center cursor-pointer active:bg-slate-50/50 dark:active:bg-white/5 transition-colors"
+                    className="flex gap-3 p-2 items-center cursor-pointer active:bg-slate-50/50 dark:active:bg-white/5 transition-colors"
                     onClick={() => toggleExpansion(item.id, 'full')}
                   >
                     {/* Left: Thumbnail */}
                     {(videoId || (item.image_url && item.image_url !== '')) && (
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 rounded-2xl bg-slate-100 dark:bg-white/5 overflow-hidden">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 rounded-xl bg-slate-100 dark:bg-white/5 overflow-hidden">
                         <img
                           src={item.content_type === 'video' && videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : item.image_url!}
                           alt={item.title}
@@ -220,7 +220,7 @@ export default function FollowingPage() {
                           {formatTime(item.created_at)}
                         </span>
                       </div>
-                      <h2 className="text-[16px] sm:text-[17px] font-black text-text-primary leading-[1.4] tracking-tight line-clamp-2">
+                      <h2 className="text-[13px] sm:text-[14px] font-black text-text-primary leading-[1.4] tracking-tight line-clamp-2">
                         {item.title}
                         <span
                           className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[13px] whitespace-nowrap"
@@ -236,7 +236,7 @@ export default function FollowingPage() {
                   <>
                     {/* Image Area */}
                     {(videoId || (item.image_url && item.image_url !== '')) && (
-                      <div className="relative mx-[10px] mt-[10px] rounded-[16px] aspect-[16/10] bg-slate-100 dark:bg-slate-800/50 overflow-hidden group">
+                      <div className="relative mx-[5px] mt-[5px] rounded-xl aspect-[16/10] bg-slate-100 dark:bg-slate-800/50 overflow-hidden group">
                         {item.content_type === 'video' && videoId ? (
                           <div className="absolute inset-0 bg-black">
                             {playingVideoId === videoId ? (
@@ -268,7 +268,7 @@ export default function FollowingPage() {
                         <FollowButton sourceId={item.source_id} />
                       </div>
 
-                      <h2 className="text-[18px] sm:text-[20px] font-black text-text-primary leading-[1.3] tracking-tight mb-3 line-clamp-3">{item.title}</h2>
+                      <h2 className="text-[15px] sm:text-[16px] font-black text-text-primary leading-[1.3] tracking-tight mb-3 line-clamp-3">{item.title}</h2>
 
                       <div className="mb-4 animate-in fade-in slide-in-from-top-1 duration-300">
                         <div className="flex gap-8 border-b border-card-border mb-3 px-1">
