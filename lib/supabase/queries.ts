@@ -634,3 +634,35 @@ export async function getNewsItemById(id: string) {
   if (error) throw error;
   return data as NewsItem | null;
 }
+
+export async function getAllUsers() {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data as User[];
+}
+
+export async function updateUserRole(userId: string, role: 'admin' | 'user') {
+  const { data, error } = await supabase
+    .from('users')
+    .update({ role, updated_at: new Date().toISOString() })
+    .eq('id', userId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as User;
+}
+
+export async function deleteUser(userId: string) {
+  const { error } = await supabase
+    .from('users')
+    .delete()
+    .eq('id', userId);
+
+  if (error) throw error;
+  return true;
+}

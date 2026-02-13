@@ -161,6 +161,12 @@ export default function Navbar() {
                   广告审核
                 </Link>
                 <Link
+                  href="/admin/users"
+                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
+                >
+                  用户管理
+                </Link>
+                <Link
                   href="/admin/settings"
                   className="text-white hover:text-teal-100 font-medium text-sm transition-colors bg-white/10 px-2 py-1 rounded"
                 >
@@ -300,6 +306,13 @@ export default function Navbar() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     系统设置
+                  </Link>
+                  <Link
+                    href="/admin/users"
+                    className="py-2 text-white hover:text-teal-100 font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    用户管理
                   </Link>
                 </>
               )}
