@@ -251,6 +251,8 @@ function HomeContent() {
 
   const toggleExpansion = (itemId: string, state: 'preview' | 'full', videoId?: string | null) => {
     setExpansionStates(prev => ({ ...prev, [itemId]: state }));
+
+    // 如果是展开操作且有视频 ID，则自动设置为播放状态，避免用户点击两次
     if (state === 'full' && videoId) {
       setPlayingVideoId(videoId);
     }
