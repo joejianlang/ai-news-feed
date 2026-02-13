@@ -83,6 +83,19 @@ async function getDeepDiveCategoryId(): Promise<string | null> {
     return category?.id || null;
 }
 
+// 提取内容中的第一张图片作为封面图
+function extractFirstImage(content: string): string | null {
+    // 匹配 Markdown 图片: ![alt](url)
+    const mdMatch = content.match(/!\[.*?\]\((.*?)\)/);
+    if (mdMatch) return mdMatch[1];
+
+    // 匹配 HTML 图片: <img src="url">
+    const htmlMatch = content.match(/<img.*?src=["'](.*?)["'].*?>/i);
+    if (htmlMatch) return htmlMatch[1];
+
+    return null;
+}
+
 // POST: 创建文章
 export async function POST(request: NextRequest) {
     const auth = await verifyAdmin(request);
@@ -115,7 +128,7 @@ export async function POST(request: NextRequest) {
                 content_type: 'article',
                 ai_summary: summary || null,
                 ai_commentary: null,
-                image_url: imageUrl || null,
+                image_url: imageUrl || extractFirstImage(content) || null,
                 category_id: categoryId,
                 author_name: authorName || null,
                 is_published: true,
@@ -192,7 +205,7 @@ export async function PUT(request: NextRequest) {
         if (title !== undefined) updates.title = title;
         if (content !== undefined) updates.content = content;
         if (summary !== undefined) updates.ai_summary = summary;
-        if (imageUrl !== undefined) updates.image_url = imageUrl;
+        if (imageUrl !== undefined) updates.image_url = imageUrl || extractFirstImage(content || '');
         if (authorName !== undefined) updates.author_name = authorName;
         if (isPublished !== undefined) updates.is_published = isPublished;
         if (isPinned !== undefined) updates.is_pinned = isPinned;
