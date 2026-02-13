@@ -383,7 +383,8 @@ function HomeContent() {
                           item.original_url.includes('/article/') ||
                           item.original_url.startsWith('#')
                         ));
-                      return item.ai_summary || item.ai_commentary || isInternal;
+                      const isVideo = item.content_type === 'video';
+                      return item.ai_summary || item.ai_commentary || isInternal || isVideo;
                     })
                     .map((item) => {
                       globalItemIndex++;
