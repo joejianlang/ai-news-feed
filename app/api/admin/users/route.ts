@@ -1,24 +1,22 @@
-import { NextResponse } from 'next/server';
-import { getAllUsers, updateUserRole, deleteUser, updateUserStatus } from '@/lib/supabase/queries';
+import { NextResponse, NextRequest } from 'next/server';
+import { getAllUsers, updateUserRole, deleteUser, updateUserStatus, getUserById } from '@/lib/supabase/queries';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { verifyToken } from '@/lib/auth/jwt';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
-        const supabase = await createSupabaseServerClient();
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) {
+        const token = request.cookies.get('auth_token')?.value;
+        if (!token) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Check if user is admin
-        const { data: userData } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', user.id)
-            .single();
+        const payload = verifyToken(token);
+        if (!payload) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
-        if (userData?.role !== 'admin') {
+        const userData = await getUserById(payload.userId);
+        if (!userData || userData.role !== 'admin') {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -30,23 +28,20 @@ export async function GET() {
     }
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
     try {
-        const supabase = await createSupabaseServerClient();
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) {
+        const token = request.cookies.get('auth_token')?.value;
+        if (!token) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Check if user is admin
-        const { data: userData } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', user.id)
-            .single();
+        const payload = verifyToken(token);
+        if (!payload) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
-        if (userData?.role !== 'admin') {
+        const userData = await getUserById(payload.userId);
+        if (!userData || userData.role !== 'admin') {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -72,23 +67,20 @@ export async function PATCH(request: Request) {
     }
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
     try {
-        const supabase = await createSupabaseServerClient();
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) {
+        const token = request.cookies.get('auth_token')?.value;
+        if (!token) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Check if user is admin
-        const { data: userData } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', user.id)
-            .single();
+        const payload = verifyToken(token);
+        if (!payload) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
-        if (userData?.role !== 'admin') {
+        const userData = await getUserById(payload.userId);
+        if (!userData || userData.role !== 'admin') {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -100,7 +92,7 @@ export async function DELETE(request: Request) {
         }
 
         // Prevent self-deletion
-        if (userId === user.id) {
+        if (userId === payload.userId) {
             return NextResponse.json({ error: 'Cannot delete yourself' }, { status: 400 });
         }
 
