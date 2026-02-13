@@ -376,7 +376,15 @@ function HomeContent() {
               return newsBatches.map((batch) => (
                 <div key={batch.batchTime}>
                   {batch.items
-                    .filter((item) => item.ai_summary || item.ai_commentary) // 只要有摘要或专业解读就显示
+                    .filter((item) => {
+                      const isInternal = item.source?.name === '原创文章' ||
+                        item.source?.name === '数位 Buffet' ||
+                        (item.original_url && (
+                          item.original_url.includes('/article/') ||
+                          item.original_url.startsWith('#')
+                        ));
+                      return item.ai_summary || item.ai_commentary || isInternal;
+                    })
                     .map((item) => {
                       globalItemIndex++;
                       const isAllCategory = selectedCategory === null;
