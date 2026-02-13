@@ -14,11 +14,12 @@ import {
     UserCircle,
     Mail,
     Calendar,
-    MoreVertical,
-    CheckCircle,
-    XCircle,
-    UserPlus,
-    Loader2
+    MicOff,
+    Mic,
+    Ban,
+    UserCheck,
+    Loader2,
+    AlertTriangle
 } from 'lucide-react';
 import { formatTime } from '@/lib/utils/format';
 
@@ -80,13 +81,41 @@ export default function AdminUsersPage() {
         }
     };
 
+    const handleUpdateStatus = async (userId: string, updates: { is_muted?: boolean; is_suspended?: boolean }) => {
+        const actionType = updates.is_suspended !== undefined
+            ? (updates.is_suspended ? '封禁' : '解封')
+            : (updates.is_muted ? '禁言' : '取消禁言');
+
+        if (!confirm(`确定要对该用户进行 ${actionType} 操作吗？`)) return;
+
+        setIsUpdating(userId);
+        try {
+            const res = await fetch('/api/admin/users', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, ...updates }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setUsers(users.map(u => u.id === userId ? { ...u, ...updates } : u));
+            } else {
+                alert(data.error || '操作失败');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('操作出错');
+        } finally {
+            setIsUpdating(null);
+        }
+    };
+
     const handleDeleteUser = async (userId: string) => {
         if (userId === currentUser?.id) {
             alert('你不能删除你自己');
             return;
         }
 
-        if (!confirm('确定要 permanent 彻底删除该用户吗？此操作无法撤销，与其相关的所有数据（评论、投放等）可能会受到影响。')) return;
+        if (!confirm('确定要彻底删除该用户吗？此操作无法撤销，与其相关的所有数据（评论、投放等）可能会受到影响。')) return;
 
         setIsUpdating(userId);
         try {
@@ -132,7 +161,7 @@ export default function AdminUsersPage() {
                             <Users className="text-teal-600" />
                             用户管理控制台
                         </h1>
-                        <p className="text-text-muted mt-1 font-medium">查看并管理全站注册用户及其权限</p>
+                        <p className="text-text-muted mt-1 font-medium">查看并管理全站注册用户及其权限和状态</p>
                     </div>
                     <button
                         onClick={fetchUsers}
@@ -175,17 +204,18 @@ export default function AdminUsersPage() {
                                 <thead className="bg-background/50 border-b border-card-border">
                                     <tr>
                                         <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">用户信息</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">状态信息</th>
                                         <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">权限角色</th>
                                         <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">注册时间</th>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-right">操作</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-right">管理操作</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-card-border">
                                     {filteredUsers.map(u => (
-                                        <tr key={u.id} className="hover:bg-background/30 transition-colors">
+                                        <tr key={u.id} className={`hover:bg-background/30 transition-colors ${u.is_suspended ? 'opacity-60 grayscale-[0.5]' : ''}`}>
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-teal-600/10 flex items-center justify-center text-teal-600 font-black text-lg">
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-lg ${u.is_suspended ? 'bg-slate-400' : 'bg-teal-600'}`}>
                                                         {u.username.substring(0, 1).toUpperCase()}
                                                     </div>
                                                     <div>
@@ -194,12 +224,34 @@ export default function AdminUsersPage() {
                                                             {u.id === currentUser?.id && (
                                                                 <span className="bg-teal-600 text-[8px] text-white px-1 rounded uppercase tracking-tighter">Me</span>
                                                             )}
+                                                            {u.is_suspended && (
+                                                                <span className="bg-red-500 text-white text-[8px] px-1 rounded uppercase tracking-tighter">已封禁</span>
+                                                            )}
                                                         </div>
                                                         <div className="text-xs text-text-muted flex items-center gap-1">
                                                             <Mail size={10} />
                                                             {u.email}
                                                         </div>
                                                     </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <div className="flex flex-wrap gap-2">
+                                                    {u.is_muted && (
+                                                        <span className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-2 py-0.5 rounded text-[10px] font-black flex items-center gap-1">
+                                                            <MicOff size={10} /> 禁言中
+                                                        </span>
+                                                    )}
+                                                    {u.is_suspended && (
+                                                        <span className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-0.5 rounded text-[10px] font-black flex items-center gap-1">
+                                                            <Ban size={10} /> 封禁中
+                                                        </span>
+                                                    )}
+                                                    {!u.is_muted && !u.is_suspended && (
+                                                        <span className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded text-[10px] font-black flex items-center gap-1">
+                                                            <UserCheck size={10} /> 正常
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5">
@@ -220,27 +272,38 @@ export default function AdminUsersPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    {u.role === 'admin' ? (
-                                                        <button
-                                                            onClick={() => handleUpdateRole(u.id, 'user')}
-                                                            disabled={isUpdating === u.id || u.id === currentUser?.id}
-                                                            className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl transition-all disabled:opacity-30"
-                                                            title="降级为普通用户"
-                                                        >
-                                                            <Shield size={18} />
-                                                        </button>
-                                                    ) : (
-                                                        <button
-                                                            onClick={() => handleUpdateRole(u.id, 'admin')}
-                                                            disabled={isUpdating === u.id}
-                                                            className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl transition-all"
-                                                            title="升级为管理员"
-                                                        >
-                                                            <Shield size={18} fill="none" />
-                                                        </button>
-                                                    )}
+                                                <div className="flex items-center justify-end gap-1">
+                                                    {/* Toggle Mute */}
+                                                    <button
+                                                        onClick={() => handleUpdateStatus(u.id, { is_muted: !u.is_muted })}
+                                                        disabled={isUpdating === u.id}
+                                                        className={`p-2 rounded-xl transition-all ${u.is_muted ? 'text-orange-500 bg-orange-50 dark:bg-orange-900/20' : 'text-text-muted hover:text-orange-500 hover:bg-orange-50'}`}
+                                                        title={u.is_muted ? "取消禁言" : "禁言用户"}
+                                                    >
+                                                        {u.is_muted ? <Mic size={18} /> : <MicOff size={18} />}
+                                                    </button>
 
+                                                    {/* Toggle Suspend */}
+                                                    <button
+                                                        onClick={() => handleUpdateStatus(u.id, { is_suspended: !u.is_suspended })}
+                                                        disabled={isUpdating === u.id || u.id === currentUser?.id}
+                                                        className={`p-2 rounded-xl transition-all ${u.is_suspended ? 'text-red-500 bg-red-50 dark:bg-red-900/20' : 'text-text-muted hover:text-red-600 hover:bg-red-50'}`}
+                                                        title={u.is_suspended ? "取消封禁" : "封禁用户"}
+                                                    >
+                                                        {u.is_suspended ? <UserCheck size={18} /> : <Ban size={18} />}
+                                                    </button>
+
+                                                    {/* Change Role */}
+                                                    <button
+                                                        onClick={() => handleUpdateRole(u.id, u.role === 'admin' ? 'user' : 'admin')}
+                                                        disabled={isUpdating === u.id || u.id === currentUser?.id}
+                                                        className={`p-2 rounded-xl transition-all ${u.role === 'admin' ? 'text-purple-600 bg-purple-50' : 'text-text-muted hover:text-purple-600 hover:bg-purple-50'}`}
+                                                        title={u.role === 'admin' ? "降级为普通用户" : "升级为管理员"}
+                                                    >
+                                                        <Shield size={18} fill={u.role === 'admin' ? "currentColor" : "none"} />
+                                                    </button>
+
+                                                    {/* Delete */}
                                                     <button
                                                         onClick={() => handleDeleteUser(u.id)}
                                                         disabled={isUpdating === u.id || u.id === currentUser?.id}
@@ -258,6 +321,18 @@ export default function AdminUsersPage() {
                         </div>
                     </div>
                 )}
+
+                <div className="mt-8 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 p-4 rounded-2xl flex gap-3 items-start">
+                    <AlertTriangle className="text-blue-600 shrink-0 mt-0.5" size={18} />
+                    <div className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed font-medium">
+                        <p className="font-black mb-1">管理说明：</p>
+                        <ul className="list-disc ml-4 space-y-1">
+                            <li><strong>禁言</strong>：用户将无法在评论区发表新评论。</li>
+                            <li><strong>封禁</strong>：用户将无法登录系统。列表将显示为灰色。</li>
+                            <li><strong>删除</strong>：彻底清除账号。请谨慎操作，建议优先使用封禁功能。</li>
+                        </ul>
+                    </div>
+                </div>
             </main>
         </div>
     );

@@ -64,6 +64,8 @@ export interface User {
   email: string;
   username: string;
   role?: 'admin' | 'user';
+  is_muted?: boolean;
+  is_suspended?: boolean;
   created_at: string;
   updated_at: string;
 }

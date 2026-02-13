@@ -666,3 +666,15 @@ export async function deleteUser(userId: string) {
   if (error) throw error;
   return true;
 }
+
+export async function updateUserStatus(userId: string, updates: { is_muted?: boolean; is_suspended?: boolean }) {
+  const { data, error } = await supabase
+    .from('users')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', userId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as User;
+}

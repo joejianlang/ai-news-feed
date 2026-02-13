@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllUsers, updateUserRole, deleteUser } from '@/lib/supabase/queries';
+import { getAllUsers, updateUserRole, deleteUser, updateUserStatus } from '@/lib/supabase/queries';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 export async function GET() {
@@ -50,16 +50,24 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        const { userId, role } = await request.json();
+        const { userId, role, is_muted, is_suspended } = await request.json();
 
-        if (!userId || !role) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        if (!userId) {
+            return NextResponse.json({ error: 'Missing user ID' }, { status: 400 });
         }
 
-        const updatedUser = await updateUserRole(userId, role);
+        let updatedUser;
+        if (role !== undefined) {
+            updatedUser = await updateUserRole(userId, role);
+        } else if (is_muted !== undefined || is_suspended !== undefined) {
+            updatedUser = await updateUserStatus(userId, { is_muted, is_suspended });
+        } else {
+            return NextResponse.json({ error: 'No update fields provided' }, { status: 400 });
+        }
+
         return NextResponse.json({ user: updatedUser });
     } catch (error) {
-        console.error('Failed to update user role:', error);
+        console.error('Failed to update user:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

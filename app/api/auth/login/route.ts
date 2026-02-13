@@ -24,6 +24,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 检查账号状态
+    if (user.is_suspended) {
+      return NextResponse.json(
+        { error: '您的账号已被封禁，请联系管理员。' },
+        { status: 403 }
+      );
+    }
+
     // 验证密码
     const isValid = await comparePassword(password, user.password_hash);
     if (!isValid) {

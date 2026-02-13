@@ -35,6 +35,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Token无效' }, { status: 401 });
     }
 
+    const { getUserById } = await import('@/lib/supabase/queries');
+    const user = await getUserById(payload.userId);
+
+    if (user?.is_suspended) {
+      return NextResponse.json({ error: '账号已被封禁' }, { status: 403 });
+    }
+
+    if (user?.is_muted) {
+      return NextResponse.json({ error: '您已被禁言，暂时无法发表评论。' }, { status: 403 });
+    }
+
     const { newsItemId, content, parentId } = await request.json();
 
     if (!newsItemId || !content?.trim()) {

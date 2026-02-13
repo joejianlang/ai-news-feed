@@ -47,6 +47,21 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: '缺少必要参数' }, { status: 400 });
         }
 
+        // 检查用户状态
+        const { data: user, error: userError } = await supabase
+            .from('users')
+            .select('is_muted, is_suspended')
+            .eq('id', userId)
+            .single();
+
+        if (user?.is_suspended) {
+            return NextResponse.json({ error: '账号已被封禁' }, { status: 403 });
+        }
+
+        if (user?.is_muted) {
+            return NextResponse.json({ error: '您已被禁言' }, { status: 403 });
+        }
+
         const { data, error } = await supabase
             .from('forum_comments')
             .insert({
