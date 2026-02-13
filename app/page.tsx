@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import type { NewsItem, Category, AdItem } from '@/types';
 import { useUser } from '@/lib/contexts/UserContext';
@@ -31,7 +32,7 @@ const CATEGORY_DISPLAY = {
   '深度': '深度',
 };
 
-export default function Home() {
+function HomeContent() {
   const { user } = useUser();
   const { city, cityTag, isLocating, error: locationError, detectLocation, setManualCity } = useLocation();
   const [newsBatches, setNewsBatches] = useState<NewsBatch[]>([]);
@@ -45,6 +46,32 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // null = 全部
   const [activeAds, setActiveAds] = useState<AdItem[]>([]);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const searchParams = useSearchParams();
+  const itemId = searchParams.get('item');
+
+  // 处理深层链接（当新闻加载完成后）
+  useEffect(() => {
+    if (!isLoading && itemId && newsBatches.length > 0) {
+      // 找到对应的文章
+      const found = newsBatches.some(batch => batch.items.some(item => item.id === itemId));
+      if (found) {
+        // 自动展开
+        toggleExpansion(itemId, 'full');
+        // 稍微延迟一下等待 DOM 渲染，然后滚动
+        setTimeout(() => {
+          const element = document.getElementById(`article-${itemId}`);
+          if (element) {
+            const headerHeight = window.innerWidth < 640 ? 96 : 112;
+            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+            window.scrollTo({
+              top: elementPosition - headerHeight,
+              behavior: 'smooth'
+            });
+          }
+        }, 500);
+      }
+    }
+  }, [isLoading, itemId, newsBatches]);
 
   // 加载分类列表
   useEffect(() => {
@@ -636,5 +663,18 @@ export default function Home() {
         />
       )}
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <div className="text-gray-500 font-bold">正在加载...</div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

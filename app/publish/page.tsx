@@ -237,10 +237,10 @@ export default function ArticleManagementPage() {
                                                         <Trash2 size={16} />
                                                     </button>
                                                     <a
-                                                        href={`/article/${article.id}`}
+                                                        href={`/?item=${article.id}`}
                                                         target="_blank"
                                                         className="p-2 text-text-muted hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
-                                                        title="查看预览"
+                                                        title="跳转到首页查看"
                                                     >
                                                         <ExternalLink size={16} />
                                                     </a>
