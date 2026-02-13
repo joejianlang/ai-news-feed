@@ -380,7 +380,7 @@ function HomeContent() {
                       const isInternal = item.source?.name === '原创文章' ||
                         item.source?.name === '数位 Buffet' ||
                         (item.original_url && (
-                          item.original_url.includes('/article/') ||
+                          item.original_url.startsWith('/article/') ||
                           item.original_url.startsWith('#')
                         ));
                       const isVideo = item.content_type === 'video';
@@ -394,7 +394,7 @@ function HomeContent() {
                       const isInternal = item.source?.name === '原创文章' ||
                         item.source?.name === '数位 Buffet' ||
                         (item.original_url && (
-                          item.original_url.includes('/article/') ||
+                          item.original_url.startsWith('/article/') ||
                           item.original_url.startsWith('#')
                         ));
 
