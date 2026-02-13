@@ -377,12 +377,7 @@ function HomeContent() {
                 <div key={batch.batchTime}>
                   {batch.items
                     .filter((item) => {
-                      const isInternal = item.source?.name === '原创文章' ||
-                        item.source?.name === '数位 Buffet' ||
-                        (item.original_url && (
-                          item.original_url.startsWith('/article/') ||
-                          item.original_url.startsWith('#')
-                        ));
+                      const isInternal = item.source?.name === '数位 Buffet';
                       const isVideo = item.content_type === 'video';
                       return item.ai_summary || item.ai_commentary || isInternal || isVideo;
                     })
@@ -391,12 +386,7 @@ function HomeContent() {
                       const isAllCategory = selectedCategory === null;
                       const activeTab = activeTabs[item.id] || (item.ai_summary ? 'summary' : 'commentary');
                       const isFullExpanded = expansionStates[item.id] === 'full';
-                      const isInternal = item.source?.name === '原创文章' ||
-                        item.source?.name === '数位 Buffet' ||
-                        (item.original_url && (
-                          item.original_url.startsWith('/article/') ||
-                          item.original_url.startsWith('#')
-                        ));
+                      const isInternal = item.source?.name === '数位 Buffet';
 
                       const displayContent = activeTab === 'summary'
                         ? (item.ai_summary || (isInternal ? '' : item.content))
