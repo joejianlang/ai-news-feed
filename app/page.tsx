@@ -312,8 +312,8 @@ function HomeContent() {
       <Navbar />
 
       {/* 分类标签栏 - 与 Navbar 一起固定 */}
-      <div className="bg-card border-b border-card-border sticky top-[48px] sm:top-[64px] z-30 transition-colors h-[48px]">
-        <div className="max-w-6xl mx-auto">
+      <nav className="sticky top-0 bg-nav border-b border-teal-700 dark:border-slate-800 z-40 shadow-md transition-colors">
+        <div className="max-w-[1400px] mx-auto px-4 py-1.5 sm:py-2">
           <div className="flex overflow-x-auto scrollbar-hide">
             {/* 全部 选项 */}
             <button
@@ -357,10 +357,10 @@ function HomeContent() {
               ))}
           </div>
         </div>
-      </div>
+      </nav>
 
       {/* 时间线 */}
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 pt-4">
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-4">
         {isLoading && newsBatches.length === 0 ? (
           <div className="flex justify-center items-center py-20">
             <div className="text-gray-500">加载中...</div>
@@ -402,7 +402,7 @@ function HomeContent() {
                         <React.Fragment key={item.id}>
                           <article
                             id={`article-${item.id}`}
-                            className="bg-card rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-3 transition-all duration-300 border border-card-border"
+                            className="bg-card rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-3 transition-all duration-300 border border-card-border sm:min-h-[150px]"
                           >
                             {isAllCategory && !isFullExpanded ? (
                               /* 1. Collapsed "All" Category Layout: List Style */
@@ -412,7 +412,7 @@ function HomeContent() {
                               >
                                 {/* Left: Thumbnail */}
                                 {(videoId || (item.image_url && item.image_url !== '')) && (
-                                  <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 rounded-xl bg-slate-100 dark:bg-white/5 overflow-hidden">
+                                  <div className="w-24 h-24 sm:w-36 sm:h-36 flex-shrink-0 rounded-xl bg-slate-100 dark:bg-white/5 overflow-hidden">
                                     <img
                                       src={item.content_type === 'video' && videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : item.image_url!}
                                       alt={item.title}
