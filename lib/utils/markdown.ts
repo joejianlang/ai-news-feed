@@ -15,7 +15,7 @@ export function renderMarkdown(content: string): string {
 
     // 图片
     html = html.replace(
-        /!\[([^\]]*)\]\(([^)]+)\)/g,
+        /!\[([^\]]*)\]\s*\(([^)]+)\)/g,
         '<img src="$2" alt="$1" class="max-w-full rounded-lg my-4 shadow-sm" />'
     );
 

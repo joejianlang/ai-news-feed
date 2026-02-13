@@ -565,13 +565,10 @@ function HomeContent() {
                                           <div className="relative min-h-[60px] mb-4">
                                             <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed font-medium">
                                               {displayContent ? (
-                                                activeTab === 'summary' ? (
-                                                  <div dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent) }} />
-                                                ) : (
-                                                  <div className="italic text-text-primary bg-background p-4 rounded-xl border border-card-border">
-                                                    {displayContent}
-                                                  </div>
-                                                )
+                                                <div
+                                                  className={activeTab === 'commentary' && !isInternal ? "italic text-text-primary bg-background p-4 rounded-xl border border-card-border" : ""}
+                                                  dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent) }}
+                                                />
                                               ) : (
                                                 <p className="italic text-slate-400 dark:text-slate-600 text-center py-4">暂无摘要内容...</p>
                                               )}
