@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { title, content, summary, imageUrl } = body;
+        const { title, content, summary, imageUrl, authorName } = body;
 
         if (!title || !content) {
             return NextResponse.json({ error: '标题和内容不能为空' }, { status: 400 });
@@ -117,6 +117,7 @@ export async function POST(request: NextRequest) {
                 ai_commentary: null,
                 image_url: imageUrl || null,
                 category_id: categoryId,
+                author_name: authorName || null,
                 is_published: true,
                 published_at: new Date().toISOString(),
                 batch_completed_at: new Date().toISOString(),
@@ -181,7 +182,7 @@ export async function PUT(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { id, title, content, summary, imageUrl, isPublished, isPinned } = body;
+        const { id, title, content, summary, imageUrl, authorName, isPublished, isPinned } = body;
 
         if (!id) {
             return NextResponse.json({ error: '缺少文章 ID' }, { status: 400 });
@@ -192,6 +193,7 @@ export async function PUT(request: NextRequest) {
         if (content !== undefined) updates.content = content;
         if (summary !== undefined) updates.ai_summary = summary;
         if (imageUrl !== undefined) updates.image_url = imageUrl;
+        if (authorName !== undefined) updates.author_name = authorName;
         if (isPublished !== undefined) updates.is_published = isPublished;
         if (isPinned !== undefined) updates.is_pinned = isPinned;
 

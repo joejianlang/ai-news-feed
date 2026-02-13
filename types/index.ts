@@ -97,6 +97,7 @@ export interface NewsItem {
   tags?: string[]; // 标签列表
   is_hot?: boolean; // 是否为热点新闻
   is_pinned?: boolean; // 是否顶置
+  author_name?: string | null; // 自定义署名
   created_at: string;
   updated_at: string;
   source?: NewsSource;

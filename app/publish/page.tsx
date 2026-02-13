@@ -28,8 +28,9 @@ interface Article {
     is_published: boolean;
     is_pinned: boolean;
     ai_summary: string | null;
+    author_name?: string | null;
+    content: string;
 }
-
 export default function ArticleManagementPage() {
     const { user } = useUser();
     const router = useRouter();
@@ -180,7 +181,14 @@ export default function ArticleManagementPage() {
                                         <tr key={article.id} className="hover:bg-background/50 transition-colors group">
                                             <td className="px-6 py-4">
                                                 <div className="max-w-md">
-                                                    <h3 className="font-bold text-sm mb-1 line-clamp-1">{article.title}</h3>
+                                                    <h3 className="font-bold text-sm mb-1 line-clamp-1">
+                                                        {article.title}
+                                                        {article.author_name && (
+                                                            <span className="ml-2 text-[10px] text-blue-500 font-normal py-0.5 px-1.5 bg-blue-50 dark:bg-blue-900/20 rounded">
+                                                                {article.author_name}
+                                                            </span>
+                                                        )}
+                                                    </h3>
                                                     <p className="text-xs text-text-muted line-clamp-1">
                                                         {article.ai_summary || '暂无摘要'}
                                                     </p>

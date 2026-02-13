@@ -404,7 +404,8 @@ function HomeContent() {
                             id={`article-${item.id}`}
                             className="bg-card rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-3 transition-all duration-300 border border-card-border"
                           >
-                            {isAllCategory && !isFullExpanded ? (                                /* 1. Collapsed "All" Category Layout: List Style */
+                            {isAllCategory && !isFullExpanded ? (
+                              /* 1. Collapsed "All" Category Layout: List Style */
                               <div
                                 className="flex gap-3 p-2 items-center cursor-pointer active:bg-slate-50/50 dark:active:bg-white/5 transition-colors"
                                 onClick={() => toggleExpansion(item.id, 'full', videoId)}
@@ -424,7 +425,7 @@ function HomeContent() {
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1.5 overflow-hidden">
                                     <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[11px] uppercase tracking-tight truncate max-w-[120px]">
-                                      {item.source?.name || 'Unknown Source'}
+                                      {item.author_name || item.source?.name || 'Unknown Source'}
                                     </span>
                                     {item.categories?.name && (
                                       <>
@@ -520,7 +521,7 @@ function HomeContent() {
                                   <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2.5 overflow-hidden">
                                       <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">
-                                        {item.source?.name || 'Unknown Source'}
+                                        {item.author_name || item.source?.name || 'Unknown Source'}
                                       </span>
                                       {item.categories?.name && (
                                         <>
@@ -594,8 +595,8 @@ function HomeContent() {
                                             <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed font-medium">
                                               {displayContent ? (
                                                 <div
-                                                  className={activeTab === 'commentary' && !isInternal ? "italic text-text-primary bg-background p-4 rounded-xl border border-card-border" : ""}
-                                                  dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent) }}
+                                                  className={`text-text-primary ${activeTab === 'commentary' && !isInternal ? "italic" : ""}`}
+                                                  dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent || '') }}
                                                 />
                                               ) : (
                                                 <p className="italic text-slate-400 dark:text-slate-600 text-center py-4">暂无摘要内容...</p>
@@ -671,11 +672,13 @@ function HomeContent() {
               ));
             })()}
 
-            {newsBatches.length > 0 && (
-              <div className="text-center py-8 text-gray-400 text-sm">
-                共 {newsBatches.length} 批更新，累计 {getTotalNewsCount()} 条新闻
-              </div>
-            )}
+            {
+              newsBatches.length > 0 && (
+                <div className="text-center py-8 text-gray-400 text-sm">
+                  共 {newsBatches.length} 批更新，累计 {getTotalNewsCount()} 条新闻
+                </div>
+              )
+            }
           </div>
         )}
       </main>

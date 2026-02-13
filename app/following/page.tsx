@@ -213,7 +213,7 @@ export default function FollowingPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1.5 overflow-hidden">
                         <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[11px] uppercase tracking-tight truncate max-w-[120px]">
-                          {item.source?.name || 'Unknown Source'}
+                          {item.author_name || item.source?.name || 'Unknown Source'}
                         </span>
                         <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
                         <span className="text-text-muted text-[11px] font-bold uppercase whitespace-nowrap">
@@ -261,7 +261,9 @@ export default function FollowingPage() {
                     <div className="px-5 pt-3 sm:px-6 sm:pt-3 pb-0">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2.5 overflow-hidden">
-                          <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">{item.source?.name}</span>
+                          <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">
+                            {item.author_name || item.source?.name || 'Unknown Source'}
+                          </span>
                           <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
                           <span className="text-text-muted text-[12px] font-bold uppercase whitespace-nowrap">{formatTime(item.created_at)}</span>
                         </div>
@@ -278,10 +280,16 @@ export default function FollowingPage() {
 
                         <div className="relative min-h-[60px] mb-4">
                           <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed font-medium">
-                            {displayContent ? <div dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent) }} /> : <p className="italic text-slate-400 text-center py-4">暂无内容...</p>}
+                            {displayContent ? (
+                              <div
+                                className={`text-text-primary ${activeTab === 'commentary' ? "italic" : ""}`}
+                                dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent || '') }}
+                              />
+                            ) : (
+                              <p className="italic text-slate-400 dark:text-slate-600 text-center py-4">暂无摘要内容...</p>
+                            )}
                           </div>
                         </div>
-
                         <div className="flex justify-center mb-2">
                           <button onClick={() => toggleExpansion(item.id, 'preview')} className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 text-slate-400 px-8 py-2 rounded-full border border-slate-100 transition-all font-black text-[13px] group shadow-sm active:scale-95">
                             <svg className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg>

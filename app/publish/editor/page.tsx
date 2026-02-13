@@ -27,12 +27,14 @@ function EditorContent() {
     const articleId = searchParams.get('id');
     const { user, isLoading: userLoading } = useUser();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const summaryRef = useRef<HTMLTextAreaElement>(null);
     const [cursorPosition, setCursorPosition] = useState(0);
 
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [summary, setSummary] = useState('');
     const [imageUrl, setImageUrl] = useState('');
+    const [authorName, setAuthorName] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPreview, setShowPreview] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -109,6 +111,14 @@ function EditorContent() {
         }
     }, [articleId, user]);
 
+    // 自动调整摘要框高度
+    useEffect(() => {
+        if (summaryRef.current) {
+            summaryRef.current.style.height = 'auto';
+            summaryRef.current.style.height = summaryRef.current.scrollHeight + 'px';
+        }
+    }, [summary]);
+
     const loadArticle = async (id: string) => {
         try {
             setIsFetching(true);
@@ -120,6 +130,7 @@ function EditorContent() {
                 setTitle(article.title);
                 setContent(article.content);
                 setSummary(article.ai_summary || '');
+                setAuthorName(article.author_name || '');
             } else {
                 alert('未找到文章');
                 router.push('/publish');
@@ -194,6 +205,7 @@ function EditorContent() {
                     title: title.trim(),
                     content: content.trim(),
                     summary: summary.trim() || null,
+                    authorName: authorName.trim() || null,
                     imageUrl: null,
                 }),
             });
@@ -284,15 +296,28 @@ function EditorContent() {
                         />
                     </div>
 
+                    {/* 署名 */}
+                    <div className="bg-card rounded-2xl border border-card-border p-6 shadow-sm">
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">署名 (可选)</label>
+                        <input
+                            type="text"
+                            value={authorName}
+                            onChange={e => setAuthorName(e.target.value)}
+                            placeholder="输入作者署名，若不填写则默认显示来源名称..."
+                            className="w-full bg-transparent border-none p-0 text-sm font-medium focus:ring-0 placeholder:opacity-30"
+                        />
+                    </div>
+
                     {/* 摘要 */}
                     <div className="bg-card rounded-2xl border border-card-border p-6 shadow-sm">
                         <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">内容摘要 (可选)</label>
-                        <input
-                            type="text"
+                        <textarea
+                            ref={summaryRef}
                             value={summary}
                             onChange={e => setSummary(e.target.value)}
-                            placeholder="简短概括文章核心内容..."
-                            className="w-full bg-transparent border-none p-0 text-sm font-medium focus:ring-0 placeholder:opacity-30"
+                            placeholder="简短概括文章核心内容，支持自动换行..."
+                            className="w-full bg-transparent border-none p-0 text-sm font-medium focus:ring-0 placeholder:opacity-30 resize-none overflow-hidden min-h-[24px]"
+                            rows={1}
                         />
                     </div>
 
