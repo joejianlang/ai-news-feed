@@ -51,3 +51,32 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+strong,
+b {
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+.article-content h3 {
+  color: var(--nav-bg);
+  font-size: 1.125rem;
+  font-weight: 900;
+  padding-bottom: 0.25rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.article-content hr {
+  border: 0;
+  border-top: 2px dashed var(--card-border);
+  margin: 2rem 0;
+  opacity: 0.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  .article-content h3 {
+    color: #2dd4bf;
+  }
+}

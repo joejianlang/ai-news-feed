@@ -390,7 +390,11 @@ function HomeContent() {
 
                       const displayContent = activeTab === 'summary'
                         ? (item.ai_summary || (isInternal ? '' : item.content))
-                        : (isInternal ? item.content : item.ai_commentary);
+                        : (isInternal
+                          ? (item.ai_summary
+                            ? `### 内容摘要\n\n${item.ai_summary}\n\n---\n\n### 正文详情\n\n${item.content}`
+                            : item.content)
+                          : item.ai_commentary);
 
                       const ad = activeAds.length > 0 && globalItemIndex % 5 === 0
                         ? activeAds[Math.floor(globalItemIndex / 5 - 1) % activeAds.length]
@@ -609,10 +613,10 @@ function HomeContent() {
                                           </div>
 
                                           <div className="relative min-h-[60px] mb-4">
-                                            <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed font-medium">
+                                            <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed">
                                               {displayContent ? (
                                                 <div
-                                                  className={`text-text-primary ${activeTab === 'commentary' && !isInternal ? "italic" : ""}`}
+                                                  className={`text-text-primary article-content ${activeTab === 'commentary' && !isInternal ? "italic" : ""}`}
                                                   dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent || '') }}
                                                 />
                                               ) : (

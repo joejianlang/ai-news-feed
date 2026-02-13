@@ -34,6 +34,9 @@ export function renderMarkdown(content: string): string {
     html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
 
+    // 自动加粗章节标题 (如: 第一章 XXX)
+    html = html.replace(/^(第[一二三四五六七八九十\d]+[章节]\s*.+)$/gm, '<strong>$1</strong>');
+
     // 代码块
     html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="bg-gray-800 dark:bg-gray-900 text-gray-100 p-4 rounded-lg my-4 overflow-x-auto text-xs font-mono"><code>$2</code></pre>');
     html = html.replace(/`([^`]+)`/g, '<code class="bg-card-border/50 text-red-500 px-1 py-0.5 rounded font-mono text-xs">$1</code>');
