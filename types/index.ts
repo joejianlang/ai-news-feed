@@ -98,6 +98,7 @@ export interface NewsItem {
   created_at: string;
   updated_at: string;
   source?: NewsSource;
+  categories?: Category;
 }
 
 export interface ScrapedContent {

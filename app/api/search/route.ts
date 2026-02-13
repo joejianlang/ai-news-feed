@@ -20,7 +20,8 @@ export async function GET(request: Request) {
       .from('news_items')
       .select(`
         *,
-        source:news_sources(*)
+        source:news_sources(*),
+        categories(*)
       `)
       .or(`title.ilike.%${keyword}%,content.ilike.%${keyword}%,ai_summary.ilike.%${keyword}%,ai_commentary.ilike.%${keyword}%`)
       .eq('is_published', true)

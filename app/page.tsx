@@ -371,6 +371,14 @@ export default function Home() {
                                     <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[11px] uppercase tracking-tight truncate max-w-[120px]">
                                       {item.source?.name || 'Unknown Source'}
                                     </span>
+                                    {item.categories?.name && (
+                                      <>
+                                        <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
+                                        <span className="text-slate-500 dark:text-slate-400 font-extrabold text-[11px] uppercase tracking-tight truncate max-w-[80px]">
+                                          {item.categories.name}
+                                        </span>
+                                      </>
+                                    )}
                                     <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
                                     <span className="text-text-muted text-[11px] font-bold uppercase whitespace-nowrap">
                                       {formatTime(item.created_at)}
@@ -459,6 +467,14 @@ export default function Home() {
                                       <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">
                                         {item.source?.name || 'Unknown Source'}
                                       </span>
+                                      {item.categories?.name && (
+                                        <>
+                                          <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
+                                          <span className="px-2 py-0.5 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 rounded-md text-[10px] font-black uppercase tracking-wider">
+                                            {item.categories.name}
+                                          </span>
+                                        </>
+                                      )}
                                       <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
                                       <span className="text-text-muted text-[12px] font-bold uppercase whitespace-nowrap">
                                         {formatTime(item.created_at)}

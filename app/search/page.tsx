@@ -159,6 +159,14 @@ function SearchContent() {
                         {item.source?.name.charAt(0) || 'N'}
                       </div>
                       <span className="text-sm text-gray-600">{item.source?.name || '未知来源'}</span>
+                      {item.categories?.name && (
+                        <>
+                          <span className="text-gray-400 text-xs">·</span>
+                          <span className="px-2 py-0.5 bg-teal-50 text-teal-700 rounded text-[10px] font-bold">
+                            {item.categories.name}
+                          </span>
+                        </>
+                      )}
                       <span className="text-gray-400 text-xs">·</span>
                       <span className="text-gray-400 text-xs">{formatTime(item.created_at)}</span>
                     </div>
