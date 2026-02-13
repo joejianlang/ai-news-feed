@@ -440,15 +440,24 @@ function HomeContent() {
                                       {formatTime(item.created_at)}
                                     </span>
                                   </div>
-                                  <h2 className="text-[13px] sm:text-[14px] font-black text-text-primary leading-[1.4] tracking-tight line-clamp-2">
-                                    {item.title}
-                                    <span
-                                      className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[13px] whitespace-nowrap"
-                                    >
-                                      详情
-                                      <svg className="w-3 h-3 translate-y-px" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                                    </span>
-                                  </h2>
+                                  <Link
+                                    href={`/article/${item.id}`}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      toggleExpansion(item.id, 'full', videoId);
+                                    }}
+                                    className="block group"
+                                  >
+                                    <h2 className="text-[13px] sm:text-[14px] font-black text-text-primary leading-[1.4] tracking-tight line-clamp-2 group-hover:text-teal-600 transition-colors">
+                                      {item.title}
+                                      <span
+                                        className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[13px] whitespace-nowrap"
+                                      >
+                                        详情
+                                        <svg className="w-3 h-3 translate-y-px" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                                      </span>
+                                    </h2>
+                                  </Link>
                                 </div>
                               </div>
                             ) : (
@@ -544,20 +553,28 @@ function HomeContent() {
                                   </div>
 
                                   {/* 3. Title */}
-                                  <h2
-                                    className="text-[15px] sm:text-[16px] font-black text-text-primary leading-[1.3] tracking-tight mb-3 hover:text-teal-700 dark:hover:text-teal-400 transition-colors cursor-pointer line-clamp-3"
-                                    onClick={() => !isFullExpanded && toggleExpansion(item.id, 'full')}
+                                  <Link
+                                    href={`/article/${item.id}`}
+                                    onClick={(e) => {
+                                      if (!isFullExpanded) {
+                                        e.preventDefault();
+                                        toggleExpansion(item.id, 'full');
+                                      }
+                                    }}
+                                    className="block group"
                                   >
-                                    {item.title}
-                                    {!isFullExpanded && (
-                                      <span
-                                        className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[14px] whitespace-nowrap"
-                                      >
-                                        详情
-                                        <svg className="w-3.5 h-3.5 translate-y-px" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                                      </span>
-                                    )}
-                                  </h2>
+                                    <h2 className="text-[15px] sm:text-[16px] font-black text-text-primary leading-[1.3] tracking-tight mb-3 group-hover:text-teal-700 dark:hover:text-teal-400 transition-colors line-clamp-3">
+                                      {item.title}
+                                      {!isFullExpanded && (
+                                        <span
+                                          className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[14px] whitespace-nowrap"
+                                        >
+                                          详情
+                                          <svg className="w-3.5 h-3.5 translate-y-px" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                                        </span>
+                                      )}
+                                    </h2>
+                                  </Link>
 
                                   {/* 4. AI Section */}
                                   {(item.ai_summary || item.ai_commentary || isInternal) && (
