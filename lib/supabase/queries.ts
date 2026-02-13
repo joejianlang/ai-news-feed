@@ -619,3 +619,18 @@ export async function getSystemSetting(key: string) {
   if (error) throw error;
   return data?.value;
 }
+
+export async function getNewsItemById(id: string) {
+  const { data, error } = await supabase
+    .from('news_items')
+    .select(`
+      *,
+      source:news_sources(*),
+      categories(*)
+    `)
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data as NewsItem | null;
+}

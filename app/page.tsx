@@ -51,27 +51,54 @@ function HomeContent() {
 
   // 处理深层链接（当新闻加载完成后）
   useEffect(() => {
-    if (!isLoading && itemId && newsBatches.length > 0) {
-      // 找到对应的文章
-      const found = newsBatches.some(batch => batch.items.some(item => item.id === itemId));
-      if (found) {
-        // 自动展开
-        toggleExpansion(itemId, 'full');
-        // 稍微延迟一下等待 DOM 渲染，然后滚动
-        setTimeout(() => {
-          const element = document.getElementById(`article-${itemId}`);
-          if (element) {
-            const headerHeight = window.innerWidth < 640 ? 96 : 112;
-            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-            window.scrollTo({
-              top: elementPosition - headerHeight,
-              behavior: 'smooth'
-            });
+    const handleDeepLink = async () => {
+      if (!isLoading && itemId) {
+        // 1. 检查是否已经在批次中
+        const found = newsBatches.some(batch => batch.items.some(item => item.id === itemId));
+
+        if (found) {
+          toggleExpansion(itemId, 'full');
+          scrollToItem(itemId);
+        } else if (newsBatches.length > 0) {
+          // 2. 如果没找到，尝试单独加载该文章（用于预览或直接链接到旧文章）
+          try {
+            const res = await fetch(`/api/news/item?id=${itemId}`);
+            if (res.ok) {
+              const item = await res.json();
+              // 将其插入到一个特殊的“搜索结果”或“当前查看”批次中
+              setNewsBatches(prev => [
+                { batchTime: item.created_at, items: [item] },
+                ...prev
+              ]);
+              // 自动展开
+              setTimeout(() => {
+                toggleExpansion(item.id, 'full');
+                scrollToItem(item.id);
+              }, 100);
+            }
+          } catch (e) {
+            console.error('Failed to fetch deep link item:', e);
           }
-        }, 500);
+        }
       }
-    }
-  }, [isLoading, itemId, newsBatches]);
+    };
+
+    handleDeepLink();
+  }, [isLoading, itemId, newsBatches.length > 0]); // 监听长度变化而不是整个数组，避免循环
+
+  const scrollToItem = (id: string) => {
+    setTimeout(() => {
+      const element = document.getElementById(`article-${id}`);
+      if (element) {
+        const headerHeight = window.innerWidth < 640 ? 96 : 112;
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({
+          top: elementPosition - headerHeight,
+          behavior: 'smooth'
+        });
+      }
+    }, 500);
+  };
 
   // 加载分类列表
   useEffect(() => {
