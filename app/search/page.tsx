@@ -171,11 +171,7 @@ function SearchContent() {
                     {/* AI 摘要 */}
                     {item.ai_summary && (
                       <div className="mb-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                            📝 AI 摘要
-                          </span>
-                        </div>
+
                         <p className={`text-gray-700 text-xs sm:text-sm leading-relaxed ${!isExpanded ? 'line-clamp-2' : ''}`}>
                           {item.ai_summary}
                         </p>
@@ -232,7 +228,7 @@ function SearchContent() {
                       return (
                         <div className="mb-4 p-4 bg-gray-100 rounded-lg flex items-center gap-3">
                           <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                            <path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
                           </svg>
                           <span className="text-sm text-gray-600">视频内容，请点击"查看原文"观看</span>
                         </div>
