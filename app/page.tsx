@@ -320,7 +320,7 @@ export default function Home() {
               return newsBatches.map((batch) => (
                 <div key={batch.batchTime}>
                   {batch.items
-                    .filter((item) => item.ai_summary) // 过滤掉没有 AI 摘要的条目
+                    .filter((item) => item.ai_summary || item.ai_commentary) // 只要有摘要或专业解读就显示
                     .map((item) => {
                       globalItemIndex++;
                       const isAllCategory = selectedCategory === null;
