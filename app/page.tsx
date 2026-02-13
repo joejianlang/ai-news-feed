@@ -406,12 +406,12 @@ function HomeContent() {
                           >
                             {isAllCategory && !isFullExpanded ? (                                /* 1. Collapsed "All" Category Layout: List Style */
                               <div
-                                className="flex gap-4 p-4 items-center cursor-pointer active:bg-slate-50/50 dark:active:bg-white/5 transition-colors"
+                                className="flex gap-4 items-stretch cursor-pointer active:bg-slate-50/50 dark:active:bg-white/5 transition-colors"
                                 onClick={() => toggleExpansion(item.id, 'full', videoId)}
                               >
                                 {/* Left: Thumbnail */}
                                 {(videoId || (item.image_url && item.image_url !== '')) && (
-                                  <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 rounded-2xl bg-slate-100 dark:bg-white/5 overflow-hidden">
+                                  <div className="w-24 sm:w-28 flex-shrink-0 bg-slate-100 dark:bg-white/5 overflow-hidden">
                                     <img
                                       src={item.content_type === 'video' && videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : item.image_url!}
                                       alt={item.title}
@@ -421,7 +421,7 @@ function HomeContent() {
                                 )}
 
                                 {/* Right: Meta & Title & Details Button */}
-                                <div className="flex-1 min-w-0">
+                                <div className="flex-1 min-w-0 py-4 pr-4">
                                   <div className="flex items-center gap-2 mb-1.5 overflow-hidden">
                                     <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[11px] uppercase tracking-tight truncate max-w-[120px]">
                                       {item.source?.name || 'Unknown Source'}
@@ -455,7 +455,7 @@ function HomeContent() {
                               <>
                                 {/* 1. Image Area (Top) - Conditional Rendering */}
                                 {(videoId || (item.image_url && item.image_url !== '')) && (
-                                  <div className="relative mx-[10px] mt-[10px] rounded-[16px] aspect-[16/10] bg-slate-100 dark:bg-slate-800/50 overflow-hidden group">
+                                  <div className="relative mx-0 mt-0 rounded-t-[24px] aspect-[16/10] bg-slate-100 dark:bg-slate-800/50 overflow-hidden group">
                                     {item.content_type === 'video' && videoId ? (
                                       <div className="absolute inset-0 bg-black">
                                         {playingVideoId === videoId ? (
