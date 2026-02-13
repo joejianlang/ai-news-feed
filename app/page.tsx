@@ -402,16 +402,16 @@ function HomeContent() {
                         <React.Fragment key={item.id}>
                           <article
                             id={`article-${item.id}`}
-                            className="bg-card rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-3 transition-all duration-300 border border-card-border"
+                            className="bg-card rounded-[24px] shadow-[0_8px_30px_-10px_rgba(0,0,0,0.2)] dark:shadow-[0_8px_30px_-10px_rgba(0,0,0,0.5)] overflow-hidden mb-3 transition-all duration-300 border border-card-border hover:border-teal-500/30 hover:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.3)]"
                           >
                             {isAllCategory && !isFullExpanded ? (                                /* 1. Collapsed "All" Category Layout: List Style */
                               <div
                                 className="flex gap-4 items-stretch cursor-pointer active:bg-slate-50/50 dark:active:bg-white/5 transition-colors"
                                 onClick={() => toggleExpansion(item.id, 'full', videoId)}
                               >
-                                {/* Left: Thumbnail */}
+                                {/* Left: Thumbnail with right separator for block structure */}
                                 {(videoId || (item.image_url && item.image_url !== '')) && (
-                                  <div className="w-24 sm:w-28 flex-shrink-0 bg-slate-100 dark:bg-white/5 overflow-hidden">
+                                  <div className="w-24 sm:w-28 flex-shrink-0 bg-slate-100 dark:bg-white/5 overflow-hidden border-r border-card-border/50">
                                     <img
                                       src={item.content_type === 'video' && videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : item.image_url!}
                                       alt={item.title}
@@ -455,7 +455,7 @@ function HomeContent() {
                               <>
                                 {/* 1. Image Area (Top) - Conditional Rendering */}
                                 {(videoId || (item.image_url && item.image_url !== '')) && (
-                                  <div className="relative mx-0 mt-0 rounded-t-[24px] aspect-[16/10] bg-slate-100 dark:bg-slate-800/50 overflow-hidden group">
+                                  <div className="relative mx-0 mt-0 rounded-t-[24px] aspect-[16/10] bg-slate-100 dark:bg-slate-800/50 overflow-hidden group border-b border-card-border/50">
                                     {item.content_type === 'video' && videoId ? (
                                       <div className="absolute inset-0 bg-black">
                                         {playingVideoId === videoId ? (
