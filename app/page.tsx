@@ -334,8 +334,8 @@ export default function Home() {
                         ));
 
                       const displayContent = activeTab === 'summary'
-                        ? (item.ai_summary || item.content) // 始终优先显示 AI 摘要（通常是中文），只有没有摘要时才显示原始内容
-                        : item.ai_commentary;
+                        ? (item.ai_summary || (isInternal ? '' : item.content))
+                        : (isInternal ? item.content : item.ai_commentary);
 
                       const ad = activeAds.length > 0 && globalItemIndex % 5 === 0
                         ? activeAds[Math.floor(globalItemIndex / 5 - 1) % activeAds.length]
@@ -504,7 +504,7 @@ export default function Home() {
                                   </h2>
 
                                   {/* 4. AI Section */}
-                                  {(item.ai_summary || item.ai_commentary) && (
+                                  {(item.ai_summary || item.ai_commentary || isInternal) && (
                                     <div className="mb-0">
                                       {!isFullExpanded ? null : (
                                         /* Expanded: Show Tabs and Full Content */
@@ -521,13 +521,13 @@ export default function Home() {
                                               )}
                                             </button>
 
-                                            {/* Analysis Tab */}
-                                            {item.ai_commentary && (
+                                            {/* Analysis/Content Tab */}
+                                            {(item.ai_commentary || isInternal) && (
                                               <button
                                                 onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'commentary'); }}
                                                 className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'commentary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
                                               >
-                                                专业解读
+                                                {isInternal ? '正文详情' : '专业解读'}
                                                 {activeTab === 'commentary' && (
                                                   <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full shadow-[0_-2px_6px_rgba(20,184,166,0.2)]"></div>
                                                 )}
