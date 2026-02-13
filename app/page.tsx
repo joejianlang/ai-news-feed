@@ -370,7 +370,7 @@ function HomeContent() {
             <div className="text-gray-500 mb-4">暂无新闻</div>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2.5">
             {(() => {
               let globalItemIndex = 0;
               return newsBatches.map((batch) => (
@@ -402,7 +402,7 @@ function HomeContent() {
                         <React.Fragment key={item.id}>
                           <article
                             id={`article-${item.id}`}
-                            className="bg-card rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-5 transition-all duration-300 border border-card-border"
+                            className="bg-card rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-3 transition-all duration-300 border border-card-border"
                           >
                             {isAllCategory && !isFullExpanded ? (                                /* 1. Collapsed "All" Category Layout: List Style */
                               <div
@@ -439,7 +439,7 @@ function HomeContent() {
                                       {formatTime(item.created_at)}
                                     </span>
                                   </div>
-                                  <h2 className="text-[16px] sm:text-[17px] font-black text-text-primary leading-[1.4] tracking-tight line-clamp-2">
+                                  <h2 className="text-[13px] sm:text-[14px] font-black text-text-primary leading-[1.4] tracking-tight line-clamp-2">
                                     {item.title}
                                     <span
                                       className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[13px] whitespace-nowrap"
@@ -544,7 +544,7 @@ function HomeContent() {
 
                                   {/* 3. Title */}
                                   <h2
-                                    className="text-[18px] sm:text-[20px] font-black text-text-primary leading-[1.3] tracking-tight mb-3 hover:text-teal-700 dark:hover:text-teal-400 transition-colors cursor-pointer line-clamp-3"
+                                    className="text-[15px] sm:text-[16px] font-black text-text-primary leading-[1.3] tracking-tight mb-3 hover:text-teal-700 dark:hover:text-teal-400 transition-colors cursor-pointer line-clamp-3"
                                     onClick={() => !isFullExpanded && toggleExpansion(item.id, 'full')}
                                   >
                                     {item.title}
