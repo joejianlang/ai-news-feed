@@ -46,6 +46,7 @@ function HomeContent() {
   const [contentPageLevel, setContentPageLevel] = useState<Record<string, number>>({});
   const [contentOverflow, setContentOverflow] = useState<Record<string, boolean>>({});
   const contentRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [expandedVideoSummary, setExpandedVideoSummary] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // null = 全部
   const [activeAds, setActiveAds] = useState<AdItem[]>([]);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -275,6 +276,18 @@ function HomeContent() {
       const isOverflowing = el.scrollHeight > el.clientHeight + 2;
       setContentOverflow(prev => ({ ...prev, [itemId]: isOverflowing }));
     }
+  };
+
+  const toggleVideoSummary = (itemId: string) => {
+    setExpandedVideoSummary(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
   };
 
   const toggleTab = (itemId: string, tab: 'summary' | 'commentary') => {
