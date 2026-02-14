@@ -462,64 +462,81 @@ function HomeContent() {
                             id={`article-${item.id}`}
                             className="bg-card rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-3 transition-all duration-300 border border-card-border sm:min-h-[150px]"
                           >
-                            {isAllCategory && !isFullExpanded ? (
-                              /* 1. Collapsed "All" Category Layout: List Style */
+                            {!isFullExpanded ? (
+                              /* Unified Collapsed Card Layout for ALL categories */
                               <div
-                                className="flex gap-3 p-2 items-center cursor-pointer active:bg-slate-50/50 dark:active:bg-white/5 transition-colors"
+                                className="cursor-pointer active:bg-slate-50/50 dark:active:bg-white/5 transition-colors"
                                 onClick={() => toggleExpansion(item.id, 'full', videoId)}
                               >
-                                {/* Left: Thumbnail */}
-                                {(videoId || (item.image_url && item.image_url !== '')) && (
-                                  <div className="w-24 h-24 sm:w-36 sm:h-36 flex-shrink-0 rounded-xl bg-slate-100 dark:bg-white/5 overflow-hidden">
-                                    <img
-                                      src={item.content_type === 'video' && videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : item.image_url!}
-                                      alt={item.title}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </div>
-                                )}
-
-                                {/* Right: Meta & Title & Details Button */}
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-1.5 overflow-hidden">
-                                    <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[11px] uppercase tracking-tight truncate max-w-[120px]">
+                                {/* 1. Meta Row: Source, Time, Follow Button */}
+                                <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+                                  <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
+                                    <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate">
                                       {item.author_name || item.source?.name || 'Unknown Source'}
                                     </span>
-                                    {item.categories?.name && (
-                                      <>
-                                        <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                        <span className="text-slate-500 dark:text-slate-400 font-extrabold text-[11px] uppercase tracking-tight truncate max-w-[80px]">
-                                          {item.categories.name}
-                                        </span>
-                                      </>
-                                    )}
                                     <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                    <span className="text-text-muted text-[11px] font-bold uppercase whitespace-nowrap">
+                                    <span className="text-text-muted text-[12px] font-bold whitespace-nowrap">
                                       {formatTime(item.created_at)}
                                     </span>
                                   </div>
-                                  <Link
-                                    href={`/article/${item.id}`}
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      toggleExpansion(item.id, 'full', videoId);
-                                    }}
-                                    className="block group"
-                                  >
-                                    <h2 className="text-[13px] sm:text-[14px] font-black text-text-primary leading-[1.4] tracking-tight line-clamp-2 group-hover:text-teal-600 transition-colors">
-                                      {item.title}
-                                      <span
-                                        className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[13px] whitespace-nowrap"
-                                      >
-                                        详情
-                                        <svg className="w-3 h-3 translate-y-px" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                                      </span>
-                                    </h2>
-                                  </Link>
+                                  {item.source && (
+                                    <div className="flex-shrink-0 ml-3" onClick={(e) => e.stopPropagation()}>
+                                      <FollowButton sourceId={item.source_id} />
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* 2. Image/Video */}
+                                {(videoId || (item.image_url && item.image_url !== '')) && (
+                                  <div className="relative overflow-hidden mx-[5px] aspect-[16/10] rounded-xl group">
+                                    {item.content_type === 'video' && videoId ? (
+                                      <div className="absolute inset-0">
+                                        <img
+                                          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                                          alt={item.title}
+                                          className="w-full h-full object-cover"
+                                          onError={(e) => {
+                                            const target = e.currentTarget;
+                                            if (target.src.includes('maxresdefault')) {
+                                              target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                            }
+                                          }}
+                                        />
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                                          <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                                            <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <img
+                                        src={item.image_url!}
+                                        alt={item.title}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                        onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                                      />
+                                    )}
+                                    {/* Location Tag */}
+                                    {item.location && (
+                                      <div className="absolute top-4 left-4 z-10">
+                                        <div className="bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-black px-3 py-1.5 rounded-lg shadow-lg uppercase tracking-wider flex items-center gap-1.5 border border-white/10">
+                                          <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(45,212,191,0.6)]"></span>
+                                          {item.location}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+
+                                {/* 3. Title - 10px padding from image */}
+                                <div className="px-5 pt-[10px] pb-5">
+                                  <h2 className="text-[16px] font-bold text-text-primary leading-[1.3] tracking-tight">
+                                    {item.title}
+                                  </h2>
                                 </div>
                               </div>
                             ) : (
-                              <div className={isDepthStyle ? "flex flex-col md:flex-row md:items-start gap-1 md:gap-8" : "flex flex-col"}>
+                              <div className="flex flex-col">
                                 {/* 1. Image Area (Top) - Conditional Rendering */}
                                 {isDepthStyle && (
                                   <div className="md:hidden px-5 pt-5 sm:px-8 sm:pt-7 pb-0">
