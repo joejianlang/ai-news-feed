@@ -444,8 +444,55 @@ function HomeContent() {
                             id={`article-${item.id}`}
                             className="bg-card rounded-[24px] shadow-sm overflow-hidden border border-card-border"
                           >
-                            {!isFullExpanded ? (
-                              /* Collapsed View */
+                            {selectedCategory === null && !isFullExpanded ? (
+                              /* "全部" Category: List Style Collapsed Layout */
+                              <div
+                                className="flex gap-3 p-2 items-center cursor-pointer active:bg-slate-50/50 dark:active:bg-white/5 transition-colors"
+                                onClick={() => toggleExpansion(item.id, 'full', videoId, isInternal)}
+                              >
+                                {/* Left: Thumbnail */}
+                                {(videoId || (item.image_url && item.image_url !== '')) && (
+                                  <div className="w-24 h-24 sm:w-36 sm:h-36 flex-shrink-0 rounded-xl bg-slate-100 dark:bg-white/5 overflow-hidden">
+                                    <img
+                                      src={item.content_type === 'video' && videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : item.image_url!}
+                                      alt={item.title}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                )}
+
+                                {/* Right: Meta & Title */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1.5 overflow-hidden">
+                                    <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[11px] uppercase tracking-tight truncate max-w-[120px]">
+                                      {item.author_name || item.source?.name || 'Unknown Source'}
+                                    </span>
+                                    {item.categories?.name && (
+                                      <>
+                                        <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
+                                        <span className="text-slate-500 dark:text-slate-400 font-extrabold text-[11px] uppercase tracking-tight truncate max-w-[80px]">
+                                          {item.categories.name}
+                                        </span>
+                                      </>
+                                    )}
+                                    <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
+                                    <span className="text-text-muted text-[11px] font-bold uppercase whitespace-nowrap">
+                                      {formatTime(item.created_at)}
+                                    </span>
+                                  </div>
+                                  <h2 className="text-[13px] sm:text-[14px] font-black text-text-primary leading-[1.4] tracking-tight line-clamp-2">
+                                    {item.title}
+                                    <span
+                                      className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[13px] whitespace-nowrap"
+                                    >
+                                      详情
+                                      <svg className="w-3 h-3 translate-y-px" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                                    </span>
+                                  </h2>
+                                </div>
+                              </div>
+                            ) : !isFullExpanded ? (
+                              /* Collapsed View (Other Categories: Card Style) */
                               <div
                                 className="cursor-pointer p-5 active:bg-slate-50 dark:active:bg-white/5 transition-colors"
                                 onClick={() => toggleExpansion(item.id, 'full', videoId, isInternal)}
