@@ -578,7 +578,7 @@ function HomeContent() {
                                         <svg className={`w-4 h-4 text-teal-500 transition-transform ${expandedVideoSummary.has(item.id) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path d="m6 9 6 6 6-6" /></svg>
                                       </div>
                                       {expandedVideoSummary.has(item.id) && item.ai_summary && (
-                                        <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 mb-4" dangerouslySetInnerHTML={{ __html: renderMarkdown(item.ai_summary) }} />
+                                        <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 mb-2" dangerouslySetInnerHTML={{ __html: renderMarkdown(item.ai_summary) }} />
                                       )}
                                     </>
                                   ) : isInternal ? (
@@ -587,7 +587,7 @@ function HomeContent() {
                                       {currentPageLevel > 0 && (
                                         <div
                                           id={`content-viewport-${item.id}`}
-                                          className="relative overflow-hidden mb-4 transition-all duration-500 ease-in-out"
+                                          className="relative overflow-hidden mb-2 transition-all duration-500 ease-in-out"
                                           style={{ height: currentPageLevel > 1 ? '650px' : '312px' }}
                                         >
                                           <div
@@ -625,7 +625,7 @@ function HomeContent() {
                                           </button>
                                         )}
                                       </div>
-                                      <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 mb-4" dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent || '') }} />
+                                      <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 mb-2" dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent || '') }} />
                                     </>
                                   )}
                                 </div>
