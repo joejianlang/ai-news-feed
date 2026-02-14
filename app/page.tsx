@@ -519,10 +519,10 @@ function HomeContent() {
                                 </div>
                               </div>
                             ) : (
-                              <div className={isDepthStyle ? "flex flex-col md:flex-row md:items-start gap-4 md:gap-8" : "flex flex-col"}>
+                              <div className={isDepthStyle ? "flex flex-col md:flex-row md:items-start gap-1 md:gap-8" : "flex flex-col"}>
                                 {/* 1. Image Area (Top) - Conditional Rendering */}
                                 {isDepthStyle && (
-                                  <div className="md:hidden px-5 pt-5 sm:px-8 sm:pt-7 pb-2">
+                                  <div className="md:hidden px-5 pt-5 sm:px-8 sm:pt-7 pb-0">
                                     <div className="flex items-center justify-between mb-3">
                                       <div className="flex items-center gap-2.5 overflow-hidden">
                                         <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">
@@ -571,7 +571,7 @@ function HomeContent() {
                                 )}
                                 {(videoId || (item.image_url && item.image_url !== '')) && (
                                   <div className={`relative overflow-hidden group transition-all duration-500 rounded-xl ${isDepthStyle
-                                    ? "mx-[5px] mt-[5px] aspect-[16/10] md:mx-0 md:ml-6 md:mt-6 md:w-[32%] md:max-w-[340px] md:aspect-[2/3] shadow-lg sticky top-32 flex-shrink-0"
+                                    ? "mx-[5px] mt-[2px] aspect-[16/10] md:mx-0 md:ml-6 md:mt-6 md:w-[32%] md:max-w-[340px] md:aspect-[2/3] shadow-lg sticky top-32 flex-shrink-0"
                                     : "mx-[5px] mt-[5px] aspect-[16/10]"
                                     }`}>
                                     {item.content_type === 'video' && videoId ? (
@@ -633,7 +633,7 @@ function HomeContent() {
                                 )}
 
                                 <div className={`flex-1 min-w-0 ${isDepthStyle ? "md:pr-2" : ""}`}>
-                                  <div className={isDepthStyle ? "px-5 pt-3 md:pt-8 pb-2" : "px-5 pt-3 sm:px-6 sm:pt-6 pb-2"}>
+                                  <div className={isDepthStyle ? "px-5 pt-1 md:pt-8 pb-2" : "px-5 pt-3 sm:px-6 sm:pt-6 pb-2"}>
                                     {/* Meta Row (Now on Right for Depth) */}
                                     <div className={`items-center justify-between mb-3 ${isDepthStyle ? "hidden md:flex" : "hidden"}`}>
                                       <div className="flex items-center gap-2.5 overflow-hidden">
@@ -769,8 +769,8 @@ function HomeContent() {
                                                 <div
                                                   ref={(el) => { contentRefs.current[item.id] = el; }}
                                                   className={`prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 transition-all duration-300 ${isInternal && currentPageLevel > 0
-                                                      ? ''
-                                                      : (isDepthStyle && !isCommentaryExpanded ? "line-clamp-[22] sm:line-clamp-[25] md:line-clamp-[28]" : "")
+                                                    ? ''
+                                                    : (isDepthStyle && !isCommentaryExpanded ? "line-clamp-[22] sm:line-clamp-[25] md:line-clamp-[28]" : "")
                                                     }`}
                                                   style={isInternal && currentPageLevel > 0 ? {
                                                     display: '-webkit-box',
