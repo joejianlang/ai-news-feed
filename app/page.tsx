@@ -471,55 +471,55 @@ function HomeContent() {
                             ) : (
                               <div className={isDepthStyle ? "flex flex-col md:flex-row md:items-start gap-4 md:gap-8" : "flex flex-col"}>
                                 {/* 1. Image Area (Top) - Conditional Rendering */}
-                                  {isDepthStyle && (
-                                    <div className="md:hidden px-5 pt-5 sm:px-8 sm:pt-7 pb-2">
-                                      <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center gap-2.5 overflow-hidden">
-                                          <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">
-                                            {item.author_name || item.source?.name || "Unknown Source"}
-                                          </span>
-                                          {item.categories?.name && (
-                                            <>
-                                              <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                              <span className="px-2 py-0.5 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 rounded-md text-[10px] font-black uppercase tracking-wider">
-                                                {item.categories.name}
-                                              </span>
-                                            </>
-                                          )}
-                                          <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                          <span className="text-text-muted text-[12px] font-bold uppercase whitespace-nowrap">
-                                            {formatTime(item.created_at)}
-                                          </span>
-                                        </div>
-                                        {item.source && (
-                                          <div className="flex-shrink-0 origin-right transition-transform active:scale-95">
-                                            <FollowButton sourceId={item.source_id} />
-                                          </div>
-                                        )}
-                                      </div>
-                                      <Link
-                                        href={`/article/${item.id}`}
-                                        onClick={(e) => {
-                                          if (!isFullExpanded) {
-                                            e.preventDefault();
-                                            toggleExpansion(item.id, "full");
-                                          }
-                                        }}
-                                        className="block group"
-                                      >
-                                        <h2 className="text-[20px] sm:text-[24px] font-black text-text-primary leading-[1.3] tracking-tight mb-2 group-hover:text-teal-700 dark:hover:text-teal-400 transition-colors">
-                                          {item.title}
-                                          {!isFullExpanded && (
-                                            <span className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[15px] whitespace-nowrap group-hover:translate-x-0.5 transition-transform">
-                                              详细
-                                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                                {isDepthStyle && (
+                                  <div className="md:hidden px-5 pt-5 sm:px-8 sm:pt-7 pb-2">
+                                    <div className="flex items-center justify-between mb-3">
+                                      <div className="flex items-center gap-2.5 overflow-hidden">
+                                        <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">
+                                          {item.author_name || item.source?.name || "Unknown Source"}
+                                        </span>
+                                        {item.categories?.name && (
+                                          <>
+                                            <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
+                                            <span className="px-2 py-0.5 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 rounded-md text-[10px] font-black uppercase tracking-wider">
+                                              {item.categories.name}
                                             </span>
-                                          )}
-                                        </h2>
-                                      </Link>
+                                          </>
+                                        )}
+                                        <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
+                                        <span className="text-text-muted text-[12px] font-bold uppercase whitespace-nowrap">
+                                          {formatTime(item.created_at)}
+                                        </span>
+                                      </div>
+                                      {item.source && (
+                                        <div className="flex-shrink-0 origin-right transition-transform active:scale-95">
+                                          <FollowButton sourceId={item.source_id} />
+                                        </div>
+                                      )}
                                     </div>
-                                  )}
-                                                               {(videoId || (item.image_url && item.image_url !== '')) && (
+                                    <Link
+                                      href={`/article/${item.id}`}
+                                      onClick={(e) => {
+                                        if (!isFullExpanded) {
+                                          e.preventDefault();
+                                          toggleExpansion(item.id, "full");
+                                        }
+                                      }}
+                                      className="block group"
+                                    >
+                                      <h2 className="text-[20px] sm:text-[24px] font-black text-text-primary leading-[1.3] tracking-tight mb-2 group-hover:text-teal-700 dark:hover:text-teal-400 transition-colors">
+                                        {item.title}
+                                        {!isFullExpanded && (
+                                          <span className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[15px] whitespace-nowrap group-hover:translate-x-0.5 transition-transform">
+                                            详细
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                                          </span>
+                                        )}
+                                      </h2>
+                                    </Link>
+                                  </div>
+                                )}
+                                {(videoId || (item.image_url && item.image_url !== '')) && (
                                   <div className={`relative overflow-hidden group transition-all duration-500 rounded-xl ${isDepthStyle
                                     ? "mx-[5px] mt-[5px] aspect-[16/10] md:mx-0 md:ml-6 md:mt-6 md:w-[32%] md:max-w-[340px] md:aspect-[2/3] shadow-lg sticky top-32 flex-shrink-0"
                                     : "mx-[5px] mt-[5px] aspect-[16/10]"
@@ -585,7 +585,7 @@ function HomeContent() {
                                 <div className={`flex-1 min-w-0 ${isDepthStyle ? "md:pr-2" : ""}`}>
                                   <div className={isDepthStyle ? "px-5 pt-3 md:pt-8 pb-2" : "px-5 pt-3 sm:px-6 sm:pt-6 pb-2"}>
                                     {/* Meta Row (Now on Right for Depth) */}
-                                    <div className={`items-center justify-between mb-3 ${isDepthStyle ? "hidden md:flex" : "flex"}`}>
+                                    <div className={`items-center justify-between mb-3 ${isDepthStyle ? "hidden md:flex" : "hidden"}`}>
                                       <div className="flex items-center gap-2.5 overflow-hidden">
                                         <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">
                                           {item.author_name || item.source?.name || 'Unknown Source'}
@@ -619,7 +619,7 @@ function HomeContent() {
                                           toggleExpansion(item.id, 'full');
                                         }
                                       }}
-                                      className={`block group mb-4 ${isDepthStyle ? "hidden md:block" : "block"}`}
+                                      className={`block group mb-4 ${isDepthStyle ? "hidden md:block" : "hidden"}`}
                                     >
                                       <h2 className={`font-black text-text-primary leading-[1.3] tracking-tight group-hover:text-teal-700 dark:hover:text-teal-400 transition-colors ${isDepthStyle ? "text-[20px] sm:text-[23px]" : "text-[15px] sm:text-[16px] line-clamp-3"}`}>
                                         {item.title}
@@ -722,15 +722,6 @@ function HomeContent() {
                                             </div>
 
                                             {/* Collapse Button */}
-                                            <div className="flex justify-center mb-2">
-                                              <button
-                                                onClick={() => toggleExpansion(item.id, 'preview')}
-                                                className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 px-8 py-2 rounded-full border border-slate-100 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-black text-[13px] group shadow-sm active:scale-95"
-                                              >
-                                                <svg className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg>
-                                                收起全文
-                                              </button>
-                                            </div>
                                           </div>
                                         )}
                                       </div>
