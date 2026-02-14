@@ -276,8 +276,11 @@ function HomeContent() {
   const checkContentOverflow = (itemId: string) => {
     const el = contentRefs.current[itemId];
     if (el) {
-      // 检查内容总高度是否超过视口高度 (312px)
-      const isOverflowing = el.scrollHeight > (contentPageLevel[itemId] || 1) * 286 + 26;
+      const level = contentPageLevel[itemId] || 1;
+      const currentViewportHeight = level > 1 ? 650 : 312;
+      // 计算当前位移加上当前视口高度，是否还有余量
+      const currentDisplacement = level === 1 ? 0 : 286 + (level - 2) * 624;
+      const isOverflowing = el.scrollHeight > (currentDisplacement + currentViewportHeight + 10);
       setContentOverflow(prev => ({ ...prev, [itemId]: isOverflowing }));
     }
   };
@@ -507,8 +510,9 @@ function HomeContent() {
                                       )}
                                     </div>
                                   ) : (
-                                    item.image_url && (
-                                      <div className="aspect-[16/10] rounded-xl overflow-hidden">
+                                    /* Image Area: Hide for Internal articles when beyond Page 1 */
+                                    item.image_url && (!isInternal || currentPageLevel <= 1) && (
+                                      <div className="aspect-[16/10] rounded-xl overflow-hidden transition-all duration-500">
                                         <img src={item.image_url} className="w-full h-full object-cover" />
                                       </div>
                                     )
@@ -531,14 +535,23 @@ function HomeContent() {
                                       )}
                                     </>
                                   ) : isInternal ? (
-                                    /* Internal Article: Paged Flip */
+                                    /* Internal Article: Paged Flip (Dynamic Height & Immersive) */
                                     <>
                                       {currentPageLevel > 0 && (
-                                        <div id={`content-viewport-${item.id}`} className="relative overflow-hidden mb-4" style={{ height: '312px' }}>
+                                        <div
+                                          id={`content-viewport-${item.id}`}
+                                          className="relative overflow-hidden mb-4 transition-all duration-500 ease-in-out"
+                                          style={{ height: currentPageLevel > 1 ? '650px' : '312px' }}
+                                        >
                                           <div
                                             ref={el => { contentRefs.current[item.id] = el; }}
-                                            className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed transition-transform duration-500 ease-in-out"
-                                            style={{ transform: `translateY(-${(currentPageLevel - 1) * 286}px)` }}
+                                            className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed transition-transform duration-500 ease-in-out px-1"
+                                            style={{
+                                              transform: `translateY(-${currentPageLevel === 1
+                                                ? 0
+                                                : 286 + (currentPageLevel - 2) * 624
+                                                }px)`
+                                            }}
                                             dangerouslySetInnerHTML={{ __html: renderMarkdown(item.content || '') }}
                                           />
                                         </div>
