@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import type { NewsItem, Category, AdItem } from '@/types';
@@ -43,6 +43,9 @@ function HomeContent() {
   const [expandedCommentary, setExpandedCommentary] = useState<Set<string>>(new Set());
   const [activeTabs, setActiveTabs] = useState<Record<string, 'summary' | 'commentary'>>({});
   const [expansionStates, setExpansionStates] = useState<Record<string, 'preview' | 'full'>>({});
+  const [contentPageLevel, setContentPageLevel] = useState<Record<string, number>>({});
+  const [contentOverflow, setContentOverflow] = useState<Record<string, boolean>>({});
+  const contentRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // null = 全部
   const [activeAds, setActiveAds] = useState<AdItem[]>([]);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -231,6 +234,49 @@ function HomeContent() {
     });
   };
 
+  const LINES_PER_PAGE = 10;
+
+  const nextContentPage = (itemId: string) => {
+    setContentPageLevel(prev => ({
+      ...prev,
+      [itemId]: (prev[itemId] || 1) + 1
+    }));
+    // Check overflow after state update
+    setTimeout(() => checkContentOverflow(itemId), 100);
+  };
+
+  const resetContentPage = (itemId: string) => {
+    setContentPageLevel(prev => ({ ...prev, [itemId]: 0 }));
+    setContentOverflow(prev => ({ ...prev, [itemId]: true }));
+    // Scroll back to the article
+    setTimeout(() => {
+      const element = document.getElementById(`article-${itemId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
+  const toggleContentSection = (itemId: string) => {
+    const currentLevel = contentPageLevel[itemId] || 0;
+    if (currentLevel === 0) {
+      // Expand to first page
+      setContentPageLevel(prev => ({ ...prev, [itemId]: 1 }));
+      setTimeout(() => checkContentOverflow(itemId), 100);
+    } else {
+      // Collapse
+      resetContentPage(itemId);
+    }
+  };
+
+  const checkContentOverflow = (itemId: string) => {
+    const el = contentRefs.current[itemId];
+    if (el) {
+      const isOverflowing = el.scrollHeight > el.clientHeight + 2;
+      setContentOverflow(prev => ({ ...prev, [itemId]: isOverflowing }));
+    }
+  };
+
   const toggleTab = (itemId: string, tab: 'summary' | 'commentary') => {
     setActiveTabs(prev => ({ ...prev, [itemId]: tab }));
 
@@ -400,6 +446,10 @@ function HomeContent() {
                           ? (item.ai_summary || item.content)
                           : item.ai_commentary);
 
+                      const currentPageLevel = contentPageLevel[item.id] || 0;
+                      const isContentOverflowing = contentOverflow[item.id] !== false;
+                      const lineClampValue = isInternal ? (currentPageLevel * LINES_PER_PAGE) : 0;
+
                       const ad = activeAds.length > 0 && globalItemIndex % 5 === 0
                         ? activeAds[Math.floor(globalItemIndex / 5 - 1) % activeAds.length]
                         : null;
@@ -509,7 +559,7 @@ function HomeContent() {
                                     >
                                       <h2 className="text-[20px] sm:text-[24px] font-black text-text-primary leading-[1.3] tracking-tight mb-2 group-hover:text-teal-700 dark:hover:text-teal-400 transition-colors">
                                         {item.title}
-                                        {!isFullExpanded && (
+                                        {!isFullExpanded && !isInternal && (
                                           <span className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[15px] whitespace-nowrap group-hover:translate-x-0.5 transition-transform">
                                             详细
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
@@ -623,7 +673,7 @@ function HomeContent() {
                                     >
                                       <h2 className={`font-black text-text-primary leading-[1.3] tracking-tight group-hover:text-teal-700 dark:hover:text-teal-400 transition-colors ${isDepthStyle ? "text-[20px] sm:text-[23px]" : "text-[15px] sm:text-[16px] line-clamp-3"}`}>
                                         {item.title}
-                                        {!isFullExpanded && (
+                                        {!isFullExpanded && !isInternal && (
                                           <span
                                             className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[15px] whitespace-nowrap group-hover:translate-x-0.5 transition-transform"
                                           >
@@ -701,25 +751,45 @@ function HomeContent() {
                                             )}
 
                                             {(isInternal || isDepthStyle) && (
-                                              <div className="flex items-center gap-2 mb-4">
+                                              <div
+                                                className={`flex items-center gap-2 mb-4 ${isInternal ? 'cursor-pointer group/section' : ''}`}
+                                                onClick={isInternal ? () => toggleContentSection(item.id) : undefined}
+                                              >
                                                 <div className="w-1 h-5 bg-teal-500 rounded-full"></div>
                                                 <span className="text-[16px] font-black text-text-primary">正文详情</span>
+                                                {isInternal && (
+                                                  <svg className={`w-4 h-4 text-teal-500 transition-transform duration-300 ${currentPageLevel > 0 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                                                )}
                                               </div>
                                             )}
 
-                                            <div className="relative min-h-[60px] mb-4">
-                                              <div className={`prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 ${isDepthStyle && !isCommentaryExpanded ? "line-clamp-[22] sm:line-clamp-[25] md:line-clamp-[28]" : ""}`}>
-                                                {displayContent ? (
-                                                  <div
-                                                    className={`text-text-primary article-content ${activeTab === 'commentary' && !isInternal ? "italic" : ""}`}
-                                                    dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent || '') }}
-                                                  />
-                                                ) : (
-                                                  <p className="italic text-slate-400 dark:text-slate-600 text-center py-4">暂无摘要内容...</p>
-                                                )}
-
+                                            {/* Content Area - For Internal: hidden by default, paginated when expanded */}
+                                            {(!isInternal || currentPageLevel > 0) && (
+                                              <div className="relative min-h-[60px] mb-4">
+                                                <div
+                                                  ref={(el) => { contentRefs.current[item.id] = el; }}
+                                                  className={`prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 transition-all duration-300 ${isInternal && currentPageLevel > 0
+                                                      ? ''
+                                                      : (isDepthStyle && !isCommentaryExpanded ? "line-clamp-[22] sm:line-clamp-[25] md:line-clamp-[28]" : "")
+                                                    }`}
+                                                  style={isInternal && currentPageLevel > 0 ? {
+                                                    display: '-webkit-box',
+                                                    WebkitBoxOrient: 'vertical' as const,
+                                                    WebkitLineClamp: lineClampValue,
+                                                    overflow: 'hidden'
+                                                  } : undefined}
+                                                >
+                                                  {displayContent ? (
+                                                    <div
+                                                      className={`text-text-primary article-content ${activeTab === 'commentary' && !isInternal ? "italic" : ""}`}
+                                                      dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent || '') }}
+                                                    />
+                                                  ) : (
+                                                    <p className="italic text-slate-400 dark:text-slate-600 text-center py-4">暂无摘要内容...</p>
+                                                  )}
+                                                </div>
                                               </div>
-                                            </div>
+                                            )}
 
                                             {/* Collapse Button */}
                                           </div>
@@ -729,8 +799,33 @@ function HomeContent() {
                                   </div>
                                 </div>
 
-                                {/* C. Footer Actions (Centered Read More Button for Depth Style) */}
-                                {(isInternal || isDepthStyle) && (
+                                {/* C. Footer Actions */}
+                                {/* For Internal articles: "下一页" / "收起全文" pagination */}
+                                {isInternal && currentPageLevel > 0 && (
+                                  <div className="mt-4 mb-8 flex justify-center">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (isContentOverflowing) {
+                                          nextContentPage(item.id);
+                                        } else {
+                                          resetContentPage(item.id);
+                                        }
+                                      }}
+                                      className="group flex items-center gap-2.5 px-12 py-4 bg-white dark:bg-slate-900 hover:bg-teal-50 dark:hover:bg-teal-900/10 text-teal-600 dark:text-teal-400 font-black rounded-2xl transition-all border-2 border-slate-100 dark:border-slate-800 hover:border-teal-500/30 shadow-xl hover:shadow-2xl active:scale-95"
+                                    >
+                                      <span className="text-[17px] tracking-tight">{isContentOverflowing ? '下一页' : '收起全文'}</span>
+                                      <div className={`w-8 h-8 rounded-full bg-teal-500/10 flex items-center justify-center transition-transform duration-300 ${!isContentOverflowing ? 'rotate-180' : 'group-hover:translate-y-0.5'}`}>
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                      </div>
+                                    </button>
+                                  </div>
+                                )}
+
+                                {/* For non-Internal Depth articles: keep original "查看更多详情" button */}
+                                {!isInternal && isDepthStyle && (
                                   <div className="mt-4 mb-8 flex justify-center">
                                     <button
                                       onClick={(e) => { e.stopPropagation(); toggleCommentary(item.id); }}
