@@ -601,6 +601,10 @@ function HomeContent() {
                                 <div className="px-5 pt-[10px] pb-5">
                                   <h2 className="text-[16px] font-bold text-text-primary leading-[1.3] tracking-tight">
                                     {item.title}
+                                    <span className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[14px] whitespace-nowrap">
+                                      {videoId ? '视频摘要' : isInternal ? '正文详情' : '内容摘要'}
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                                    </span>
                                   </h2>
                                 </div>
                               </div>
