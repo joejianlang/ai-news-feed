@@ -375,17 +375,17 @@ function HomeContent() {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <Navbar />
 
-      <nav className="sticky top-0 bg-nav border-b border-teal-700/30 dark:border-slate-800 z-40 shadow-sm transition-colors">
+      <nav className="sticky top-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-40 shadow-sm transition-colors">
         <div className="max-w-[900px] mx-auto relative group">
-          {/* Left fading mask to indicate scrollability */}
-          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-nav to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          {/* Left fading mask for scrollability hints */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-slate-900 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
-          <div className="flex items-center overflow-x-auto scrollbar-hide px-4 py-2 gap-2 relative">
+          <div className="flex items-center overflow-x-auto scrollbar-hide px-4 py-2.5 gap-2 relative">
             <button
               onClick={() => setSelectedCategory(null)}
               className={`flex-shrink-0 px-5 py-1.5 text-[15px] font-black rounded-full transition-all duration-300 ${selectedCategory === null
-                ? 'bg-teal-600 text-white shadow-md shadow-teal-500/20 scale-105'
-                : 'text-text-secondary hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-105'
+                : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-white/5'
                 }`}
             >
               全部
@@ -394,7 +394,7 @@ function HomeContent() {
             {user && (
               <Link
                 href="/following"
-                className="flex-shrink-0 px-5 py-1.5 text-[15px] font-black rounded-full text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all flex items-center gap-1.5"
+                className="flex-shrink-0 px-5 py-1.5 text-[15px] font-black rounded-full text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all flex items-center gap-1.5"
               >
                 <span>关注</span>
               </Link>
@@ -407,8 +407,8 @@ function HomeContent() {
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
                   className={`flex-shrink-0 px-5 py-1.5 text-[15px] font-black rounded-full transition-all duration-300 ${selectedCategory === category.id
-                    ? 'bg-teal-600 text-white shadow-md shadow-teal-500/20 scale-105'
-                    : 'text-text-secondary hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-105'
+                    : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-white/5'
                     }`}
                 >
                   {category.name}
@@ -416,8 +416,8 @@ function HomeContent() {
               ))}
           </div>
 
-          {/* Right fading mask to indicate scrollability */}
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-nav to-transparent z-10 pointer-events-none"></div>
+          {/* Right fading mask for scrollability hints */}
+          <div className="absolute right-0 top-0 bottom-0 w-10 bg-gradient-to-l from-white dark:from-slate-900 to-transparent z-10 pointer-events-none"></div>
         </div>
       </nav>
 
