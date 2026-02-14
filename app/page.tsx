@@ -308,12 +308,18 @@ function HomeContent() {
     }, 50);
   };
 
-  const toggleExpansion = (itemId: string, state: 'preview' | 'full', videoId?: string | null) => {
+  const toggleExpansion = (itemId: string, state: 'preview' | 'full', videoId?: string | null, isInternal?: boolean) => {
     setExpansionStates(prev => ({ ...prev, [itemId]: state }));
 
-    // 如果是展开操作且有视频 ID，则自动设置为播放状态，避免用户点击两次
-    if (state === 'full' && videoId) {
-      setPlayingVideoId(videoId);
+    if (state === 'full') {
+      // 自动展开视频摘要或 Internal 文章正文
+      if (videoId) {
+        setPlayingVideoId(videoId);
+        setExpandedVideoSummary(prev => new Set(prev).add(itemId));
+      } else if (isInternal) {
+        setContentPageLevel(prev => ({ ...prev, [itemId]: 1 }));
+        setTimeout(() => checkContentOverflow(itemId), 200);
+      }
     }
 
     if (state === 'preview') {
@@ -515,7 +521,7 @@ function HomeContent() {
                                     href={`/article/${item.id}`}
                                     onClick={(e) => {
                                       e.preventDefault();
-                                      toggleExpansion(item.id, 'full', videoId);
+                                      toggleExpansion(item.id, 'full', videoId, isInternal);
                                     }}
                                     className="block group"
                                   >
@@ -532,10 +538,10 @@ function HomeContent() {
                                 </div>
                               </div>
                             ) : !isFullExpanded ? (
-                              /* Other Categories: Card Style Collapsed Layout */
+                              /* Other Categories: Card Style Collapsed Layout (Figure 1) */
                               <div
                                 className="cursor-pointer active:bg-slate-50/50 dark:active:bg-white/5 transition-colors"
-                                onClick={() => toggleExpansion(item.id, 'full', videoId)}
+                                onClick={() => toggleExpansion(item.id, 'full', videoId, isInternal)}
                               >
                                 {/* 1. Meta Row: Source, Time, Follow Button */}
                                 <div className="px-5 pt-5 pb-3 flex items-center justify-between">
@@ -555,7 +561,7 @@ function HomeContent() {
                                   )}
                                 </div>
 
-                                {/* 2. Image/Video */}
+                                {/* 2. Image/Video Area */}
                                 {(videoId || (item.image_url && item.image_url !== '')) && (
                                   <div className="relative overflow-hidden mx-[5px] aspect-[16/10] rounded-xl group">
                                     {item.content_type === 'video' && videoId ? (
@@ -597,7 +603,7 @@ function HomeContent() {
                                   </div>
                                 )}
 
-                                {/* 3. Title - 10px padding from image */}
+                                {/* 3. Title & Suffix (Figure 1) */}
                                 <div className="px-5 pt-[10px] pb-5">
                                   <h2 className="text-[16px] font-bold text-text-primary leading-[1.3] tracking-tight">
                                     {item.title}
@@ -609,7 +615,7 @@ function HomeContent() {
                                 </div>
                               </div>
                             ) : (
-                              /* Unified Expanded Layout for ALL categories */
+                              /* Unified Expanded Layout for ALL categories (Figure 2) */
                               <div className="flex flex-col">
                                 {/* 1. Meta Row: Source, Time, Follow Button */}
                                 <div className="px-5 pt-5 pb-3 flex items-center justify-between">
@@ -629,9 +635,9 @@ function HomeContent() {
                                   )}
                                 </div>
 
-                                {/* 2. Video Player OR Image */}
+                                {/* 2. Image/Video Area */}
                                 {videoId ? (
-                                  /* VIDEO */
+                                  /* VIDEO Area */
                                   <div className="relative overflow-hidden mx-[5px] aspect-[16/10] rounded-xl bg-black">
                                     {playingVideoId === videoId ? (
                                       <iframe
@@ -678,7 +684,7 @@ function HomeContent() {
                                     )}
                                   </div>
                                 ) : (
-                                  /* IMAGE (for articles) */
+                                  /* IMAGE Area */
                                   (item.image_url && item.image_url !== '') && (
                                     <div className="relative overflow-hidden mx-[5px] aspect-[16/10] rounded-xl group">
                                       <img
