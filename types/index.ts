@@ -63,6 +63,10 @@ export interface User {
   id: string;
   email: string;
   username: string;
+  display_name?: string;
+  avatar_url?: string;
+  phone?: string;
+  bio?: string;
   role?: 'admin' | 'user';
   is_muted?: boolean;
   is_suspended?: boolean;
