@@ -760,9 +760,9 @@ function HomeContent() {
                                         </div>
                                       )}
 
-                                      {/* Pagination Button - 10px padding from content */}
+                                      {/* Pagination & Collapse Buttons - 15px padding from content */}
                                       {currentPageLevel > 0 && (
-                                        <div className="mt-[10px] mb-6 flex justify-center">
+                                        <div className="mt-[15px] mb-4 flex justify-between items-center gap-3">
                                           <button
                                             onClick={(e) => {
                                               e.stopPropagation();
@@ -772,14 +772,22 @@ function HomeContent() {
                                                 resetContentPage(item.id);
                                               }
                                             }}
-                                            className="group flex items-center gap-2.5 px-12 py-4 bg-white dark:bg-slate-900 hover:bg-teal-50 dark:hover:bg-teal-900/10 text-teal-600 dark:text-teal-400 font-black rounded-2xl transition-all border-2 border-slate-100 dark:border-slate-800 hover:border-teal-500/30 shadow-xl hover:shadow-2xl active:scale-95"
+                                            className="flex-1 group flex items-center justify-center gap-2 h-11 bg-white dark:bg-slate-900 hover:bg-teal-50 dark:hover:bg-teal-900/10 text-teal-600 dark:text-teal-400 font-black rounded-xl transition-all border border-slate-200 dark:border-slate-700 hover:border-teal-500/30 shadow-sm hover:shadow-md active:scale-[0.98]"
                                           >
-                                            <span className="text-[17px] tracking-tight">{isContentOverflowing ? '下一页' : '收起全文'}</span>
-                                            <div className={`w-8 h-8 rounded-full bg-teal-500/10 flex items-center justify-center transition-transform duration-300 ${!isContentOverflowing ? 'rotate-180' : 'group-hover:translate-y-0.5'}`}>
-                                              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                                              </svg>
-                                            </div>
+                                            <span className="text-[14px] tracking-tight">{isContentOverflowing ? '下一页' : '收起全文'}</span>
+                                            <svg className={`w-4 h-4 transition-transform duration-300 ${!isContentOverflowing ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                          </button>
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              toggleExpansion(item.id, 'preview');
+                                            }}
+                                            className="flex-1 group flex items-center justify-center gap-2 h-11 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 font-black rounded-xl transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 shadow-sm hover:shadow-md active:scale-[0.98]"
+                                          >
+                                            <svg className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg>
+                                            <span className="text-[14px] tracking-tight">收起</span>
                                           </button>
                                         </div>
                                       )}
@@ -826,8 +834,8 @@ function HomeContent() {
                                   )}
                                 </div>
 
-                                {/* 5. Collapse Button */}
-                                {isFullExpanded && (
+                                {/* 5. Collapse Button (for non-Internal articles and videos) */}
+                                {isFullExpanded && !isInternal && (
                                   <div className="flex justify-center mb-4">
                                     <button
                                       onClick={() => toggleExpansion(item.id, 'preview')}
