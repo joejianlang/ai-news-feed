@@ -592,8 +592,15 @@ function HomeContent() {
                                 )}
 
                                 <div className="px-5 sm:px-8 py-2.5 border-t border-card-border bg-slate-50/30 dark:bg-white/5 flex items-center justify-between">
-                                  {!isInternal && <a href={item.original_url} target="_blank" className="text-teal-600 dark:text-teal-400 font-extrabold text-[13px]">阅读原文</a>}
-                                  <button onClick={() => handleShare(item)} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-secondary text-text-muted transition-all"><svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg></button>
+                                  {!isInternal && !videoId && (
+                                    <a href={item.original_url} target="_blank" className="flex items-center gap-1.5 text-teal-600 dark:text-teal-400 hover:text-teal-700 font-extrabold text-[13px]">
+                                      阅读原文
+                                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m9 18 6-6-6-6" /></svg>
+                                    </a>
+                                  )}
+                                  <button onClick={() => handleShare(item)} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-secondary text-teal-600 dark:text-teal-400 transition-all">
+                                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
+                                  </button>
                                 </div>
                                 <div className="border-t border-card-border"><div className="px-5 sm:px-8 py-2"><CommentSection newsItemId={item.id} initialCommentCount={item.comment_count || 0} /></div></div>
                               </div>
