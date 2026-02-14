@@ -176,7 +176,6 @@ function HomeContent() {
     await loadNews();
   };
 
-
   const getTotalNewsCount = () => {
     return newsBatches.reduce((total, batch) => total + batch.items.length, 0);
   };
@@ -235,45 +234,50 @@ function HomeContent() {
     });
   };
 
-  const LINES_PER_PAGE = 10;
+  const LINES_PER_PAGE = 11; // 翻页逻辑：每次翻 11 行，保留 1 行
 
   const nextContentPage = (itemId: string) => {
     setContentPageLevel(prev => ({
       ...prev,
       [itemId]: (prev[itemId] || 1) + 1
     }));
-    // Check overflow after state update
-    setTimeout(() => checkContentOverflow(itemId), 100);
+
+    // 翻页后，微调视图位置，确保内容顶部对齐
+    setTimeout(() => {
+      const element = document.getElementById(`content-viewport-${itemId}`);
+      if (element) {
+        const headerHeight = window.innerWidth < 640 ? 96 : 112;
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({
+          top: elementPosition - headerHeight - 15, // 向上留出 15px 间距
+          behavior: 'smooth'
+        });
+      }
+      checkContentOverflow(itemId);
+    }, 100);
   };
 
   const resetContentPage = (itemId: string) => {
-    setContentPageLevel(prev => ({ ...prev, [itemId]: 0 }));
-    setContentOverflow(prev => ({ ...prev, [itemId]: true }));
+    setContentPageLevel(prev => ({ ...prev, [itemId]: 1 }));
     // Scroll back to the article
     setTimeout(() => {
       const element = document.getElementById(`article-${itemId}`);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const headerHeight = window.innerWidth < 640 ? 96 : 112;
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({
+          top: elementPosition - headerHeight,
+          behavior: 'smooth'
+        });
       }
     }, 100);
-  };
-
-  const toggleContentSection = (itemId: string) => {
-    const currentLevel = contentPageLevel[itemId] || 0;
-    if (currentLevel === 0) {
-      // Expand to first page
-      setContentPageLevel(prev => ({ ...prev, [itemId]: 1 }));
-      setTimeout(() => checkContentOverflow(itemId), 100);
-    } else {
-      // Collapse
-      resetContentPage(itemId);
-    }
   };
 
   const checkContentOverflow = (itemId: string) => {
     const el = contentRefs.current[itemId];
     if (el) {
-      const isOverflowing = el.scrollHeight > el.clientHeight + 2;
+      // 检查内容总高度是否超过视口高度 (312px)
+      const isOverflowing = el.scrollHeight > (contentPageLevel[itemId] || 1) * 286 + 26;
       setContentOverflow(prev => ({ ...prev, [itemId]: isOverflowing }));
     }
   };
@@ -293,11 +297,10 @@ function HomeContent() {
   const toggleTab = (itemId: string, tab: 'summary' | 'commentary') => {
     setActiveTabs(prev => ({ ...prev, [itemId]: tab }));
 
-    // 当切换 Tab 时，自动将“正在阅读”栏对齐到分类栏下方
+    // 当切换 Tab 时，自动将内容栏对齐
     setTimeout(() => {
-      const element = document.getElementById(`reading-bar-${itemId}`);
+      const element = document.getElementById(`article-${itemId}`);
       if (element) {
-        // 计算顶部吸顶栏的高度 (Navbar + CategoryBar)
         const headerHeight = window.innerWidth < 640 ? 96 : 112;
         const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
         window.scrollTo({
@@ -312,7 +315,6 @@ function HomeContent() {
     setExpansionStates(prev => ({ ...prev, [itemId]: state }));
 
     if (state === 'full') {
-      // 自动展开视频摘要或 Internal 文章正文
       if (videoId) {
         setPlayingVideoId(videoId);
         setExpandedVideoSummary(prev => new Set(prev).add(itemId));
@@ -323,15 +325,18 @@ function HomeContent() {
     }
 
     if (state === 'preview') {
-      // 收起时滚动回条目顶部
       const element = document.getElementById(`article-${itemId}`);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const headerHeight = window.innerWidth < 640 ? 96 : 112;
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+        window.scrollTo({
+          top: elementPosition - headerHeight,
+          behavior: 'smooth'
+        });
       }
     } else if (state === 'full') {
-      // 展开时，自动将“正在阅读”栏对齐到分类栏下方
       setTimeout(() => {
-        const element = document.getElementById(`reading-bar-${itemId}`);
+        const element = document.getElementById(`article-${itemId}`);
         if (element) {
           const headerHeight = window.innerWidth < 640 ? 96 : 112;
           const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
@@ -340,7 +345,7 @@ function HomeContent() {
             behavior: 'smooth'
           });
         }
-      }, 100); // 稍微长一点的延迟确保展开动画和 DOM 渲染完成
+      }, 100);
     }
   };
 
@@ -348,64 +353,47 @@ function HomeContent() {
     const shareData = {
       title: item.title,
       text: item.ai_summary || item.title,
-      url: window.location.origin + `?item=${item.id}`, // 或者直接分享原文链接，看需求
+      url: window.location.origin + `?item=${item.id}`,
     };
 
     try {
       if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
       } else {
-        // Fallback: Copy to clipboard
-        await navigator.clipboard.writeText(`${shareData.title}\n${item.original_url}`);
-        setToast({ message: 'Link copied to clipboard', type: 'success' });
+        await navigator.clipboard.writeText(`${shareData.title}\n${shareData.url}`);
+        setToast({ message: '分享链接已复制', type: 'success' });
       }
     } catch (error) {
       console.error('Error sharing:', error);
-      // Fallback: Copy to clipboard if sharing fails
-      try {
-        await navigator.clipboard.writeText(`${item.title}\n${item.original_url}`);
-        setToast({ message: 'Link copied to clipboard', type: 'success' });
-      } catch (copyError) {
-        console.error('Copy failed:', copyError);
-      }
     }
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
-      {/* 顶部导航 */}
       <Navbar />
 
-      {/* 分类标签栏 - 与 Navbar 一起固定 */}
       <nav className="sticky top-0 bg-nav border-b border-teal-700 dark:border-slate-800 z-40 shadow-md transition-colors">
         <div className="max-w-[900px] mx-auto px-4 py-1.5 sm:py-2">
           <div className="flex overflow-x-auto scrollbar-hide">
-            {/* 全部 选项 */}
             <button
               onClick={() => setSelectedCategory(null)}
               className={`flex-shrink-0 px-4 py-3 text-[17px] font-bold border-b-2 transition-colors ${selectedCategory === null
                 ? 'text-teal-600 border-teal-600'
-                : 'text-text-secondary border-transparent hover:text-foreground hover:border-card-border'
+                : 'text-text-secondary border-transparent hover:text-foreground'
                 }`}
             >
               全部
             </button>
 
-            {/* 我的关注 - 显示快捷入口 */}
             {user && (
               <Link
                 href="/following"
                 className="flex-shrink-0 px-4 py-3 text-[17px] font-bold border-b-2 border-transparent text-teal-600 hover:text-teal-700 flex items-center gap-1.5 transition-colors group"
               >
-                <div className="w-5 h-5 flex items-center justify-center">
-                  <svg className="w-4 h-4 fill-teal-600 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                </div>
                 <span>关注</span>
               </Link>
             )}
-            {/* 动态分类 - 过滤掉旧分类 */}
+
             {categories
               .filter((cat: Category) => !['传统新闻媒体', 'YouTube网红', '网络专业媒体'].includes(cat.name))
               .map((category: Category) => (
@@ -414,7 +402,7 @@ function HomeContent() {
                   onClick={() => setSelectedCategory(category.id)}
                   className={`flex-shrink-0 px-4 py-3 text-[17px] font-bold border-b-2 transition-colors ${selectedCategory === category.id
                     ? 'text-teal-600 border-teal-600'
-                    : 'text-text-secondary border-transparent hover:text-foreground hover:border-card-border'
+                    : 'text-text-secondary border-transparent hover:text-foreground'
                     }`}
                 >
                   {category.name}
@@ -424,478 +412,177 @@ function HomeContent() {
         </div>
       </nav>
 
-      {/* 时间线 */}
       <main className="max-w-[900px] mx-auto px-4 sm:px-6 pt-4">
-        {isLoading && newsBatches.length === 0 ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="text-gray-500">加载中...</div>
-          </div>
-        ) : newsBatches.length === 0 ? (
-          <div className="flex flex-col justify-center items-center py-20 text-center">
-            <div className="text-gray-500 mb-4">暂无新闻</div>
-          </div>
-        ) : (
-          <div className="space-y-2.5">
-            {(() => {
-              let globalItemIndex = 0;
-              return newsBatches.map((batch) => (
-                <div key={batch.batchTime}>
+        {!isLoading || newsBatches.length > 0 ? (
+          <div className="space-y-4">
+            {newsBatches.map((batch, batchIndex) => (
+              <div key={batch.batchTime}>
+                <div className="space-y-4">
                   {batch.items
-                    .filter((item) => {
+                    .filter(item => {
                       const isInternal = item.source?.name === '数位 Buffet';
                       const isVideo = item.content_type === 'video';
                       return item.ai_summary || item.ai_commentary || isInternal || isVideo;
                     })
-                    .map((item) => {
-                      globalItemIndex++;
+                    .map((item, itemIndex) => {
+                      const globalIndex = batchIndex * 100 + itemIndex;
                       const isInternal = item.source?.name === '数位 Buffet';
-                      const isAllCategory = selectedCategory === null;
-                      const activeTab = activeTabs[item.id] || 'summary';
                       const isFullExpanded = expansionStates[item.id] === 'full';
-                      const isDepthStyle = isInternal || item.categories?.name === '深度';
-                      const isCommentaryExpanded = expandedCommentary.has(item.id);
-
-                      const displayContent = isInternal
-                        ? (isCommentaryExpanded
-                          ? (item.ai_summary
-                            ? `### 内容摘要\n\n${item.ai_summary}\n\n---\n\n### 正文详情\n\n${item.content}`
-                            : item.content)
-                          : (item.ai_summary || item.content))
-                        : (activeTab === 'summary'
-                          ? (item.ai_summary || item.content)
-                          : item.ai_commentary);
-
+                      const activeTab = activeTabs[item.id] || 'summary';
+                      const videoId = item.content_type === 'video' ? (item.video_id || extractYouTubeVideoId(item.original_url)) : null;
                       const currentPageLevel = contentPageLevel[item.id] || 0;
                       const isContentOverflowing = contentOverflow[item.id] !== false;
-                      const lineClampValue = isInternal ? (currentPageLevel * LINES_PER_PAGE) : 0;
-
-                      const ad = activeAds.length > 0 && globalItemIndex % 5 === 0
-                        ? activeAds[Math.floor(globalItemIndex / 5 - 1) % activeAds.length]
-                        : null;
-
-                      const videoId = item.content_type === 'video' ? (item.video_id || extractYouTubeVideoId(item.original_url)) : null;
+                      const displayContent = activeTab === 'summary' ? (item.ai_summary || item.content) : item.ai_commentary;
+                      const ad = globalIndex > 0 && globalIndex % 5 === 0 ? activeAds[Math.floor(globalIndex / 5) % activeAds.length] : null;
 
                       return (
                         <React.Fragment key={item.id}>
                           <article
                             id={`article-${item.id}`}
-                            className="bg-card rounded-[24px] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden mb-3 transition-all duration-300 border border-card-border sm:min-h-[150px]"
+                            className="bg-card rounded-[24px] shadow-sm overflow-hidden border border-card-border"
                           >
-                            {isAllCategory && !isFullExpanded ? (
-                              /* "全部" Category: List Style Collapsed Layout */
+                            {!isFullExpanded ? (
+                              /* Collapsed View */
                               <div
-                                className="flex gap-3 p-2 items-center cursor-pointer active:bg-slate-50/50 dark:active:bg-white/5 transition-colors"
-                                onClick={() => toggleExpansion(item.id, 'full', videoId)}
-                              >
-                                {/* Left: Thumbnail */}
-                                {(videoId || (item.image_url && item.image_url !== '')) && (
-                                  <div className="w-24 h-24 sm:w-36 sm:h-36 flex-shrink-0 rounded-xl bg-slate-100 dark:bg-white/5 overflow-hidden">
-                                    <img
-                                      src={item.content_type === 'video' && videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : item.image_url!}
-                                      alt={item.title}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </div>
-                                )}
-
-                                {/* Right: Meta & Title */}
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-1.5 overflow-hidden">
-                                    <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[11px] uppercase tracking-tight truncate max-w-[120px]">
-                                      {item.author_name || item.source?.name || 'Unknown Source'}
-                                    </span>
-                                    {item.categories?.name && (
-                                      <>
-                                        <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                        <span className="text-slate-500 dark:text-slate-400 font-extrabold text-[11px] uppercase tracking-tight truncate max-w-[80px]">
-                                          {item.categories.name}
-                                        </span>
-                                      </>
-                                    )}
-                                    <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                    <span className="text-text-muted text-[11px] font-bold uppercase whitespace-nowrap">
-                                      {formatTime(item.created_at)}
-                                    </span>
-                                  </div>
-                                  <Link
-                                    href={`/article/${item.id}`}
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      toggleExpansion(item.id, 'full', videoId, isInternal);
-                                    }}
-                                    className="block group"
-                                  >
-                                    <h2 className="text-[13px] sm:text-[14px] font-black text-text-primary leading-[1.4] tracking-tight line-clamp-2 group-hover:text-teal-600 transition-colors">
-                                      {item.title}
-                                      <span
-                                        className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[13px] whitespace-nowrap"
-                                      >
-                                        详情
-                                        <svg className="w-3 h-3 translate-y-px" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                                      </span>
-                                    </h2>
-                                  </Link>
-                                </div>
-                              </div>
-                            ) : !isFullExpanded ? (
-                              /* Other Categories: Card Style Collapsed Layout (Figure 1) */
-                              <div
-                                className="cursor-pointer active:bg-slate-50/50 dark:active:bg-white/5 transition-colors"
+                                className="cursor-pointer p-5 active:bg-slate-50 dark:active:bg-white/5 transition-colors"
                                 onClick={() => toggleExpansion(item.id, 'full', videoId, isInternal)}
                               >
-                                {/* 1. Meta Row: Source, Time, Follow Button */}
-                                <div className="px-5 pt-5 pb-3 flex items-center justify-between">
-                                  <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
-                                    <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate">
-                                      {item.author_name || item.source?.name || 'Unknown Source'}
-                                    </span>
-                                    <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                    <span className="text-text-muted text-[12px] font-bold whitespace-nowrap">
-                                      {formatTime(item.created_at)}
-                                    </span>
-                                  </div>
-                                  {item.source && (
-                                    <div className="flex-shrink-0 ml-3" onClick={(e) => e.stopPropagation()}>
-                                      <FollowButton sourceId={item.source_id} />
-                                    </div>
-                                  )}
+                                <div className="flex items-center gap-2 mb-3">
+                                  <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase">
+                                    {item.author_name || item.source?.name}
+                                  </span>
+                                  <span className="text-slate-300 dark:text-slate-600">·</span>
+                                  <span className="text-text-muted text-[12px]">{formatTime(item.created_at)}</span>
                                 </div>
 
-                                {/* 2. Image/Video Area */}
-                                {(videoId || (item.image_url && item.image_url !== '')) && (
-                                  <div className="relative overflow-hidden mx-[5px] aspect-[16/10] rounded-xl group">
-                                    {item.content_type === 'video' && videoId ? (
-                                      <div className="absolute inset-0">
-                                        <img
-                                          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
-                                          alt={item.title}
-                                          className="w-full h-full object-cover"
-                                          onError={(e) => {
-                                            const target = e.currentTarget;
-                                            if (target.src.includes('maxresdefault')) {
-                                              target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                                            }
-                                          }}
-                                        />
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                                          <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                                            <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      <img
-                                        src={item.image_url!}
-                                        alt={item.title}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                        onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
-                                      />
-                                    )}
-                                    {/* Location Tag */}
-                                    {item.location && (
-                                      <div className="absolute top-4 left-4 z-10">
-                                        <div className="bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-black px-3 py-1.5 rounded-lg shadow-lg uppercase tracking-wider flex items-center gap-1.5 border border-white/10">
-                                          <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(45,212,191,0.6)]"></span>
-                                          {item.location}
+                                {(videoId || item.image_url) && (
+                                  <div className="relative aspect-[16/10] rounded-xl overflow-hidden mb-4 bg-slate-100 dark:bg-white/5">
+                                    <img
+                                      src={videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : item.image_url!}
+                                      alt=""
+                                      className="w-full h-full object-cover"
+                                    />
+                                    {videoId && (
+                                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                        <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white">
+                                          <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                                         </div>
                                       </div>
                                     )}
                                   </div>
                                 )}
 
-                                {/* 3. Title & Suffix (Figure 1) */}
-                                <div className="px-5 pt-[10px] pb-5">
-                                  <h2 className="text-[16px] font-bold text-text-primary leading-[1.3] tracking-tight">
-                                    {item.title}
-                                    <span className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[14px] whitespace-nowrap">
-                                      {videoId ? '视频摘要' : isInternal ? '正文详情' : '内容摘要'}
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                                    </span>
-                                  </h2>
-                                </div>
+                                <h2 className="text-[16px] font-bold leading-relaxed">
+                                  {item.title}
+                                  <span className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[14px]">
+                                    {videoId ? '视频摘要' : isInternal ? '正文详情' : '内容摘要'}
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path d="m6 9 6 6 6-6" /></svg>
+                                  </span>
+                                </h2>
                               </div>
                             ) : (
-                              /* Unified Expanded Layout for ALL categories (Figure 2) */
+                              /* Expanded View */
                               <div className="flex flex-col">
-                                {/* 1. Meta Row: Source, Time, Follow Button */}
                                 <div className="px-5 pt-5 pb-3 flex items-center justify-between">
                                   <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
-                                    <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate">
-                                      {item.author_name || item.source?.name || 'Unknown Source'}
+                                    <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase truncate">
+                                      {item.author_name || item.source?.name}
                                     </span>
-                                    <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                    <span className="text-text-muted text-[12px] font-bold whitespace-nowrap">
-                                      {formatTime(item.created_at)}
-                                    </span>
+                                    <span className="text-slate-300 dark:text-slate-600">·</span>
+                                    <span className="text-text-muted text-[12px] whitespace-nowrap">{formatTime(item.created_at)}</span>
                                   </div>
-                                  {item.source && (
-                                    <div className="flex-shrink-0 ml-3" onClick={(e) => e.stopPropagation()}>
-                                      <FollowButton sourceId={item.source_id} />
-                                    </div>
-                                  )}
+                                  <FollowButton sourceId={item.source_id} />
                                 </div>
 
-                                {/* 2. Image/Video Area */}
-                                {videoId ? (
-                                  /* VIDEO Area */
-                                  <div className="relative overflow-hidden mx-[5px] aspect-[16/10] rounded-xl bg-black">
-                                    {playingVideoId === videoId ? (
-                                      <iframe
-                                        className="w-full h-full"
-                                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`}
-                                        title={item.title}
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowFullScreen
-                                      />
-                                    ) : (
-                                      <div
-                                        className="absolute inset-0 cursor-pointer group"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setPlayingVideoId(videoId);
-                                        }}
-                                      >
-                                        <img
-                                          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
-                                          alt={item.title}
-                                          className="w-full h-full object-cover"
-                                          onError={(e) => {
-                                            const target = e.currentTarget;
-                                            if (target.src.includes('maxresdefault')) {
-                                              target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                                            }
-                                          }}
-                                        />
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                                          <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
-                                            <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    )}
-                                    {/* Location Tag */}
-                                    {item.location && (
-                                      <div className="absolute top-4 left-4 z-10">
-                                        <div className="bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-black px-3 py-1.5 rounded-lg shadow-lg uppercase tracking-wider flex items-center gap-1.5 border border-white/10">
-                                          <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(45,212,191,0.6)]"></span>
-                                          {item.location}
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                ) : (
-                                  /* IMAGE Area */
-                                  (item.image_url && item.image_url !== '') && (
-                                    <div className="relative overflow-hidden mx-[5px] aspect-[16/10] rounded-xl group">
-                                      <img
-                                        src={item.image_url}
-                                        alt={item.title}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                        onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
-                                      />
-                                      {/* Location Tag */}
-                                      {item.location && (
-                                        <div className="absolute top-4 left-4 z-10">
-                                          <div className="bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-black px-3 py-1.5 rounded-lg shadow-lg uppercase tracking-wider flex items-center gap-1.5 border border-white/10">
-                                            <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(45,212,191,0.6)]"></span>
-                                            {item.location}
-                                          </div>
+                                <div className="mx-[5px]">
+                                  {videoId ? (
+                                    <div className="aspect-[16/10] rounded-xl overflow-hidden bg-black">
+                                      {playingVideoId === videoId ? (
+                                        <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${videoId}?autoplay=1`} allowFullScreen />
+                                      ) : (
+                                        <div className="relative w-full h-full cursor-pointer" onClick={() => setPlayingVideoId(videoId)}>
+                                          <img src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} className="w-full h-full object-cover" />
+                                          <div className="absolute inset-0 flex items-center justify-center bg-black/20"><div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-white"><svg className="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg></div></div>
                                         </div>
                                       )}
                                     </div>
-                                  )
-                                )}
+                                  ) : (
+                                    item.image_url && (
+                                      <div className="aspect-[16/10] rounded-xl overflow-hidden">
+                                        <img src={item.image_url} className="w-full h-full object-cover" />
+                                      </div>
+                                    )
+                                  )}
+                                </div>
 
-                                {/* 3. Title (for videos only) - 10px padding from video */}
-                                {videoId && (
-                                  <div className="px-5 pt-[10px]">
-                                    <h2 className="text-[16px] font-bold text-text-primary leading-[1.3] tracking-tight">
-                                      {item.title}
-                                    </h2>
-                                  </div>
-                                )}
+                                {videoId && <div className="px-5 pt-3"><h2 className="text-[16px] font-black">{item.title}</h2></div>}
 
-                                {/* 4. Content Area */}
-                                <div className="px-5 pt-[10px] pb-2">
+                                <div className="px-5 py-3">
                                   {videoId ? (
-                                    /* VIDEO: Collapsible Summary */
+                                    /* Video Summary */
                                     <>
-                                      <div
-                                        className="flex items-center gap-2 mb-3 cursor-pointer group/summary"
-                                        onClick={(e) => { e.stopPropagation(); toggleVideoSummary(item.id); }}
-                                      >
+                                      <div className="flex items-center gap-2 mb-3 cursor-pointer" onClick={() => toggleVideoSummary(item.id)}>
                                         <div className="w-1 h-5 bg-teal-500 rounded-full"></div>
-                                        <span className="text-[16px] font-black text-text-primary">视频摘要</span>
-                                        <svg className={`w-4 h-4 text-teal-500 transition-transform duration-300 ${expandedVideoSummary.has(item.id) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                                        <span className="text-[16px] font-black">视频摘要</span>
+                                        <svg className={`w-4 h-4 text-teal-500 transition-transform ${expandedVideoSummary.has(item.id) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path d="m6 9 6 6 6-6" /></svg>
                                       </div>
                                       {expandedVideoSummary.has(item.id) && item.ai_summary && (
-                                        <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 mb-4 animate-in fade-in slide-in-from-top-1 duration-300">
-                                          <div
-                                            className="text-text-primary article-content"
-                                            dangerouslySetInnerHTML={{ __html: renderMarkdown(item.ai_summary) }}
-                                          />
-                                        </div>
+                                        <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 mb-4" dangerouslySetInnerHTML={{ __html: renderMarkdown(item.ai_summary) }} />
                                       )}
                                     </>
                                   ) : isInternal ? (
-                                    /* ARTICLE (Internal): Paginated Content */
+                                    /* Internal Article: Paged Flip */
                                     <>
-                                      <div
-                                        className="flex items-center gap-2 mb-4 cursor-pointer group/section"
-                                        onClick={() => toggleContentSection(item.id)}
-                                      >
-                                        <div className="w-1 h-5 bg-teal-500 rounded-full"></div>
-                                        <span className="text-[16px] font-black text-text-primary">正文详情</span>
-                                        <svg className={`w-4 h-4 text-teal-500 transition-transform duration-300 ${currentPageLevel > 0 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                                      </div>
-
-                                      {/* Content - hidden by default, paginated when expanded */}
                                       {currentPageLevel > 0 && (
-                                        <div className="relative min-h-[60px] mb-4">
+                                        <div id={`content-viewport-${item.id}`} className="relative overflow-hidden mb-4" style={{ height: '312px' }}>
                                           <div
-                                            ref={(el) => { contentRefs.current[item.id] = el; }}
-                                            className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 transition-all duration-300"
-                                            style={{
-                                              display: '-webkit-box',
-                                              WebkitBoxOrient: 'vertical' as const,
-                                              WebkitLineClamp: lineClampValue,
-                                              overflow: 'hidden'
-                                            }}
-                                          >
-                                            <div
-                                              className="text-text-primary article-content"
-                                              dangerouslySetInnerHTML={{ __html: renderMarkdown(item.content || '') }}
-                                            />
-                                          </div>
+                                            ref={el => { contentRefs.current[item.id] = el; }}
+                                            className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed transition-transform duration-500 ease-in-out"
+                                            style={{ transform: `translateY(-${(currentPageLevel - 1) * 286}px)` }}
+                                            dangerouslySetInnerHTML={{ __html: renderMarkdown(item.content || '') }}
+                                          />
                                         </div>
                                       )}
-
-                                      {/* Pagination & Collapse Buttons - 15px padding from content */}
                                       {currentPageLevel > 0 && (
-                                        <div className="mt-[15px] mb-4 flex justify-between items-center gap-3">
-                                          <button
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              if (isContentOverflowing) {
-                                                nextContentPage(item.id);
-                                              } else {
-                                                resetContentPage(item.id);
-                                              }
-                                            }}
-                                            className="flex-1 group flex items-center justify-center gap-2 h-11 bg-white dark:bg-slate-900 hover:bg-teal-50 dark:hover:bg-teal-900/10 text-teal-600 dark:text-teal-400 font-black rounded-xl transition-all border border-slate-200 dark:border-slate-700 hover:border-teal-500/30 shadow-sm hover:shadow-md active:scale-[0.98]"
-                                          >
-                                            <span className="text-[14px] tracking-tight">{isContentOverflowing ? '下一页' : '收起全文'}</span>
-                                            <svg className={`w-4 h-4 transition-transform duration-300 ${!isContentOverflowing ? 'rotate-180' : 'group-hover:translate-y-0.5'}`} fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                                            </svg>
+                                        <div className="flex gap-3 mb-4">
+                                          <button onClick={() => isContentOverflowing ? nextContentPage(item.id) : resetContentPage(item.id)} className="flex-1 h-11 bg-white dark:bg-slate-900 text-teal-600 font-extrabold rounded-xl border border-slate-200 dark:border-slate-700">
+                                            {isContentOverflowing ? '下一页' : '收起全文'}
                                           </button>
-                                          <button
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              toggleExpansion(item.id, 'preview');
-                                            }}
-                                            className="flex-1 group flex items-center justify-center gap-2 h-11 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 font-black rounded-xl transition-all border border-slate-200 dark:border-slate-700 hover:border-slate-300 shadow-sm hover:shadow-md active:scale-[0.98]"
-                                          >
-                                            <svg className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg>
-                                            <span className="text-[14px] tracking-tight">收起</span>
-                                          </button>
+                                          <button onClick={() => toggleExpansion(item.id, 'preview')} className="flex-1 h-11 bg-slate-50 dark:bg-slate-800 text-slate-500 font-extrabold rounded-xl border border-slate-200 dark:border-slate-700">收起</button>
                                         </div>
                                       )}
                                     </>
                                   ) : (
-                                    /* ARTICLE (Non-Internal): Tabs */
+                                    /* Non-Internal Tabs */
                                     <>
-                                      {/* Tabs */}
                                       <div className="flex gap-8 border-b border-card-border mb-3 px-1">
-                                        <button
-                                          onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'summary'); }}
-                                          className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'summary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
-                                        >
-                                          内容摘要
-                                          {activeTab === 'summary' && (
-                                            <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full shadow-[0_-2px_6px_rgba(20,184,166,0.2)]"></div>
-                                          )}
+                                        <button onClick={() => toggleTab(item.id, 'summary')} className={`pb-3 text-[15px] font-black relative ${activeTab === 'summary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}>
+                                          内容摘要 {activeTab === 'summary' && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full" />}
                                         </button>
                                         {item.ai_commentary && (
-                                          <button
-                                            onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'commentary'); }}
-                                            className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'commentary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
-                                          >
-                                            专业解读
-                                            {activeTab === 'commentary' && (
-                                              <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full shadow-[0_-2px_6px_rgba(20,184,166,0.2)]"></div>
-                                            )}
+                                          <button onClick={() => toggleTab(item.id, 'commentary')} className={`pb-3 text-[15px] font-black relative ${activeTab === 'commentary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}>
+                                            专业解读 {activeTab === 'commentary' && <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full" />}
                                           </button>
                                         )}
                                       </div>
-
-                                      {/* Tab Content */}
-                                      <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 mb-4">
-                                        {displayContent ? (
-                                          <div
-                                            className={`text-text-primary article-content ${activeTab === 'commentary' ? "italic" : ""}`}
-                                            dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent || '') }}
-                                          />
-                                        ) : (
-                                          <p className="italic text-slate-400 dark:text-slate-600 text-center py-4">暂无内容...</p>
-                                        )}
-                                      </div>
+                                      <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 mb-4" dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent || '') }} />
                                     </>
                                   )}
                                 </div>
 
-                                {/* 5. Collapse Button (for non-Internal articles and videos) */}
-                                {isFullExpanded && !isInternal && (
+                                {isFullExpanded && !isInternal && !videoId && (
                                   <div className="flex justify-center mb-4">
-                                    <button
-                                      onClick={() => toggleExpansion(item.id, 'preview')}
-                                      className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 px-8 py-2 rounded-full border border-slate-100 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-black text-[13px] group shadow-sm active:scale-95"
-                                    >
-                                      <svg className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg>
-                                      收起
+                                    <button onClick={() => toggleExpansion(item.id, 'preview')} className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 text-slate-400 px-8 py-2 rounded-full border border-slate-100 dark:border-slate-700 font-black text-[13px]">
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path d="m18 15-6-6-6 6" /></svg> 收起
                                     </button>
                                   </div>
                                 )}
 
-                                {/* 6. Footer: Original Link, Share, Comments */}
-                                {isFullExpanded && (
-                                  <>
-                                    <div className="px-5 sm:px-8 py-2.5 flex items-center justify-between border-t border-card-border mt-0 bg-slate-50/30 dark:bg-white/5">
-                                      <div className="flex items-center gap-6">
-                                        {!isInternal && (
-                                          <a
-                                            href={item.original_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center gap-1.5 text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors group"
-                                          >
-                                            <span className="text-[13px] font-extrabold group-hover:underline decoration-2 underline-offset-4 decoration-teal-200/50">阅读原文</span>
-                                            <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
-                                          </a>
-                                        )}
-                                      </div>
-                                      <div className="flex items-center gap-2 text-slate-300">
-                                        <button
-                                          onClick={() => handleShare(item)}
-                                          className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-secondary text-text-muted hover:text-text-primary transition-all"
-                                        >
-                                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
-                                        </button>
-                                        <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-secondary text-text-muted hover:text-text-primary transition-all">
-                                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
-                                        </button>
-                                      </div>
-                                    </div>
-                                    <div className="border-t border-card-border bg-secondary/5 dark:bg-white/5">
-                                      <div className="px-5 sm:px-8 py-2">
-                                        <CommentSection
-                                          newsItemId={item.id}
-                                          initialCommentCount={item.comment_count || 0}
-                                        />
-                                      </div>
-                                    </div>
-                                  </>
-                                )}
+                                <div className="px-5 sm:px-8 py-2.5 border-t border-card-border bg-slate-50/30 dark:bg-white/5 flex items-center justify-between">
+                                  {!isInternal && <a href={item.original_url} target="_blank" className="text-teal-600 dark:text-teal-400 font-extrabold text-[13px]">阅读原文</a>}
+                                  <button onClick={() => handleShare(item)} className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-secondary text-text-muted transition-all"><svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg></button>
+                                </div>
+                                <div className="border-t border-card-border"><div className="px-5 sm:px-8 py-2"><CommentSection newsItemId={item.id} initialCommentCount={item.comment_count || 0} /></div></div>
                               </div>
                             )}
                           </article>
@@ -904,26 +591,20 @@ function HomeContent() {
                       );
                     })}
                 </div>
-              ));
-            })()}
-
+              </div>
+            ))}
             {newsBatches.length > 0 && (
               <div className="text-center py-8 text-gray-400 text-sm">
                 共 {newsBatches.length} 批更新，累计 {getTotalNewsCount()} 条新闻
               </div>
-            )
-            }
+            )}
           </div>
+        ) : (
+          <div className="flex justify-center items-center py-20 font-bold text-gray-500">加载中...</div>
         )}
       </main>
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 }
