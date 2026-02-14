@@ -549,383 +549,281 @@ function HomeContent() {
                                 </div>
                               </div>
                             ) : (
-                              <div className="flex flex-col">
-                                {/* 1. Image Area (Top) - Conditional Rendering */}
-                                {isDepthStyle && (
-                                  <div className="md:hidden px-5 pt-5 sm:px-8 sm:pt-7 pb-0">
-                                    <div className="flex items-center justify-between mb-3">
-                                      <div className="flex items-center gap-2.5 overflow-hidden">
-                                        <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">
-                                          {item.author_name || item.source?.name || "Unknown Source"}
-                                        </span>
-                                        {item.categories?.name && (
-                                          <>
-                                            <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                            <span className="px-2 py-0.5 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 rounded-md text-[10px] font-black uppercase tracking-wider">
-                                              {item.categories.name}
-                                            </span>
-                                          </>
-                                        )}
-                                        <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                        <span className="text-text-muted text-[12px] font-bold uppercase whitespace-nowrap">
-                                          {formatTime(item.created_at)}
-                                        </span>
-                                      </div>
-                                      {item.source && (
-                                        <div className="flex-shrink-0 origin-right transition-transform active:scale-95">
-                                          <FollowButton sourceId={item.source_id} />
-                                        </div>
-                                      )}
-                                    </div>
-                                    <Link
-                                      href={`/article/${item.id}`}
-                                      onClick={(e) => {
-                                        if (!isFullExpanded) {
-                                          e.preventDefault();
-                                          toggleExpansion(item.id, "full");
-                                        }
-                                      }}
-                                      className="block group"
-                                    >
-                                      <h2 className="text-[20px] sm:text-[24px] font-black text-text-primary leading-[1.3] tracking-tight mb-2 group-hover:text-teal-700 dark:hover:text-teal-400 transition-colors">
-                                        {item.title}
-                                        {!isFullExpanded && !isInternal && (
-                                          <span className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[15px] whitespace-nowrap group-hover:translate-x-0.5 transition-transform">
-                                            详细
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                                          </span>
-                                        )}
-                                      </h2>
-                                    </Link>
-                                  </div>
-                                )}
-                                {(videoId || (item.image_url && item.image_url !== '')) && (
-                                  <div className={`relative overflow-hidden group transition-all duration-500 rounded-xl ${isDepthStyle
-                                    ? "mx-[5px] mt-[2px] aspect-[16/10] md:mx-0 md:ml-6 md:mt-6 md:w-[32%] md:max-w-[340px] md:aspect-[2/3] shadow-lg sticky top-32 flex-shrink-0"
-                                    : "mx-[5px] mt-[5px] aspect-[16/10]"
-                                    }`}>
-                                    {item.content_type === 'video' && videoId ? (
-                                      <div className="absolute inset-0 bg-black">
-                                        {playingVideoId === videoId ? (
-                                          <iframe
-                                            className="w-full h-full"
-                                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`}
-                                            title={item.title}
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                            allowFullScreen
-                                          />
-                                        ) : (
-                                          <div
-                                            className="absolute inset-0 cursor-pointer"
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              setPlayingVideoId(videoId);
-                                            }}
-                                          >
-                                            <img
-                                              src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
-                                              alt={item.title}
-                                              className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-105"
-                                              onError={(e) => {
-                                                const target = e.currentTarget;
-                                                if (target.src.includes('maxresdefault')) {
-                                                  target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                                                }
-                                              }}
-                                            />
-                                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
-                                              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300">
-                                                <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                                              </div>
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    ) : (
-                                      <img
-                                        src={item.image_url!}
-                                        alt={item.title}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                        onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
-                                      />
-                                    )}
+    /* Unified Expanded Layout for ALL categories */
+    <div className="flex flex-col">
+        {/* 1. Meta Row: Source, Time, Follow Button */}
+        <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
+                <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate">
+                    {item.author_name || item.source?.name || 'Unknown Source'}
+                </span>
+                <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
+                <span className="text-text-muted text-[12px] font-bold whitespace-nowrap">
+                    {formatTime(item.created_at)}
+                </span>
+            </div>
+            {item.source && (
+                <div className="flex-shrink-0 ml-3" onClick={(e) => e.stopPropagation()}>
+                    <FollowButton sourceId={item.source_id} />
+                </div>
+            )}
+        </div>
 
-                                    {/* Location Tag */}
-                                    {item.location && (
-                                      <div className="absolute top-4 left-4 z-10">
-                                        <div className="bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-black px-3 py-1.5 rounded-lg shadow-lg uppercase tracking-wider flex items-center gap-1.5 border border-white/10 transition-transform hover:scale-105">
-                                          <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(45,212,191,0.6)]"></span>
-                                          {item.location}
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
+        {/* 2. Video Player OR Image */}
+        {videoId ? (
+            /* VIDEO */
+            <div className="relative overflow-hidden mx-[5px] aspect-[16/10] rounded-xl bg-black">
+                {playingVideoId === videoId ? (
+                    <iframe
+                        className="w-full h-full"
+                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`}
+                        title={item.title}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                    />
+                ) : (
+                    <div
+                        className="absolute inset-0 cursor-pointer group"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setPlayingVideoId(videoId);
+                        }}
+                    >
+                        <img
+                            src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                                const target = e.currentTarget;
+                                if (target.src.includes('maxresdefault')) {
+                                    target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                }
+                            }}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                            <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                                <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* Location Tag */}
+                {item.location && (
+                    <div className="absolute top-4 left-4 z-10">
+                        <div className="bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-black px-3 py-1.5 rounded-lg shadow-lg uppercase tracking-wider flex items-center gap-1.5 border border-white/10">
+                            <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(45,212,191,0.6)]"></span>
+                            {item.location}
+                        </div>
+                    </div>
+                )}
+            </div>
+        ) : (
+            /* IMAGE (for articles) */
+            (item.image_url && item.image_url !== '') && (
+                <div className="relative overflow-hidden mx-[5px] aspect-[16/10] rounded-xl group">
+                    <img
+                        src={item.image_url}
+                        alt={item.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        onError={(e) => { e.currentTarget.parentElement!.style.display = 'none'; }}
+                    />
+                    {/* Location Tag */}
+                    {item.location && (
+                        <div className="absolute top-4 left-4 z-10">
+                            <div className="bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-black px-3 py-1.5 rounded-lg shadow-lg uppercase tracking-wider flex items-center gap-1.5 border border-white/10">
+                                <span className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(45,212,191,0.6)]"></span>
+                                {item.location}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )
+        )}
 
-                                <div className={`flex-1 min-w-0 ${isDepthStyle ? "md:pr-2" : ""}`}>
-                                  <div className={isDepthStyle ? "px-5 pt-1 md:pt-8 pb-2" : "px-5 pt-3 sm:px-6 sm:pt-6 pb-2"}>
-                                    {/* Meta Row (Now on Right for Depth) */}
-                                    <div className={`items-center justify-between mb-3 ${isDepthStyle ? "hidden md:flex" : "hidden"}`}>
-                                      <div className="flex items-center gap-2.5 overflow-hidden">
-                                        <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">
-                                          {item.author_name || item.source?.name || 'Unknown Source'}
-                                        </span>
-                                        {item.categories?.name && (
-                                          <>
-                                            <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                            <span className="px-2 py-0.5 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 rounded-md text-[10px] font-black uppercase tracking-wider">
-                                              {item.categories.name}
-                                            </span>
-                                          </>
-                                        )}
-                                        <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                        <span className="text-text-muted text-[12px] font-bold uppercase whitespace-nowrap">
-                                          {formatTime(item.created_at)}
-                                        </span>
-                                      </div>
-                                      {item.source && isDepthStyle && (
-                                        <div className="flex-shrink-0 origin-right transition-transform active:scale-95 scale-90">
-                                          <FollowButton sourceId={item.source_id} />
-                                        </div>
-                                      )}
-                                    </div>
+        {/* 3. Title (for videos only) - 10px padding from video */}
+        {videoId && (
+            <div className="px-5 pt-[10px]">
+                <h2 className="text-[16px] font-bold text-text-primary leading-[1.3] tracking-tight">
+                    {item.title}
+                </h2>
+            </div>
+        )}
 
-                                    {/* Title (Now on Right for Depth) */}
-                                    <Link
-                                      href={`/article/${item.id}`}
-                                      onClick={(e) => {
-                                        if (!isFullExpanded) {
-                                          e.preventDefault();
-                                          toggleExpansion(item.id, 'full');
-                                        }
-                                      }}
-                                      className={`block group mb-4 ${isDepthStyle ? "hidden md:block" : "hidden"}`}
-                                    >
-                                      <h2 className={`font-black text-text-primary leading-[1.3] tracking-tight group-hover:text-teal-700 dark:hover:text-teal-400 transition-colors ${isDepthStyle ? "text-[20px] sm:text-[23px]" : "text-[15px] sm:text-[16px] line-clamp-3"}`}>
-                                        {item.title}
-                                        {!isFullExpanded && !isInternal && (
-                                          <span
-                                            className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[15px] whitespace-nowrap group-hover:translate-x-0.5 transition-transform"
-                                          >
-                                            详细
-                                            <svg className={`w-4 h-4 transition-transform ${isDepthStyle ? "" : "-rotate-90"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                                          </span>
-                                        )}
-                                      </h2>
-                                    </Link>
+        {/* 4. Content Area */}
+        <div className="px-5 pt-[10px] pb-2">
+            {videoId ? (
+                /* VIDEO: Collapsible Summary */
+                <>
+                    <div
+                        className="flex items-center gap-2 mb-3 cursor-pointer group/summary"
+                        onClick={(e) => { e.stopPropagation(); toggleVideoSummary(item.id); }}
+                    >
+                        <div className="w-1 h-5 bg-teal-500 rounded-full"></div>
+                        <span className="text-[16px] font-black text-text-primary">视频摘要</span>
+                        <svg className={`w-4 h-4 text-teal-500 transition-transform duration-300 ${expandedVideoSummary.has(item.id) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                    </div>
+                    {expandedVideoSummary.has(item.id) && item.ai_summary && (
+                        <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 mb-4 animate-in fade-in slide-in-from-top-1 duration-300">
+                            <div
+                                className="text-text-primary article-content"
+                                dangerouslySetInnerHTML={{ __html: renderMarkdown(item.ai_summary) }}
+                            />
+                        </div>
+                    )}
+                </>
+            ) : isInternal ? (
+                /* ARTICLE (Internal): Paginated Content */
+                <>
+                    <div
+                        className="flex items-center gap-2 mb-4 cursor-pointer group/section"
+                        onClick={() => toggleContentSection(item.id)}
+                    >
+                        <div className="w-1 h-5 bg-teal-500 rounded-full"></div>
+                        <span className="text-[16px] font-black text-text-primary">正文详情</span>
+                        <svg className={`w-4 h-4 text-teal-500 transition-transform duration-300 ${currentPageLevel > 0 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                    </div>
 
-                                    {!isDepthStyle && (
-                                      <>
-                                        {/* 2. Meta Row: Source & Follow (Fallback for standard) */}
-                                        <div className="flex items-center justify-between mb-2">
-                                          <div className="flex items-center gap-2.5 overflow-hidden">
-                                            <span className="text-blue-600 dark:text-blue-400 font-extrabold text-[13px] uppercase tracking-tight truncate max-w-[200px]">
-                                              {item.author_name || item.source?.name || 'Unknown Source'}
-                                            </span>
-                                            {item.categories?.name && (
-                                              <>
-                                                <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                                <span className="px-2 py-0.5 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 rounded-md text-[10px] font-black uppercase tracking-wider">
-                                                  {item.categories.name}
-                                                </span>
-                                              </>
-                                            )}
-                                            <span className="text-slate-300 dark:text-slate-600 font-black">·</span>
-                                            <span className="text-text-muted text-[12px] font-bold uppercase whitespace-nowrap">
-                                              {formatTime(item.created_at)}
-                                            </span>
-                                          </div>
-                                          {item.source && (
-                                            <div className="flex-shrink-0 origin-right transition-transform active:scale-95">
-                                              <FollowButton sourceId={item.source_id} />
-                                            </div>
-                                          )}
-                                        </div>
+                    {/* Content - hidden by default, paginated when expanded */}
+                    {currentPageLevel > 0 && (
+                        <div className="relative min-h-[60px] mb-4">
+                            <div
+                                ref={(el) => { contentRefs.current[item.id] = el; }}
+                                className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 transition-all duration-300"
+                                style={{
+                                    display: '-webkit-box',
+                                    WebkitBoxOrient: 'vertical' as const,
+                                    WebkitLineClamp: lineClampValue,
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                <div
+                                    className="text-text-primary article-content"
+                                    dangerouslySetInnerHTML={{ __html: renderMarkdown(item.content || '') }}
+                                />
+                            </div>
+                        </div>
+                    )}
 
-                                      </>
-                                    )}
-
-                                    {/* 4. AI Section */}
-                                    {(item.ai_summary || item.ai_commentary || isInternal) && (
-                                      <div className="mb-0">
-                                        {(!isFullExpanded && !isDepthStyle) ? null : (
-                                          /* Expanded: Show Tabs and Full Content */
-                                          <div className="mb-4 animate-in fade-in slide-in-from-top-1 duration-300">
-                                            {/* Tabs for non-internal News, Single view for Internal */}
-                                            {!isInternal && (
-                                              <div className="flex gap-8 border-b border-card-border mb-3 px-1">
-                                                {/* Summary Tab */}
-                                                <button
-                                                  onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'summary'); }}
-                                                  className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'summary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
-                                                >
-                                                  内容摘要
-                                                  {activeTab === 'summary' && (
-                                                    <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full shadow-[0_-2px_6px_rgba(20,184,166,0.2)]"></div>
-                                                  )}
-                                                </button>
-
-                                                {/* Analysis Tab */}
-                                                {item.ai_commentary && (
-                                                  <button
-                                                    onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'commentary'); }}
-                                                    className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'commentary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
-                                                  >
-                                                    专业解读
-                                                    {activeTab === 'commentary' && (
-                                                      <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full shadow-[0_-2px_6px_rgba(20,184,166,0.2)]"></div>
-                                                    )}
-                                                  </button>
-                                                )}
-                                              </div>
-                                            )}
-
-                                            {(isInternal || isDepthStyle) && (
-                                              <div
-                                                className={`flex items-center gap-2 mb-4 ${isInternal ? 'cursor-pointer group/section' : ''}`}
-                                                onClick={isInternal ? () => toggleContentSection(item.id) : undefined}
-                                              >
-                                                <div className="w-1 h-5 bg-teal-500 rounded-full"></div>
-                                                <span className="text-[16px] font-black text-text-primary">正文详情</span>
-                                                {isInternal && (
-                                                  <svg className={`w-4 h-4 text-teal-500 transition-transform duration-300 ${currentPageLevel > 0 ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                                                )}
-                                              </div>
-                                            )}
-
-                                            {/* Content Area - For Internal: hidden by default, paginated when expanded */}
-                                            {(!isInternal || currentPageLevel > 0) && (
-                                              <div className="relative min-h-[60px] mb-4">
-                                                <div
-                                                  ref={(el) => { contentRefs.current[item.id] = el; }}
-                                                  className={`prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 transition-all duration-300 ${isInternal && currentPageLevel > 0
-                                                    ? ''
-                                                    : (isDepthStyle && !isCommentaryExpanded ? "line-clamp-[22] sm:line-clamp-[25] md:line-clamp-[28]" : "")
-                                                    }`}
-                                                  style={isInternal && currentPageLevel > 0 ? {
-                                                    display: '-webkit-box',
-                                                    WebkitBoxOrient: 'vertical' as const,
-                                                    WebkitLineClamp: lineClampValue,
-                                                    overflow: 'hidden'
-                                                  } : undefined}
-                                                >
-                                                  {displayContent ? (
-                                                    <div
-                                                      className={`text-text-primary article-content ${activeTab === 'commentary' && !isInternal ? "italic" : ""}`}
-                                                      dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent || '') }}
-                                                    />
-                                                  ) : (
-                                                    <p className="italic text-slate-400 dark:text-slate-600 text-center py-4">暂无摘要内容...</p>
-                                                  )}
-                                                </div>
-                                              </div>
-                                            )}
-
-                                            {/* Collapse Button */}
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
+                    {/* Pagination Button - 10px padding from content */}
+                    {currentPageLevel > 0 && (
+                        <div className="mt-[10px] mb-6 flex justify-center">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (isContentOverflowing) {
+                                        nextContentPage(item.id);
+                                    } else {
+                                        resetContentPage(item.id);
+                                    }
+                                }}
+                                className="group flex items-center gap-2.5 px-12 py-4 bg-white dark:bg-slate-900 hover:bg-teal-50 dark:hover:bg-teal-900/10 text-teal-600 dark:text-teal-400 font-black rounded-2xl transition-all border-2 border-slate-100 dark:border-slate-800 hover:border-teal-500/30 shadow-xl hover:shadow-2xl active:scale-95"
+                            >
+                                <span className="text-[17px] tracking-tight">{isContentOverflowing ? '下一页' : '收起全文'}</span>
+                                <div className={`w-8 h-8 rounded-full bg-teal-500/10 flex items-center justify-center transition-transform duration-300 ${!isContentOverflowing ? 'rotate-180' : 'group-hover:translate-y-0.5'}`}>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
                                 </div>
-
-                                {/* C. Footer Actions */}
-                                {/* For Internal articles: "下一页" / "收起全文" pagination */}
-                                {isInternal && currentPageLevel > 0 && (
-                                  <div className="mt-4 mb-8 flex justify-center">
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (isContentOverflowing) {
-                                          nextContentPage(item.id);
-                                        } else {
-                                          resetContentPage(item.id);
-                                        }
-                                      }}
-                                      className="group flex items-center gap-2.5 px-12 py-4 bg-white dark:bg-slate-900 hover:bg-teal-50 dark:hover:bg-teal-900/10 text-teal-600 dark:text-teal-400 font-black rounded-2xl transition-all border-2 border-slate-100 dark:border-slate-800 hover:border-teal-500/30 shadow-xl hover:shadow-2xl active:scale-95"
-                                    >
-                                      <span className="text-[17px] tracking-tight">{isContentOverflowing ? '下一页' : '收起全文'}</span>
-                                      <div className={`w-8 h-8 rounded-full bg-teal-500/10 flex items-center justify-center transition-transform duration-300 ${!isContentOverflowing ? 'rotate-180' : 'group-hover:translate-y-0.5'}`}>
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                      </div>
-                                    </button>
-                                  </div>
-                                )}
-
-                                {/* For non-Internal Depth articles: keep original "查看更多详情" button */}
-                                {!isInternal && isDepthStyle && (
-                                  <div className="mt-4 mb-8 flex justify-center">
-                                    <button
-                                      onClick={(e) => { e.stopPropagation(); toggleCommentary(item.id); }}
-                                      className="group flex items-center gap-2.5 px-12 py-4 bg-white dark:bg-slate-900 hover:bg-teal-50 dark:hover:bg-teal-900/10 text-teal-600 dark:text-teal-400 font-black rounded-2xl transition-all border-2 border-slate-100 dark:border-slate-800 hover:border-teal-500/30 shadow-xl hover:shadow-2xl active:scale-95"
-                                    >
-                                      <span className="text-[17px] tracking-tight">{isCommentaryExpanded ? '收起详情' : '查看更多详情'}</span>
-                                      <div className={`w-8 h-8 rounded-full bg-teal-500/10 flex items-center justify-center transition-transform duration-300 ${isCommentaryExpanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`}>
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="3.5" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                      </div>
-                                    </button>
-                                  </div>
-                                )}
-
-                                {/* Collapse Button for non-depth expanded view */}
-                                {isFullExpanded && !isDepthStyle && (
-                                  <div className="flex justify-center mb-6">
-                                    <button
-                                      onClick={() => toggleExpansion(item.id, 'preview')}
-                                      className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 px-8 py-2 rounded-full border border-slate-100 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-black text-[13px] group shadow-sm active:scale-95"
-                                    >
-                                      <svg className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg>
-                                      收起全文
-                                    </button>
-                                  </div>
-                                )}
-
-                                {isFullExpanded && (
-                                  <>
-                                    <div className="px-5 sm:px-8 py-2.5 flex items-center justify-between border-t border-card-border mt-0 bg-slate-50/30 dark:bg-white/5">
-                                      <div className="flex items-center gap-6">
-                                        {!isInternal && (
-                                          <a
-                                            href={item.original_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex items-center gap-1.5 text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors group"
-                                          >
-                                            <span className="text-[13px] font-extrabold group-hover:underline decoration-2 underline-offset-4 decoration-teal-200/50">阅读原文</span>
-                                            <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
-                                          </a>
-                                        )}
-                                      </div>
-
-                                      <div className="flex items-center gap-2 text-slate-300">
-                                        <button
-                                          onClick={() => handleShare(item)}
-                                          className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-secondary text-text-muted hover:text-text-primary transition-all"
-                                        >
-                                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
-                                        </button>
-                                        <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-secondary text-text-muted hover:text-text-primary transition-all">
-                                          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
-                                        </button>
-                                      </div>
-                                    </div>
-
-                                    <div className="border-t border-card-border bg-secondary/5 dark:bg-white/5">
-                                      <div className="px-5 sm:px-8 py-2">
-                                        <CommentSection
-                                          newsItemId={item.id}
-                                          initialCommentCount={item.comment_count || 0}
-                                        />
-                                      </div>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
+                            </button>
+                        </div>
+                    )}
+                </>
+            ) : (
+                /* ARTICLE (Non-Internal): Tabs */
+                <>
+                    {/* Tabs */}
+                    <div className="flex gap-8 border-b border-card-border mb-3 px-1">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'summary'); }}
+                            className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'summary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                        >
+                            内容摘要
+                            {activeTab === 'summary' && (
+                                <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full shadow-[0_-2px_6px_rgba(20,184,166,0.2)]"></div>
                             )}
+                        </button>
+                        {item.ai_commentary && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'commentary'); }}
+                                className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'commentary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                            >
+                                专业解读
+                                {activeTab === 'commentary' && (
+                                    <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full shadow-[0_-2px_6px_rgba(20,184,166,0.2)]"></div>
+                                )}
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Tab Content */}
+                    <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 mb-4">
+                        {displayContent ? (
+                            <div
+                                className={`text-text-primary article-content ${activeTab === 'commentary' ? "italic" : ""}`}
+                                dangerouslySetInnerHTML={{ __html: renderMarkdown(displayContent || '') }}
+                            />
+                        ) : (
+                            <p className="italic text-slate-400 dark:text-slate-600 text-center py-4">暂无内容...</p>
+                        )}
+                    </div>
+                </>
+            )}
+        </div>
+
+        {/* 5. Collapse Button */}
+        {isFullExpanded && (
+            <div className="flex justify-center mb-4">
+                <button
+                    onClick={() => toggleExpansion(item.id, 'preview')}
+                    className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 px-8 py-2 rounded-full border border-slate-100 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-black text-[13px] group shadow-sm active:scale-95"
+                >
+                    <svg className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6" /></svg>
+                    收起
+                </button>
+            </div>
+        )}
+
+        {/* 6. Footer: Original Link, Share, Comments */}
+        {isFullExpanded && (
+            <>
+                <div className="px-5 sm:px-8 py-2.5 flex items-center justify-between border-t border-card-border mt-0 bg-slate-50/30 dark:bg-white/5">
+                    <div className="flex items-center gap-6">
+                        {!isInternal && (
+                            <a
+                                href={item.original_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1.5 text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 transition-colors group"
+                            >
+                                <span className="text-[13px] font-extrabold group-hover:underline decoration-2 underline-offset-4 decoration-teal-200/50">阅读原文</span>
+                                <svg className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                            </a>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2 text-slate-300">
+                        <button
+                            onClick={() => handleShare(item)}
+                            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-secondary text-text-muted hover:text-text-primary transition-all"
+                        >
+                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
+                        </button>
+                        <button className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-secondary text-text-muted hover:text-text-primary transition-all">
+                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="12" cy="5" r="1" /><circle cx="12" cy="19" r="1" /></svg>
+                        </button>
+                    </div>
+                </div>
+                <div className="border-t border-card-border bg-secondary/5 dark:bg-white/5">
+                    <div className="px-5 sm:px-8 py-2">
+                        <CommentSection
+                            newsItemId={item.id}
+                            initialCommentCount={item.comment_count || 0}
+                        />
+                    </div>
+                </div>
+            </>
+        )}
+    </div>
+)}
                           </article>
                           {ad && <AdCard ad={ad as AdItem} />}
                         </React.Fragment>
