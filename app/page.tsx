@@ -375,14 +375,17 @@ function HomeContent() {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <Navbar />
 
-      <nav className="sticky top-0 bg-nav border-b border-teal-700 dark:border-slate-800 z-40 shadow-md transition-colors">
-        <div className="max-w-[900px] mx-auto px-4 py-1.5 sm:py-2">
-          <div className="flex overflow-x-auto scrollbar-hide">
+      <nav className="sticky top-0 bg-nav border-b border-teal-700/30 dark:border-slate-800 z-40 shadow-sm transition-colors">
+        <div className="max-w-[900px] mx-auto relative group">
+          {/* Left fading mask to indicate scrollability */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-nav to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+          <div className="flex items-center overflow-x-auto scrollbar-hide px-4 py-2 gap-2 relative">
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`flex-shrink-0 px-4 py-3 text-[17px] font-bold border-b-2 transition-colors ${selectedCategory === null
-                ? 'text-teal-600 border-teal-600'
-                : 'text-text-secondary border-transparent hover:text-foreground'
+              className={`flex-shrink-0 px-5 py-1.5 text-[15px] font-black rounded-full transition-all duration-300 ${selectedCategory === null
+                ? 'bg-teal-600 text-white shadow-md shadow-teal-500/20 scale-105'
+                : 'text-text-secondary hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5'
                 }`}
             >
               全部
@@ -391,7 +394,7 @@ function HomeContent() {
             {user && (
               <Link
                 href="/following"
-                className="flex-shrink-0 px-4 py-3 text-[17px] font-bold border-b-2 border-transparent text-teal-600 hover:text-teal-700 flex items-center gap-1.5 transition-colors group"
+                className="flex-shrink-0 px-5 py-1.5 text-[15px] font-black rounded-full text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all flex items-center gap-1.5"
               >
                 <span>关注</span>
               </Link>
@@ -403,15 +406,18 @@ function HomeContent() {
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`flex-shrink-0 px-4 py-3 text-[17px] font-bold border-b-2 transition-colors ${selectedCategory === category.id
-                    ? 'text-teal-600 border-teal-600'
-                    : 'text-text-secondary border-transparent hover:text-foreground'
+                  className={`flex-shrink-0 px-5 py-1.5 text-[15px] font-black rounded-full transition-all duration-300 ${selectedCategory === category.id
+                    ? 'bg-teal-600 text-white shadow-md shadow-teal-500/20 scale-105'
+                    : 'text-text-secondary hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5'
                     }`}
                 >
                   {category.name}
                 </button>
               ))}
           </div>
+
+          {/* Right fading mask to indicate scrollability */}
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-nav to-transparent z-10 pointer-events-none"></div>
         </div>
       </nav>
 
