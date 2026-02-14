@@ -313,7 +313,7 @@ function HomeContent() {
 
       {/* 分类标签栏 - 与 Navbar 一起固定 */}
       <nav className="sticky top-0 bg-nav border-b border-teal-700 dark:border-slate-800 z-40 shadow-md transition-colors">
-        <div className="max-w-[1400px] mx-auto px-4 py-1.5 sm:py-2">
+        <div className="max-w-[900px] mx-auto px-4 py-1.5 sm:py-2">
           <div className="flex overflow-x-auto scrollbar-hide">
             {/* 全部 选项 */}
             <button
@@ -360,7 +360,7 @@ function HomeContent() {
       </nav>
 
       {/* 时间线 */}
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-4">
+      <main className="max-w-[900px] mx-auto px-4 sm:px-6 pt-4">
         {isLoading && newsBatches.length === 0 ? (
           <div className="flex justify-center items-center py-20">
             <div className="text-gray-500">加载中...</div>
