@@ -384,16 +384,19 @@ function HomeContent() {
                     .map((item) => {
                       globalItemIndex++;
                       const isAllCategory = selectedCategory === null;
-                      const activeTab = activeTabs[item.id] || (item.ai_summary ? 'summary' : 'commentary');
+                      const activeTab = activeTabs[item.id] || 'summary';
                       const isFullExpanded = expansionStates[item.id] === 'full';
                       const isInternal = item.source?.name === '数位 Buffet';
+                      const isCommentaryExpanded = expandedCommentary.has(item.id);
 
-                      const displayContent = activeTab === 'summary'
-                        ? (item.ai_summary || (isInternal ? '' : item.content))
-                        : (isInternal
+                      const displayContent = isInternal
+                        ? (isCommentaryExpanded
                           ? (item.ai_summary
                             ? `### 内容摘要\n\n${item.ai_summary}\n\n---\n\n### 正文详情\n\n${item.content}`
                             : item.content)
+                          : (item.ai_summary || item.content))
+                        : (activeTab === 'summary'
+                          ? (item.ai_summary || item.content)
                           : item.ai_commentary);
 
                       const ad = activeAds.length > 0 && globalItemIndex % 5 === 0
@@ -586,31 +589,41 @@ function HomeContent() {
                                       {!isFullExpanded ? null : (
                                         /* Expanded: Show Tabs and Full Content */
                                         <div className="mb-4 animate-in fade-in slide-in-from-top-1 duration-300">
-                                          <div className="flex gap-8 border-b border-card-border mb-3 px-1">
-                                            {/* Summary Tab */}
-                                            <button
-                                              onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'summary'); }}
-                                              className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'summary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
-                                            >
-                                              内容摘要
-                                              {activeTab === 'summary' && (
-                                                <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full shadow-[0_-2px_6px_rgba(20,184,166,0.2)]"></div>
-                                              )}
-                                            </button>
-
-                                            {/* Analysis/Content Tab */}
-                                            {(item.ai_commentary || isInternal) && (
+                                          {/* Tabs for non-internal News, Single view for Internal */}
+                                          {!isInternal && (
+                                            <div className="flex gap-8 border-b border-card-border mb-3 px-1">
+                                              {/* Summary Tab */}
                                               <button
-                                                onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'commentary'); }}
-                                                className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'commentary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                                                onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'summary'); }}
+                                                className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'summary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
                                               >
-                                                {isInternal ? '正文详情' : '专业解读'}
-                                                {activeTab === 'commentary' && (
+                                                内容摘要
+                                                {activeTab === 'summary' && (
                                                   <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full shadow-[0_-2px_6px_rgba(20,184,166,0.2)]"></div>
                                                 )}
                                               </button>
-                                            )}
-                                          </div>
+
+                                              {/* Analysis Tab */}
+                                              {item.ai_commentary && (
+                                                <button
+                                                  onClick={(e) => { e.stopPropagation(); toggleTab(item.id, 'commentary'); }}
+                                                  className={`pb-3 text-[15px] font-black transition-all relative group ${activeTab === 'commentary' ? 'text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+                                                >
+                                                  专业解读
+                                                  {activeTab === 'commentary' && (
+                                                    <div className="absolute bottom-0 left-0 w-full h-[3px] bg-teal-500 rounded-t-full shadow-[0_-2px_6px_rgba(20,184,166,0.2)]"></div>
+                                                  )}
+                                                </button>
+                                              )}
+                                            </div>
+                                          )}
+
+                                          {isInternal && (
+                                            <div className="flex items-center gap-2 mb-4">
+                                              <div className="w-1 h-5 bg-teal-500 rounded-full"></div>
+                                              <span className="text-[16px] font-black text-text-primary">正文详情</span>
+                                            </div>
+                                          )}
 
                                           <div className="relative min-h-[60px] mb-4">
                                             <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed">
@@ -621,6 +634,26 @@ function HomeContent() {
                                                 />
                                               ) : (
                                                 <p className="italic text-slate-400 dark:text-slate-600 text-center py-4">暂无摘要内容...</p>
+                                              )}
+
+                                              {isInternal && (
+                                                <div className="mt-8 flex justify-center">
+                                                  <button
+                                                    onClick={(e) => { e.stopPropagation(); toggleCommentary(item.id); }}
+                                                    className="group flex items-center gap-2 px-8 py-3 bg-secondary hover:bg-teal-500/10 text-teal-600 dark:text-teal-400 font-black rounded-2xl transition-all border border-card-border hover:border-teal-500/30 shadow-sm active:scale-95"
+                                                  >
+                                                    {isCommentaryExpanded ? '收起全文' : '查看更多详情'}
+                                                    <svg
+                                                      className={`w-4 h-4 transition-transform duration-300 ${isCommentaryExpanded ? 'rotate-180' : 'group-hover:translate-y-0.5'}`}
+                                                      fill="none"
+                                                      stroke="currentColor"
+                                                      strokeWidth="3"
+                                                      viewBox="0 0 24 24"
+                                                    >
+                                                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                  </button>
+                                                </div>
                                               )}
                                             </div>
                                           </div>
