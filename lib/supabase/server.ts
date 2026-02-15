@@ -36,3 +36,25 @@ export async function createSupabaseServerClient() {
         }
     );
 }
+/**
+ * 创建具有管理员权限的 Supabase 客户端（使用 Service Role Key）
+ * 警告：由于该客户端绕过 RLS 策略，请务必只在后端且经过身份验证的操作中使用！
+ */
+export async function createSupabaseAdminClient() {
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (!serviceRoleKey) {
+        console.warn('SUPABASE_SERVICE_ROLE_KEY is missing. Falling back to anon key.');
+    }
+
+    return createServerClient(
+        supabaseUrl,
+        serviceRoleKey || supabaseAnonKey,
+        {
+            cookies: {
+                getAll() { return []; },
+                setAll() { },
+            },
+        }
+    );
+}
