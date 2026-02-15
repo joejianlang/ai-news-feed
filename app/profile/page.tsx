@@ -2,7 +2,7 @@
 
 import Navbar from '@/components/Navbar';
 import { useUser } from '@/lib/contexts/UserContext';
-import { User, FileText, Store, Heart, Settings, LogOut, Sun, Moon } from 'lucide-react';
+import { User, FileText, Store, Heart, Settings, LogOut, Sun, Moon, Megaphone } from 'lucide-react';
 import { useTheme } from '@/lib/contexts/ThemeContext';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -75,6 +75,7 @@ export default function ProfilePage() {
     const menuItems = [
         { icon: FileText, label: '我的发帖', href: '/profile/posts', count: counts.posts },
         { icon: Store, label: '我的服务', href: '/profile/services', count: counts.services },
+        { icon: Megaphone, label: '我的投放', href: '/profile/ads' },
         { icon: Heart, label: '我的收藏', href: '/profile/favorites', count: counts.favorites },
         { icon: Settings, label: '账户设置', href: '/profile/settings' },
     ];
