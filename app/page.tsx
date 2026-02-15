@@ -566,18 +566,32 @@ function HomeContent() {
                                 </div>
 
                                 {(videoId || item.image_url) && (
-                                  <div className="relative aspect-[16/10] rounded-xl overflow-hidden mb-4 bg-slate-100 dark:bg-white/5">
-                                    <img
-                                      src={videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : item.image_url!}
-                                      alt=""
-                                      className="w-full h-full object-cover"
-                                    />
-                                    {videoId && (
-                                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                                        <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white">
-                                          <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                                        </div>
-                                      </div>
+                                  <div
+                                    className="relative aspect-[16/10] rounded-xl overflow-hidden mb-4 bg-slate-100 dark:bg-white/5"
+                                    data-item-id={item.id}
+                                    data-video-id={videoId}
+                                  >
+                                    {autoPlayingVideoId === videoId ? (
+                                      <iframe
+                                        className="w-full h-full pointer-events-none"
+                                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&rel=0&enablejsapi=1`}
+                                        allow="autoplay"
+                                      />
+                                    ) : (
+                                      <>
+                                        <img
+                                          src={videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : item.image_url!}
+                                          alt=""
+                                          className="w-full h-full object-cover"
+                                        />
+                                        {videoId && (
+                                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                            <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white">
+                                              <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </>
                                     )}
                                   </div>
                                 )}
@@ -615,7 +629,7 @@ function HomeContent() {
                                         /* 1. 用户点击后的播放：有声音 */
                                         <iframe
                                           className="w-full h-full"
-                                          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+                                          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&enablejsapi=1`}
                                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                           allowFullScreen
                                         />
@@ -624,7 +638,7 @@ function HomeContent() {
                                         <div className="relative w-full h-full cursor-pointer" onClick={() => handleVideoClick(item.id, videoId)}>
                                           <iframe
                                             className="w-full h-full pointer-events-none"
-                                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&rel=0`}
+                                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&rel=0&enablejsapi=1`}
                                             allow="autoplay"
                                           />
                                           {/* 透明遮罩层，防止点击 iframe 而不触发 React 事件 */}
