@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/lib/contexts/UserContext';
-import { getPendingAds, updateAdStatus } from '@/lib/supabase/queries';
+
 import type { AdItem } from '@/types';
 import Navbar from '@/components/Navbar';
 import AdCard from '@/components/AdCard';
@@ -42,8 +42,11 @@ export default function AdminAdsPage() {
     const fetchAds = async () => {
         setIsLoading(true);
         try {
-            const data = await getPendingAds();
-            setAds(data);
+            const res = await fetch('/api/admin/ads/pending');
+            const data = await res.json();
+            if (data.ads) {
+                setAds(data.ads);
+            }
         } catch (err) {
             console.error(err);
         } finally {
@@ -54,7 +57,14 @@ export default function AdminAdsPage() {
     const handleConfirmPayment = async (id: string) => {
         if (!confirm('已确认收到客户转账，现在让广告立即上线吗？')) return;
         try {
-            await updateAdStatus(id, 'active');
+            const res = await fetch('/api/admin/ads/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, status: 'active' })
+            });
+
+            if (!res.ok) throw new Error('API failed');
+
             setAds(ads.filter(a => a.id !== id));
             setSelectedAd(null);
             alert('广告已通过并正式上线');
@@ -67,7 +77,14 @@ export default function AdminAdsPage() {
     const handleApproveForPayment = async (id: string) => {
         if (!confirm('确定内容合规，通知用户进行支付吗？')) return;
         try {
-            await updateAdStatus(id, 'unpaid');
+            const res = await fetch('/api/admin/ads/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, status: 'unpaid' })
+            });
+
+            if (!res.ok) throw new Error('API failed');
+
             setAds(ads.filter(a => a.id !== id));
             setSelectedAd(null);
             alert('审核已通过，状态已更新为“待支付”');
@@ -80,7 +97,14 @@ export default function AdminAdsPage() {
     const handleReject = async (id: string) => {
         if (!rejectReason.trim()) return alert('请填写拒绝理由');
         try {
-            await updateAdStatus(id, 'rejected', rejectReason);
+            const res = await fetch('/api/admin/ads/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, status: 'rejected', rejectionReason: rejectReason })
+            });
+
+            if (!res.ok) throw new Error('API failed');
+
             setAds(ads.filter(a => a.id !== id));
             setSelectedAd(null);
             setShowRejectForm(false);
