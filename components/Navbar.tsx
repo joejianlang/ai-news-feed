@@ -220,9 +220,14 @@ export default function Navbar() {
                   管理后台
                 </button>
                 <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-800 py-2 z-[60] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                  <Link href="/publish" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5">文章管理</Link>
-                  <Link href="/admin/ads" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5">广告审核</Link>
-                  <Link href="/admin/settings" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5">系统设置</Link>
+                  <Link href="/publish" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">文章管理</Link>
+                  <Link href="/admin/ads" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">广告审核</Link>
+                  <Link href="/sources" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">源管理</Link>
+                  <Link href="/admin/fetch-stats" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">抓取记录</Link>
+                  <Link href="/admin/search-analytics" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">搜索分析</Link>
+                  <Link href="/admin/maintenance" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">系统维护</Link>
+                  <Link href="/admin/users" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">用户管理</Link>
+                  <Link href="/admin/settings" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-white/5 text-teal-600 bg-teal-50/50">系统设置</Link>
                 </div>
               </div>
             ) : user && (

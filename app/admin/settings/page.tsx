@@ -13,7 +13,12 @@ import {
     Info,
     RefreshCw,
     MapPin,
-    Clock
+    Clock,
+    Sparkles,
+    Users,
+    Activity,
+    Search,
+    Database
 } from 'lucide-react';
 import Toast from '@/components/Toast';
 
@@ -127,6 +132,37 @@ export default function AdminSettingsPage() {
                         {isSaving ? <RefreshCw size={20} className="animate-spin" /> : <Save size={20} />}
                         保存所有修改
                     </button>
+                </div>
+
+                <div className="mb-12">
+                    <div className="flex items-center gap-2 mb-4 text-text-muted">
+                        <Plus size={16} />
+                        <span className="text-[11px] font-black uppercase tracking-widest">核心管理功能</span>
+                    </div>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        {[
+                            { title: '文章管理', icon: Clock, href: '/publish', desc: '内容撰写与发布', color: 'bg-blue-500' },
+                            { title: '广告审核', icon: DollarSign, href: '/admin/ads', desc: '订单、收据与定价', color: 'bg-indigo-500' },
+                            { title: '管理抓取', icon: RefreshCw, href: '/sources', desc: 'RSS、YouTube源管理', color: 'bg-purple-500' },
+                            { title: '抓取记录', icon: Activity, href: '/admin/fetch-stats', desc: '抓取流水线健康监控', color: 'bg-orange-500' },
+                            { title: '搜索分析', icon: Search, href: '/admin/search-analytics', desc: '用户搜什么？反馈建议', color: 'bg-rose-500' },
+                            { title: '系统维护', icon: Database, href: '/admin/maintenance', desc: '数据清理与保质期管理', color: 'bg-slate-500' },
+                            { title: 'AI 实验室', icon: Sparkles, href: '/admin/ai-config', desc: '模型参数与故障切换', color: 'bg-teal-500' },
+                            { title: '用户中心', icon: Users, href: '/admin/users', desc: '权限、角色与注册管理', color: 'bg-slate-800' },
+                        ].map((item, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => router.push(item.href)}
+                                className="bg-card border border-card-border p-4 rounded-3xl text-left hover:border-teal-500/50 hover:shadow-lg transition-all group overflow-hidden relative shadow-sm"
+                            >
+                                <div className={`w-10 h-10 ${item.color} rounded-2xl flex items-center justify-center text-white mb-3 shadow-lg group-hover:scale-110 transition-transform`}>
+                                    <item.icon size={20} />
+                                </div>
+                                <h3 className="font-black text-[13px] uppercase tracking-tight">{item.title}</h3>
+                                <p className="text-[9px] text-text-muted font-bold mt-0.5 leading-tight">{item.desc}</p>
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
