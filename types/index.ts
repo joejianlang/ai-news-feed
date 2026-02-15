@@ -155,7 +155,7 @@ export interface CommentWithReplies extends Comment {
 
 // 广告相关类型
 export type AdScope = 'local' | 'city' | 'province' | 'national';
-export type AdStatus = 'pending' | 'active' | 'expired' | 'rejected' | 'unpaid';
+export type AdStatus = 'pending' | 'active' | 'expired' | 'rejected' | 'unpaid' | 'verifying_payment';
 
 export interface AdItem {
   id: string;
@@ -172,7 +172,9 @@ export interface AdItem {
   duration_days: number;
   price_total: number;
   status: AdStatus;
-  payment_status: 'unpaid' | 'paid';
+  payment_status: 'unpaid' | 'verifying' | 'paid';
+  payment_method?: 'online' | 'manual';
+  payment_voucher_url?: string;
   rejection_reason?: string;
   created_at: string;
   updated_at: string;
