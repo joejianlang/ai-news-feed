@@ -37,7 +37,18 @@ export async function generateMetadata(
 
     const title = item.title;
     const description = item.ai_summary || item.title;
-    const imageUrl = item.image_url || '/og-image.jpg';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ai-news-feed-rose.vercel.app';
+
+    // 生成动态分享图 URL
+    const ogImageUrl = new URL(`${baseUrl}/api/og`);
+    ogImageUrl.searchParams.set('title', title);
+    if (item.image_url) ogImageUrl.searchParams.set('image', item.image_url);
+
+    // 处理 source 可能返回数组的情况
+    const sourceName = Array.isArray(item.source)
+        ? item.source[0]?.name
+        : (item.source as any)?.name;
+    if (sourceName) ogImageUrl.searchParams.set('source', sourceName);
 
     return {
         title,
@@ -46,13 +57,13 @@ export async function generateMetadata(
             title,
             description,
             type: 'article',
-            images: [imageUrl],
+            images: [ogImageUrl.toString()],
         },
         twitter: {
             card: 'summary_large_image',
             title,
             description,
-            images: [imageUrl],
+            images: [ogImageUrl.toString()],
         },
     };
 }

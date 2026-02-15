@@ -11,6 +11,7 @@ import FollowButton from '@/components/FollowButton';
 import CommentSection from '@/components/comments/CommentSection';
 import Toast from '@/components/Toast';
 import AdCard from '@/components/AdCard';
+import ShareModal from '@/components/ShareModal';
 import { renderMarkdown } from '@/lib/utils/markdown';
 import { formatTime, formatBatchTime } from '@/lib/utils/format';
 
@@ -51,6 +52,8 @@ function HomeContent() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // null = 全部
   const [activeAds, setActiveAds] = useState<AdItem[]>([]);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [sharingItem, setSharingItem] = useState<NewsItem | null>(null);
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const itemId = searchParams.get('item');
@@ -414,18 +417,20 @@ function HomeContent() {
     const shareData = {
       title: item.title,
       text: item.ai_summary || item.title,
-      url: window.location.origin + `?item=${item.id}`,
+      url: window.location.origin + `/article/${item.id}?utm_source=share&utm_medium=social&utm_campaign=feed`,
     };
 
     try {
       if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
       } else {
-        await navigator.clipboard.writeText(`${shareData.title}\n${shareData.url}`);
-        setToast({ message: '分享链接已复制', type: 'success' });
+        setSharingItem(item);
+        setShowShareModal(true);
       }
     } catch (error) {
       console.error('Error sharing:', error);
+      setSharingItem(item);
+      setShowShareModal(true);
     }
   };
 
@@ -781,6 +786,21 @@ function HomeContent() {
       </main>
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      {sharingItem && (
+        <ShareModal
+          isOpen={showShareModal}
+          onClose={() => {
+            setShowShareModal(false);
+            setSharingItem(null);
+          }}
+          title={sharingItem.title}
+          summary={sharingItem.ai_summary || sharingItem.title}
+          imageUrl={sharingItem.image_url}
+          source={sharingItem.source?.name}
+          articleId={sharingItem.id}
+        />
+      )}
     </div>
   );
 }

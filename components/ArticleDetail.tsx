@@ -8,6 +8,7 @@ import { formatTime } from '@/lib/utils/format';
 import CommentSection from '@/components/comments/CommentSection';
 import Navbar from '@/components/Navbar';
 import FollowButton from '@/components/FollowButton';
+import ShareModal from '@/components/ShareModal';
 import { ArrowLeft, Share2, MoreHorizontal } from 'lucide-react';
 
 interface ArticleDetailProps {
@@ -19,6 +20,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
     const [activeTab, setActiveTab] = useState<'summary' | 'commentary'>(
         article.ai_summary ? 'summary' : 'commentary'
     );
+    const [showShareModal, setShowShareModal] = useState(false);
 
     const isInternal = article.source?.name === '数位 Buffet';
     const displayContent = activeTab === 'summary'
@@ -26,20 +28,23 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         : (isInternal ? article.content : article.ai_commentary);
 
     const handleShare = async () => {
-        const shareData = {
-            title: article.title,
-            text: article.ai_summary || article.title,
-            url: window.location.href,
-        };
+        const detailUrl = typeof window !== 'undefined'
+            ? `${window.location.origin}/article/${article.id}?utm_source=share&utm_medium=social&utm_campaign=detail`
+            : '';
+
         if (navigator.share) {
             try {
-                await navigator.share(shareData);
+                await navigator.share({
+                    title: article.title,
+                    text: article.ai_summary || article.title,
+                    url: detailUrl,
+                });
             } catch (e) {
                 console.error('Error sharing:', e);
+                setShowShareModal(true);
             }
         } else {
-            navigator.clipboard.writeText(`${article.title}\n${window.location.href}`);
-            alert('链接已复制到剪贴板');
+            setShowShareModal(true);
         }
     };
 
@@ -168,6 +173,16 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
                         </div>
                     </div>
                 </article>
+
+                <ShareModal
+                    isOpen={showShareModal}
+                    onClose={() => setShowShareModal(false)}
+                    title={article.title}
+                    summary={article.ai_summary || article.title}
+                    imageUrl={article.image_url}
+                    source={article.source?.name}
+                    articleId={article.id}
+                />
 
                 {/* 评论区 */}
                 <div className="bg-card rounded-[32px] border border-card-border p-6 sm:p-8">
