@@ -180,107 +180,91 @@ export default function Navbar() {
             </div>
           </form>
 
-          {/* 桌面端导航 */}
-          <div className="hidden md:flex items-center gap-6">
-            {user && (
-              <>
-                <Link
-                  href="/following"
-                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
-                >
-                  我的关注
-                </Link>
-                <Link
-                  href="/ads/create"
-                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors border border-white/20 px-3 py-1 rounded-full hover:bg-white/10"
-                >
-                  投放广告
-                </Link>
-              </>
-            )}
-            {user?.role === 'admin' && (
-              <>
-                <Link
-                  href="/recommendations"
-                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
-                >
-                  推荐源
-                </Link>
-                <Link
-                  href="/sources"
-                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
-                >
-                  管理源
-                </Link>
-                <Link
-                  href="/admin/fetch-stats"
-                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
-                >
-                  抓取统计
-                </Link>
-                <Link
-                  href="/publish"
-                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
-                >
-                  文章管理
-                </Link>
-                <Link
-                  href="/admin/maintenance"
-                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
-                >
-                  库维护
-                </Link>
-                <Link
-                  href="/admin/ads"
-                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
-                >
-                  广告审核
-                </Link>
-                <Link
-                  href="/admin/users"
-                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors"
-                >
-                  用户管理
-                </Link>
-                <Link
-                  href="/admin/settings"
-                  className="text-white hover:text-teal-100 font-medium text-sm transition-colors bg-white/10 px-2 py-1 rounded"
-                >
-                  系统设置
-                </Link>
-              </>
-            )}
+          {/* 桌面端中心主导航 */}
+          <div className="hidden lg:flex items-center gap-1 xl:gap-2">
+            <Link
+              href="/"
+              className="flex flex-col items-center px-3 py-1 text-white hover:text-teal-100 transition-colors group"
+            >
+              <span className="text-[13px] font-black tracking-widest uppercase">新闻</span>
+              <div className="h-0.5 w-0 group-hover:w-full bg-white transition-all duration-300"></div>
+            </Link>
+            <Link
+              href="/forum"
+              className="flex flex-col items-center px-3 py-1 text-white hover:text-teal-100 transition-colors group"
+            >
+              <span className="text-[13px] font-black tracking-widest uppercase">论坛</span>
+              <div className="h-0.5 w-0 group-hover:w-full bg-white transition-all duration-300"></div>
+            </Link>
+            <Link
+              href="/services"
+              className="flex flex-col items-center px-3 py-1 text-white hover:text-teal-100 transition-colors group"
+            >
+              <span className="text-[13px] font-black tracking-widest uppercase">服务</span>
+              <div className="h-0.5 w-0 group-hover:w-full bg-white transition-all duration-300"></div>
+            </Link>
+            <Link
+              href="/profile"
+              className="flex flex-col items-center px-3 py-1 text-white hover:text-teal-100 transition-colors group"
+            >
+              <span className="text-[13px] font-black tracking-widest uppercase">我的</span>
+              <div className="h-0.5 w-0 group-hover:w-full bg-white transition-all duration-300"></div>
+            </Link>
           </div>
 
-          {/* 桌面端用户区 */}
-          <div className="hidden md:flex items-center gap-4">
+          {/* 桌面端右侧功能区 */}
+          <div className="hidden md:flex items-center gap-3">
+            {user?.role === 'admin' ? (
+              <div className="relative group">
+                <button className="text-[11px] font-black text-white/70 hover:text-white uppercase tracking-tighter border border-white/20 px-2 py-1 rounded">
+                  管理后台
+                </button>
+                <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-800 py-2 z-[60] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                  <Link href="/publish" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5">文章管理</Link>
+                  <Link href="/admin/ads" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5">广告审核</Link>
+                  <Link href="/admin/settings" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5">系统设置</Link>
+                </div>
+              </div>
+            ) : user && (
+              <Link
+                href="/ads/create"
+                className="hidden xl:block text-[11px] font-black text-white hover:bg-white/10 border border-white/30 px-3 py-1 rounded-full transition-all uppercase tracking-widest"
+              >
+                投放广告
+              </Link>
+            )}
+
+            <div className="h-6 w-px bg-white/10 mx-1"></div>
+
             {user ? (
-              <>
-                <span className="text-sm text-teal-50">
-                  欢迎, {user.username}
-                </span>
+              <div className="flex items-center gap-3">
+                <div className="flex flex-col items-end">
+                  <span className="text-[10px] font-black text-white/60 uppercase tracking-tighter leading-none">Welcome</span>
+                  <span className="text-[12px] font-black text-white leading-tight">{user.username}</span>
+                </div>
                 <button
                   onClick={handleLogout}
-                  className="text-sm text-teal-100 hover:text-white transition-colors"
+                  className="p-2 text-white/70 hover:text-white transition-colors"
+                  title="退出登录"
                 >
-                  退出
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 </button>
-              </>
+              </div>
             ) : (
-              <>
+              <div className="flex items-center gap-2">
                 <Link
                   href="/login"
-                  className="text-sm text-white hover:text-teal-100 font-medium"
+                  className="text-[13px] font-black text-white hover:text-teal-100 transition-colors px-2"
                 >
                   登录
                 </Link>
                 <Link
                   href="/register"
-                  className="text-sm bg-white text-teal-600 px-4 py-2 rounded-lg hover:bg-teal-50 transition-colors shadow-sm font-bold"
+                  className="text-[13px] font-black bg-white text-teal-600 px-4 py-1.5 rounded-full hover:bg-teal-50 transition-colors shadow-lg"
                 >
                   注册
                 </Link>
-              </>
+              </div>
             )}
           </div>
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, Suspense, useRef, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import type { NewsItem, Category, AdItem } from '@/types';
 import { useUser } from '@/lib/contexts/UserContext';
@@ -52,6 +52,7 @@ function HomeContent() {
   const [activeAds, setActiveAds] = useState<AdItem[]>([]);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const itemId = searchParams.get('item');
   const urlCategoryId = searchParams.get('categoryId');
 
@@ -432,7 +433,7 @@ function HomeContent() {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <Navbar />
 
-      <nav className="sticky top-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-40 shadow-sm transition-colors">
+      <nav className="sticky top-[52px] sm:top-[72px] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 z-40 shadow-sm transition-all duration-300">
         <div className="max-w-[900px] mx-auto relative group">
           {/* Left fading mask for scrollability hints */}
           <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-slate-900 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -451,7 +452,10 @@ function HomeContent() {
             {user && (
               <Link
                 href="/following"
-                className="flex-shrink-0 px-4 py-1 sm:px-5 sm:py-1.5 text-[14px] sm:text-[15px] font-black rounded-full text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all flex items-center gap-1.5"
+                className={`flex-shrink-0 px-4 py-1 sm:px-5 sm:py-1.5 text-[14px] sm:text-[15px] font-black rounded-full transition-all flex items-center gap-1.5 ${pathname === '/following'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-105'
+                  : 'text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+                  }`}
               >
                 <span>关注</span>
               </Link>
@@ -758,7 +762,7 @@ function HomeContent() {
                               </div>
                             )}
                           </article>
-                          {ad && <AdCard ad={ad as AdItem} />}
+                          {ad && <AdCard ad={ad as AdItem} isListStyle={selectedCategory === null} />}
                         </React.Fragment>
                       );
                     })}
