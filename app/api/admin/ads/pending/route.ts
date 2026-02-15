@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         const { data, error } = await supabaseAdmin
             .from('ads')
             .select('*')
-            .in('status', ['pending', 'unpaid'])
+            .in('status', ['pending', 'unpaid', 'verifying_payment'])
             .order('created_at', { ascending: true });
 
         if (error) {
