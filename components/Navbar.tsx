@@ -68,9 +68,9 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 bg-nav border-b border-teal-700 dark:border-slate-800 z-50 shadow-md transition-colors">
-      <div className="max-w-[900px] mx-auto px-4 py-1 sm:py-2">
-        <div className="flex items-center justify-between gap-4">
+    <nav className="sticky top-0 bg-nav border-b border-teal-700 dark:border-white/10 z-50 shadow-md transition-colors">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-1 sm:py-2">
+        <div className="flex items-center justify-between gap-4 sm:gap-6 lg:gap-8">
           {/* Logo & Location Container */}
           <div className="flex items-center gap-3 flex-shrink-0">
             <Link href="/" className="flex-shrink-0 transition-opacity hover:opacity-80">

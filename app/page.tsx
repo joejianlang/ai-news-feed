@@ -439,7 +439,7 @@ function HomeContent() {
       <Navbar />
 
       <nav className="sticky top-[52px] sm:top-[72px] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 z-40 shadow-sm transition-all duration-300">
-        <div className="max-w-[900px] mx-auto relative group">
+        <div className="max-w-[1200px] mx-auto relative group">
           {/* Left fading mask for scrollability hints */}
           <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-slate-900 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
@@ -487,7 +487,7 @@ function HomeContent() {
         </div>
       </nav>
 
-      <main className="max-w-[720px] lg:max-w-[900px] mx-auto px-2 sm:px-4 md:px-6 pt-2 sm:pt-4">
+      <main className="max-w-[1240px] mx-auto px-2 sm:px-4 md:px-6 pt-2 sm:pt-4">
         {!isLoading || newsBatches.length > 0 ? (
           <div className="space-y-4">
             {newsBatches.map((batch, batchIndex) => (
