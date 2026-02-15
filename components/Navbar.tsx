@@ -131,19 +131,26 @@ export default function Navbar() {
                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
                         自动重新定位
                       </button>
-                      {POPULAR_CITIES.map((c) => (
-                        <button
-                          key={c.tag}
-                          onClick={() => {
-                            setManualCity(c.tag);
-                            setIsCityMenuOpen(false);
-                            navigateToLocalNews();
-                          }}
-                          className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${city === c.name ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/10' : 'text-slate-600 dark:text-slate-300'
-                            }`}
-                        >
-                          {c.name}
-                        </button>
+                      {POPULAR_CITIES.map((group) => (
+                        <div key={group.province} className="mb-2">
+                          <div className="px-4 py-1.5 text-[10px] font-bold text-slate-400 bg-slate-50 dark:bg-white/5 uppercase tracking-wider">
+                            {group.province}
+                          </div>
+                          {group.cities.map((cityItem) => (
+                            <button
+                              key={cityItem.tag}
+                              onClick={() => {
+                                setManualCity(cityItem.tag);
+                                setIsCityMenuOpen(false);
+                                navigateToLocalNews();
+                              }}
+                              className={`w-full text-left px-5 py-2 text-sm font-medium transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${city === cityItem.name ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/10' : 'text-slate-600 dark:text-slate-300'
+                                }`}
+                            >
+                              {cityItem.name}
+                            </button>
+                          ))}
+                        </div>
                       ))}
                     </div>
                   </div>

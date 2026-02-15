@@ -3,17 +3,58 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Common Canadian cities for manual selection
+// Common Canadian cities grouped by Province
 export const POPULAR_CITIES = [
-    { name: 'Toronto', tag: '#Toronto' },
-    { name: 'Vancouver', tag: '#Vancouver' },
-    { name: 'Montreal', tag: '#Montreal' },
-    { name: 'Calgary', tag: '#Calgary' },
-    { name: 'Ottawa', tag: '#Ottawa' },
-    { name: 'Edmonton', tag: '#Edmonton' },
-    { name: 'Richmond', tag: '#Richmond' },
-    { name: 'Markham', tag: '#Markham' },
-    { name: 'Guelph', tag: '#Guelph' },
+    {
+        province: 'Ontario',
+        cities: [
+            { name: 'Toronto', tag: '#Toronto' },
+            { name: 'Markham', tag: '#Markham' },
+            { name: 'Richmond Hill', tag: '#RichmondHill' },
+            { name: 'Mississauga', tag: '#Mississauga' },
+            { name: 'Scarborough', tag: '#Scarborough' },
+            { name: 'Waterloo', tag: '#Waterloo' },
+            { name: 'Kitchener', tag: '#Kitchener' },
+            { name: 'Cambridge', tag: '#Cambridge' },
+            { name: 'Guelph', tag: '#Guelph' },
+            { name: 'Ottawa', tag: '#Ottawa' },
+            { name: 'Oakville', tag: '#Oakville' },
+            { name: 'Burlington', tag: '#Burlington' },
+            { name: 'Hamilton', tag: '#Hamilton' },
+            { name: 'London', tag: '#London' },
+            { name: 'Windsor', tag: '#Windsor' },
+            { name: 'Niagara Falls', tag: '#Niagara' },
+        ]
+    },
+    {
+        province: 'British Columbia',
+        cities: [
+            { name: 'Vancouver', tag: '#Vancouver' },
+            { name: 'Richmond', tag: '#Richmond' },
+            { name: 'Burnaby', tag: '#Burnaby' },
+            { name: 'Coquitlam', tag: '#Coquitlam' },
+            { name: 'Surrey', tag: '#Surrey' },
+            { name: 'Victoria', tag: '#Victoria' },
+        ]
+    },
+    {
+        province: 'Alberta',
+        cities: [
+            { name: 'Calgary', tag: '#Calgary' },
+            { name: 'Edmonton', tag: '#Edmonton' },
+        ]
+    },
+    {
+        province: 'Quebec',
+        cities: [
+            { name: 'Montreal', tag: '#Montreal' },
+            { name: 'Quebec City', tag: '#Quebec' },
+        ]
+    }
 ];
+
+// Helper to get flat city list for matching
+const ALL_CITIES_FLAT = POPULAR_CITIES.flatMap(p => p.cities);
 
 // Fallback translation mapping for UI consistency
 const CITY_NAME_MAPPING: Record<string, string> = {
@@ -68,7 +109,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const setManualCity = (tag: string) => {
-        const found = POPULAR_CITIES.find(c => c.tag === tag);
+        const found = ALL_CITIES_FLAT.find(c => c.tag === tag);
         const name = found ? found.name : tag.replace('#', '');
 
         setCity(name);
@@ -115,7 +156,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
                         let matchedName = null;
 
                         // 1. Try exact English match from list
-                        const exactMatch = POPULAR_CITIES.find(c => normalizedCity.toLowerCase().includes(c.name.toLowerCase()));
+                        const exactMatch = ALL_CITIES_FLAT.find(c => normalizedCity.toLowerCase().includes(c.name.toLowerCase()));
                         if (exactMatch) {
                             matchedTag = exactMatch.tag;
                             matchedName = exactMatch.name;

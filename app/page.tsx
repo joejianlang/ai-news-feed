@@ -255,8 +255,11 @@ function HomeContent() {
       }
     );
 
-    const videoContainers = document.querySelectorAll('[data-video-id]');
-    videoContainers.forEach((el) => observer.observe(el));
+    const videoContainers = document.querySelectorAll('[data-video-id]:not([data-video-id=""])');
+    videoContainers.forEach((el) => {
+      const vid = el.getAttribute('data-video-id');
+      if (vid && vid !== "null") observer.observe(el);
+    });
 
     return () => observer.disconnect();
   }, [newsBatches]);
@@ -571,7 +574,7 @@ function HomeContent() {
                                     data-item-id={item.id}
                                     data-video-id={videoId}
                                   >
-                                    {autoPlayingVideoId === videoId ? (
+                                    {videoId && autoPlayingVideoId === videoId ? (
                                       <iframe
                                         className="w-full h-full pointer-events-none"
                                         src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&rel=0&enablejsapi=1`}
@@ -633,7 +636,7 @@ function HomeContent() {
                                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                           allowFullScreen
                                         />
-                                      ) : autoPlayingVideoId === videoId ? (
+                                      ) : (videoId && autoPlayingVideoId === videoId) ? (
                                         /* 2. 划到中间自动播放：静音 */
                                         <div className="relative w-full h-full cursor-pointer" onClick={() => handleVideoClick(item.id, videoId)}>
                                           <iframe
