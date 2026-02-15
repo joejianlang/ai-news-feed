@@ -173,7 +173,7 @@ export default function FollowingPage() {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <Navbar />
 
-      <main className="max-w-6xl mx-auto py-8 px-4">
+      <main className="max-w-[720px] lg:max-w-[900px] mx-auto py-4 sm:py-8 px-2 sm:px-6">
         <div className="sticky top-[48px] sm:top-[64px] z-10 bg-background/95 backdrop-blur-md -mt-8 pt-8 pb-4 mb-4 sm:mb-8 border-b border-card-border/50 flex items-center justify-between">
           <h1 className="text-xl sm:text-2xl font-black text-foreground italic uppercase tracking-tighter">我的关注</h1>
           <button
@@ -226,10 +226,10 @@ export default function FollowingPage() {
                           {formatTime(item.created_at)}
                         </span>
                       </div>
-                      <h2 className="text-[13px] sm:text-[14px] font-black text-text-primary leading-[1.4] tracking-tight line-clamp-2">
+                      <h2 className="text-[13px] sm:text-[14px] md:text-[15px] font-black text-text-primary leading-[1.4] tracking-tight line-clamp-2">
                         {item.title}
                         <span
-                          className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[13px] whitespace-nowrap"
+                          className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[12px] sm:text-[13px] whitespace-nowrap"
                         >
                           详情
                           <svg className="w-3 h-3 translate-y-px" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>

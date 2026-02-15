@@ -18,21 +18,6 @@ export default function Navbar() {
   const [isCityMenuOpen, setIsCityMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  if (isLoading) {
-    return null;
-  }
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-    // 强制刷新页面以清除所有状态
-    window.location.href = '/';
-    setIsMenuOpen(false);
-  };
-
   // Load categories to find the ID for "本地"
   useEffect(() => {
     const loadCategories = async () => {
@@ -56,6 +41,20 @@ export default function Navbar() {
     }
   };
 
+  if (isLoading) {
+    return null;
+  }
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    // 强制刷新页面以清除所有状态
+    window.location.href = '/';
+    setIsMenuOpen(false);
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

@@ -47,7 +47,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         <div className="min-h-screen bg-background text-foreground transition-colors duration-300 pb-10">
             <Navbar />
 
-            <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-4">
+            <main className="max-w-[800px] mx-auto px-4 sm:px-6 pt-4">
                 {/* 返回按钮 */}
                 <div className="flex items-center justify-between mb-6">
                     <button
@@ -96,7 +96,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
                     </div>
 
                     {/* Title */}
-                    <h1 className="text-2xl sm:text-3xl font-black text-text-primary leading-[1.2] tracking-tight mb-6">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-text-primary leading-tight tracking-tight mb-6">
                         {article.title}
                     </h1>
 

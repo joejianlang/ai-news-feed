@@ -40,6 +40,7 @@ function HomeContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
+  const [autoPlayingVideoId, setAutoPlayingVideoId] = useState<string | null>(null);
   const [expandedCommentary, setExpandedCommentary] = useState<Set<string>>(new Set());
   const [activeTabs, setActiveTabs] = useState<Record<string, 'summary' | 'commentary'>>({});
   const [expansionStates, setExpansionStates] = useState<Record<string, 'preview' | 'full'>>({});
@@ -228,11 +229,49 @@ function HomeContent() {
     );
 
     // 监听所有带 article id 的元素
-    const articles = document.querySelectorAll('article[id^="article-"]');
-    articles.forEach((article) => observer.observe(article));
+    return () => observer.disconnect();
+  }, [newsBatches, expansionStates]);
+
+  // 视频自动播放逻辑：监听视频是否进入屏幕中央
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const itemId = entry.target.getAttribute('data-item-id');
+          const videoId = entry.target.getAttribute('data-video-id');
+
+          if (entry.isIntersecting && videoId) {
+            // 进入中心区域，设为自动播放（静音）
+            setAutoPlayingVideoId(videoId);
+          } else {
+            // 离开中心区域，停止自动播放
+            setAutoPlayingVideoId((prev) => (prev === videoId ? null : prev));
+          }
+        });
+      },
+      {
+        threshold: 0,
+        rootMargin: '-30% 0px -30% 0px', // 只有在垂直中心 40% 的区域才算“进入中间”
+      }
+    );
+
+    const videoContainers = document.querySelectorAll('[data-video-id]');
+    videoContainers.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, [newsBatches, expansionStates]); // 当新闻列表或展开状态变化时，确保观察者保持最新状态
+  }, [newsBatches]);
+
+  const handleVideoClick = (itemId: string, videoId: string) => {
+    // 用户主动点击：开启声音，并展开摘要
+    setPlayingVideoId(videoId);
+    setAutoPlayingVideoId(null);
+    setExpandedVideoSummary(prev => new Set(prev).add(itemId));
+
+    // 如果还没展开全文，自动展开
+    if (expansionStates[itemId] !== 'full') {
+      toggleExpansion(itemId, 'full', videoId);
+    }
+  };
 
   const toggleCommentary = (itemId: string) => {
     setExpandedCommentary(prev => {
@@ -436,7 +475,7 @@ function HomeContent() {
         </div>
       </nav>
 
-      <main className="max-w-[900px] mx-auto px-2 sm:px-6 pt-2 sm:pt-4">
+      <main className="max-w-[720px] lg:max-w-[900px] mx-auto px-2 sm:px-4 md:px-6 pt-2 sm:pt-4">
         {!isLoading || newsBatches.length > 0 ? (
           <div className="space-y-4">
             {newsBatches.map((batch, batchIndex) => (
@@ -501,10 +540,10 @@ function HomeContent() {
                                       {formatTime(item.created_at)}
                                     </span>
                                   </div>
-                                  <h2 className="text-[13px] sm:text-[14px] font-black text-text-primary leading-[1.4] tracking-tight line-clamp-2">
+                                  <h2 className="text-[13px] sm:text-[14px] md:text-[15px] font-black text-text-primary leading-[1.4] tracking-tight line-clamp-2">
                                     {item.title}
                                     <span
-                                      className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[13px] whitespace-nowrap"
+                                      className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[12px] sm:text-[13px] whitespace-nowrap"
                                     >
                                       详情
                                       <svg className="w-3 h-3 translate-y-px" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
@@ -543,9 +582,9 @@ function HomeContent() {
                                   </div>
                                 )}
 
-                                <h2 className="text-[16px] font-bold leading-relaxed">
+                                <h2 className="text-[15px] sm:text-[17px] md:text-[19px] font-black leading-tight sm:leading-relaxed">
                                   {item.title}
-                                  <span className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[14px]">
+                                  <span className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[13px] sm:text-[14px]">
                                     {videoId ? (item.ai_summary ? '视频摘要' : '查看详情') : isInternal ? '正文详情' : '内容摘要'}
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path d="m6 9 6 6 6-6" /></svg>
                                   </span>
@@ -567,13 +606,39 @@ function HomeContent() {
 
                                 <div className="mx-[5px]">
                                   {videoId ? (
-                                    <div className="aspect-[16/10] rounded-xl overflow-hidden bg-black">
+                                    <div
+                                      className="aspect-[16/10] rounded-xl overflow-hidden bg-black"
+                                      data-item-id={item.id}
+                                      data-video-id={videoId}
+                                    >
                                       {playingVideoId === videoId ? (
-                                        <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${videoId}?autoplay=1`} allowFullScreen />
+                                        /* 1. 用户点击后的播放：有声音 */
+                                        <iframe
+                                          className="w-full h-full"
+                                          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+                                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                          allowFullScreen
+                                        />
+                                      ) : autoPlayingVideoId === videoId ? (
+                                        /* 2. 划到中间自动播放：静音 */
+                                        <div className="relative w-full h-full cursor-pointer" onClick={() => handleVideoClick(item.id, videoId)}>
+                                          <iframe
+                                            className="w-full h-full pointer-events-none"
+                                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&rel=0`}
+                                            allow="autoplay"
+                                          />
+                                          {/* 透明遮罩层，防止点击 iframe 而不触发 React 事件 */}
+                                          <div className="absolute inset-0 bg-transparent" />
+                                        </div>
                                       ) : (
-                                        <div className="relative w-full h-full cursor-pointer" onClick={() => setPlayingVideoId(videoId)}>
+                                        /* 3. 默认预览图 */
+                                        <div className="relative w-full h-full cursor-pointer" onClick={() => handleVideoClick(item.id, videoId)}>
                                           <img src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`} className="w-full h-full object-cover" />
-                                          <div className="absolute inset-0 flex items-center justify-center bg-black/20"><div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-white"><svg className="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg></div></div>
+                                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                                            <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-white">
+                                              <svg className="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                            </div>
+                                          </div>
                                         </div>
                                       )}
                                     </div>
