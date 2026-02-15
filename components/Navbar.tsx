@@ -1,18 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/lib/contexts/UserContext';
 import { useLocation } from '@/lib/contexts/LocationContext';
 import ThemeToggle from './ThemeToggle';
+import { POPULAR_CITIES } from '@/lib/contexts/LocationContext';
 
 export default function Navbar() {
   const { user, isLoading } = useUser();
-  const { city, detectLocation } = useLocation();
+  const { city, detectLocation, setManualCity } = useLocation();
   const router = useRouter();
+  const [categories, setCategories] = useState<any[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCityMenuOpen, setIsCityMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   if (isLoading) {
@@ -28,6 +31,29 @@ export default function Navbar() {
     // 强制刷新页面以清除所有状态
     window.location.href = '/';
     setIsMenuOpen(false);
+  };
+
+  // Load categories to find the ID for "本地"
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await fetch('/api/categories');
+        const data = await res.json();
+        if (data.categories) setCategories(data.categories);
+      } catch (e) {
+        console.error('Failed to load categories in Navbar:', e);
+      }
+    };
+    loadCategories();
+  }, []);
+
+  const navigateToLocalNews = () => {
+    const localCat = categories.find(c => c.name === '本地' || c.name === 'Local');
+    if (localCat) {
+      router.push(`/?categoryId=${localCat.id}`);
+    } else {
+      router.push('/');
+    }
   };
 
 
@@ -67,20 +93,64 @@ export default function Navbar() {
             </Link>
 
             {/* Simplified Location */}
-            <button
-              onClick={detectLocation}
-              className="flex items-center gap-1.5 text-white/90 hover:text-white transition-colors py-1 px-2 rounded-md hover:bg-white/10"
-              title="点击重新定位"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              <span className="text-sm font-bold tracking-tight">{city || '定位中...'}</span>
-              <svg className="w-3 h-3 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="18 15 12 9 6 15" className="rotate-180 origin-center" />
-              </svg>
-            </button>
+            {/* City Selection Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsCityMenuOpen(!isCityMenuOpen)}
+                className="flex items-center gap-1.5 text-white/90 hover:text-white transition-colors py-1 px-2 rounded-md hover:bg-white/10"
+                title="选择城市"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                <span className="text-sm font-bold tracking-tight">{city || '选择城市'}</span>
+                <svg className={`w-3 h-3 transition-transform ${isCityMenuOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+
+              {isCityMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setIsCityMenuOpen(false)}
+                  />
+                  <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 py-2 z-20 animate-in fade-in zoom-in-95 duration-200">
+                    <div className="px-4 py-2 text-[11px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-50 dark:border-slate-800 mb-1">
+                      热门城市
+                    </div>
+                    <div className="max-h-[300px] overflow-y-auto">
+                      <button
+                        onClick={() => {
+                          detectLocation();
+                          setIsCityMenuOpen(false);
+                          navigateToLocalNews();
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-indigo-600 dark:text-indigo-400 font-bold hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                        自动重新定位
+                      </button>
+                      {POPULAR_CITIES.map((c) => (
+                        <button
+                          key={c.tag}
+                          onClick={() => {
+                            setManualCity(c.tag);
+                            setIsCityMenuOpen(false);
+                            navigateToLocalNews();
+                          }}
+                          className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${city === c.name ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/10' : 'text-slate-600 dark:text-slate-300'
+                            }`}
+                        >
+                          {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* 搜索框 */}

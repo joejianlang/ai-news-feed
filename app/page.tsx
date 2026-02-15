@@ -52,6 +52,14 @@ function HomeContent() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const searchParams = useSearchParams();
   const itemId = searchParams.get('item');
+  const urlCategoryId = searchParams.get('categoryId');
+
+  // 初始化分类（支持从 URL 获取）
+  useEffect(() => {
+    if (urlCategoryId) {
+      setSelectedCategory(urlCategoryId);
+    }
+  }, [urlCategoryId]);
 
   // 处理深层链接（当新闻加载完成后）
   useEffect(() => {
