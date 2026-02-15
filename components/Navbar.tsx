@@ -3,16 +3,18 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useUser } from '@/lib/contexts/UserContext';
 import { useLocation } from '@/lib/contexts/LocationContext';
 import ThemeToggle from './ThemeToggle';
 import { POPULAR_CITIES } from '@/lib/contexts/LocationContext';
+import { Newspaper, MessageSquare, Store, User, Search, LogOut, ChevronDown, MapPin, Bookmark, PlusCircle, Activity, LayoutDashboard, Share2, Settings, Users, Database } from 'lucide-react';
 
 export default function Navbar() {
   const { user, isLoading } = useUser();
   const { city, detectLocation, setManualCity } = useLocation();
   const router = useRouter();
+  const pathname = usePathname();
   const [categories, setCategories] = useState<any[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCityMenuOpen, setIsCityMenuOpen] = useState(false);
@@ -70,7 +72,7 @@ export default function Navbar() {
       <div className="max-w-[900px] mx-auto px-4 py-1 sm:py-2">
         <div className="flex items-center justify-between gap-4">
           {/* Logo & Location Container */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-shrink-0">
             <Link href="/" className="flex-shrink-0 transition-opacity hover:opacity-80">
               <div
                 className="h-7 sm:h-12 w-20 sm:w-40 bg-white shrink-0"
@@ -93,7 +95,7 @@ export default function Navbar() {
 
             {/* Simplified Location */}
             {/* City Selection Dropdown */}
-            <div className="relative">
+            <div className="relative flex-shrink-0">
               <button
                 onClick={() => setIsCityMenuOpen(!isCityMenuOpen)}
                 className="flex items-center gap-1.5 text-white/90 hover:text-white transition-colors py-1 px-2 rounded-md hover:bg-white/10"
@@ -160,95 +162,111 @@ export default function Navbar() {
           </div>
 
           {/* 搜索框 */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-md hidden sm:block">
-            <div className="relative">
+          <form onSubmit={handleSearch} className="flex-1 max-w-[300px] xl:max-w-md hidden sm:block">
+            <div className="relative group">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="搜索新闻..."
-                className="w-full px-4 py-2 pr-10 bg-teal-700/50 border border-teal-500/50 rounded-full focus:outline-none focus:ring-2 focus:ring-white/30 text-white placeholder-teal-100 text-sm transition-all"
+                className="w-full px-4 py-1.5 pr-10 bg-white/10 border border-white/20 rounded-full focus:outline-none focus:ring-2 focus:ring-white/30 text-white placeholder-teal-100/50 text-xs transition-all"
               />
               <button
                 type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-teal-100 hover:text-white"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-teal-100/50 hover:text-white transition-colors"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                <Search size={14} />
               </button>
             </div>
           </form>
 
           {/* 桌面端中心主导航 */}
-          <div className="hidden lg:flex items-center gap-1 xl:gap-2">
+          <div className="hidden lg:flex items-center gap-1 xl:gap-2 flex-shrink-0">
             <Link
               href="/"
-              className="flex flex-col items-center px-3 py-1 text-white hover:text-teal-100 transition-colors group"
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all whitespace-nowrap group ${pathname === '/' ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/5 hover:text-white'}`}
             >
-              <span className="text-[13px] font-black tracking-widest uppercase">新闻</span>
-              <div className="h-0.5 w-0 group-hover:w-full bg-white transition-all duration-300"></div>
+              <Newspaper size={18} />
+              <span className="text-[13px] font-black tracking-tight">新闻</span>
             </Link>
             <Link
               href="/forum"
-              className="flex flex-col items-center px-3 py-1 text-white hover:text-teal-100 transition-colors group"
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all whitespace-nowrap group ${pathname === '/forum' ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/5 hover:text-white'}`}
             >
-              <span className="text-[13px] font-black tracking-widest uppercase">论坛</span>
-              <div className="h-0.5 w-0 group-hover:w-full bg-white transition-all duration-300"></div>
+              <MessageSquare size={18} />
+              <span className="text-[13px] font-black tracking-tight">论坛</span>
             </Link>
             <Link
               href="/services"
-              className="flex flex-col items-center px-3 py-1 text-white hover:text-teal-100 transition-colors group"
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all whitespace-nowrap group ${pathname === '/services' ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/5 hover:text-white'}`}
             >
-              <span className="text-[13px] font-black tracking-widest uppercase">服务</span>
-              <div className="h-0.5 w-0 group-hover:w-full bg-white transition-all duration-300"></div>
+              <Store size={18} />
+              <span className="text-[13px] font-black tracking-tight">服务</span>
             </Link>
             <Link
               href="/profile"
-              className="flex flex-col items-center px-3 py-1 text-white hover:text-teal-100 transition-colors group"
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-all whitespace-nowrap group ${pathname === '/profile' ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/5 hover:text-white'}`}
             >
-              <span className="text-[13px] font-black tracking-widest uppercase">我的</span>
-              <div className="h-0.5 w-0 group-hover:w-full bg-white transition-all duration-300"></div>
+              <User size={18} />
+              <span className="text-[13px] font-black tracking-tight">我的</span>
             </Link>
           </div>
 
           {/* 桌面端右侧功能区 */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3 flex-shrink-0">
             {user?.role === 'admin' ? (
-              <div className="relative group">
-                <button className="text-[11px] font-black text-white/70 hover:text-white uppercase tracking-tighter border border-white/20 px-2 py-1 rounded">
+              <div className="relative group flex-shrink-0">
+                <button className="flex items-center gap-1.5 text-[11px] font-black text-white/70 hover:text-white uppercase tracking-tighter border border-white/20 px-2 py-1 rounded transition-colors whitespace-nowrap">
+                  <LayoutDashboard size={12} />
                   管理后台
                 </button>
-                <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-800 py-2 z-[60] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                  <Link href="/publish" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">文章管理</Link>
-                  <Link href="/admin/ads" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">广告审核</Link>
-                  <Link href="/sources" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">源管理</Link>
-                  <Link href="/admin/fetch-stats" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">抓取记录</Link>
-                  <Link href="/admin/search-analytics" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">搜索分析</Link>
-                  <Link href="/admin/maintenance" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">系统维护</Link>
-                  <Link href="/admin/users" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">用户管理</Link>
-                  <Link href="/admin/settings" className="block px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-white/5 text-teal-600 bg-teal-50/50">系统设置</Link>
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-800 py-2 z-[60] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                  <Link href="/publish" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
+                    <Newspaper size={14} /> 文章管理
+                  </Link>
+                  <Link href="/admin/ads" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
+                    <Share2 size={14} /> 广告审核
+                  </Link>
+                  <Link href="/sources" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
+                    <Database size={14} /> 源管理
+                  </Link>
+                  <Link href="/admin/fetch-stats" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
+                    <Activity size={14} /> 抓取记录
+                  </Link>
+                  <Link href="/admin/search-analytics" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
+                    <Search size={14} /> 搜索分析
+                  </Link>
+                  <Link href="/admin/maintenance" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
+                    <Database size={14} /> 系统维护
+                  </Link>
+                  <Link href="/admin/users" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
+                    <Users size={14} /> 用户管理
+                  </Link>
+                  <Link href="/admin/settings" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-teal-600 bg-teal-50/50 hover:bg-teal-100/50 transition-colors">
+                    <Settings size={14} /> 系统设置
+                  </Link>
                 </div>
               </div>
             ) : user && (
               <Link
                 href="/ads/create"
-                className="hidden xl:block text-[11px] font-black text-white hover:bg-white/10 border border-white/30 px-3 py-1 rounded-full transition-all uppercase tracking-widest"
+                className="hidden xl:flex items-center gap-1.5 text-[11px] font-black text-white hover:bg-white/20 border border-white/30 px-3 py-1.5 rounded-full transition-all uppercase tracking-widest whitespace-nowrap flex-shrink-0"
               >
+                <PlusCircle size={14} />
                 投放广告
               </Link>
             )}
 
-            <div className="h-6 w-px bg-white/10 mx-1"></div>
+            <div className="h-6 w-px bg-white/10 mx-1 flex-shrink-0"></div>
 
             {user ? (
-              <div className="flex items-center gap-3">
-                <Link href="/profile" className="flex items-center gap-3 group">
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <Link href="/profile" className="flex items-center gap-3 group whitespace-nowrap">
                   <div className="flex flex-col items-end">
                     <span className="text-[10px] font-black text-white/60 uppercase tracking-tighter leading-none">Welcome</span>
                     <span className="text-[12px] font-black text-white leading-tight group-hover:text-teal-100 transition-colors">{user.username}</span>
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-white/20 border border-white/30 overflow-hidden flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-white/20 border border-white/30 overflow-hidden flex items-center justify-center flex-shrink-0">
                     {user.avatar_url ? (
                       <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -258,23 +276,23 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="ml-1 p-1 text-white/70 hover:text-white transition-colors"
+                  className="ml-1 p-1 text-white/70 hover:text-white transition-colors flex-shrink-0"
                   title="退出登录"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                  <LogOut size={18} strokeWidth={2.5} />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <Link
                   href="/login"
-                  className="text-[13px] font-black text-white hover:text-teal-100 transition-colors px-2"
+                  className="text-[13px] font-black text-white hover:text-teal-100 transition-colors px-2 whitespace-nowrap"
                 >
                   登录
                 </Link>
                 <Link
                   href="/register"
-                  className="text-[13px] font-black bg-white text-teal-600 px-4 py-1.5 rounded-full hover:bg-teal-50 transition-colors shadow-lg"
+                  className="text-[13px] font-black bg-white text-teal-600 px-4 py-1.5 rounded-full hover:bg-teal-50 transition-colors shadow-lg whitespace-nowrap"
                 >
                   注册
                 </Link>
