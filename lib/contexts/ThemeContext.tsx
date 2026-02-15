@@ -15,12 +15,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setTheme] = useState<Theme>('light');
 
     useEffect(() => {
-        // 初始化时从本地存储获取，没有则跟随系统
+        // 初始化时逻辑优先级：
+        // 1. 本地存储（用户手动切换过）
+        // 2. 当前时间（晚上19点到早上7点自动暗色）
+        // 3. 系统偏好
         const savedTheme = localStorage.getItem('theme') as Theme | null;
         if (savedTheme) {
             setTheme(savedTheme);
-        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            setTheme('dark');
+        } else {
+            const hour = new Date().getHours();
+            const isNight = hour >= 19 || hour < 7;
+            if (isNight) {
+                setTheme('dark');
+            } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                setTheme('dark');
+            } else {
+                setTheme('light');
+            }
         }
     }, []);
 
