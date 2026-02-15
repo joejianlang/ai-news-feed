@@ -1,30 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
+import { getAuthUser } from '@/lib/auth/server';
 import { getUserById } from '@/lib/supabase/queries';
 
 export async function GET(request: NextRequest) {
   try {
-    // 从cookie获取token
-    const token = request.cookies.get('auth_token')?.value;
+    const authUser = await getAuthUser(request);
 
-    if (!token) {
+    if (!authUser) {
       return NextResponse.json(
         { error: '未登录' },
         { status: 401 }
       );
     }
 
-    // 验证token
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json(
-        { error: 'Token无效' },
-        { status: 401 }
-      );
-    }
-
-    // 获取用户信息
-    const user = await getUserById(payload.userId);
+    // 获取详细用户信息
+    const user = await getUserById(authUser.id);
 
     return NextResponse.json({ user });
   } catch (error) {

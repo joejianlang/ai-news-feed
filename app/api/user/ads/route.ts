@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { getAuthUser } from '@/lib/auth/server';
 import { getUserAds } from '@/lib/supabase/queries';
 
 export async function GET(request: NextRequest) {
-    const supabase = await createSupabaseServerClient();
-
     try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        const user = await getAuthUser(request);
 
-        if (authError || !user) {
+        if (!user) {
             return NextResponse.json({ error: '未授权' }, { status: 401 });
         }
 

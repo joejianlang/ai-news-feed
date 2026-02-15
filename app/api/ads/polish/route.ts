@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { polishAdContent } from '@/lib/ai/ad';
-import { verifyToken } from '@/lib/auth/jwt';
+import { getAuthUser } from '@/lib/auth/server';
 
 export async function POST(request: NextRequest) {
     try {
-        const token = request.cookies.get('auth_token')?.value;
-        if (!token || !verifyToken(token)) {
+        const user = await getAuthUser(request);
+
+        if (!user) {
             return NextResponse.json({ error: '未登录' }, { status: 401 });
         }
 

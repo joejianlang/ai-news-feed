@@ -1,23 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
+import { getAuthUser } from '@/lib/auth/server';
 import { createAd } from '@/lib/supabase/queries';
 
 export async function POST(request: NextRequest) {
     try {
-        const token = request.cookies.get('auth_token')?.value;
-        if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const user = await getAuthUser(request);
 
-        const payload = verifyToken(token);
-        if (!payload) return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+        if (!user) {
+            return NextResponse.json({ error: '未授权' }, { status: 401 });
+        }
 
         const adData = await request.json();
 
-        // Force security override
+        // 确保使用当前授权用户的 ID
         const finalAd = {
             ...adData,
-            user_id: payload.userId, // Ensure user ID matches token
+            user_id: user.id,
             status: 'pending',
-            payment_status: 'unpaid', // Must be unpaid when first submitted for approval
+            payment_status: 'unpaid',
             created_at: new Date().toISOString()
         };
 
@@ -26,6 +26,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, ad: result });
     } catch (error) {
         console.error('Failed to create ad via API:', error);
-        return NextResponse.json({ error: 'Failed' }, { status: 500 });
+        return NextResponse.json({ error: '提交广告失败' }, { status: 500 });
     }
 }
