@@ -41,14 +41,14 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 bg-nav border-b border-teal-700 dark:border-slate-800 z-40 shadow-md transition-colors">
-      <div className="max-w-[900px] mx-auto px-4 py-1.5 sm:py-2">
+    <nav className="sticky top-0 bg-nav border-b border-teal-700 dark:border-slate-800 z-50 shadow-md transition-colors">
+      <div className="max-w-[900px] mx-auto px-4 py-1 sm:py-2">
         <div className="flex items-center justify-between gap-4">
           {/* Logo & Location Container */}
           <div className="flex items-center gap-3">
             <Link href="/" className="flex-shrink-0 transition-opacity hover:opacity-80">
               <div
-                className="h-8 sm:h-12 w-24 sm:w-40 bg-white shrink-0"
+                className="h-7 sm:h-12 w-20 sm:w-40 bg-white shrink-0"
                 style={{
                   maskImage: 'url(/logo.png)',
                   WebkitMaskImage: 'url(/logo.png)',

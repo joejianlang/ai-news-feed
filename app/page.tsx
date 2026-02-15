@@ -199,13 +199,17 @@ function HomeContent() {
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) {
-            const itemId = entry.target.id.replace('article-', '');
-            setExpansionStates((prev) => {
-              if (prev[itemId] === 'full') {
-                return { ...prev, [itemId]: 'preview' };
-              }
-              return prev;
-            });
+            // 只在内容离开屏幕底部时才收起（即 entry.boundingClientRect.top > 0）
+            // 这样可以防止向下滚动时，上方内容收缩导致页面位置跳动
+            if (entry.boundingClientRect.top > 0) {
+              const itemId = entry.target.id.replace('article-', '');
+              setExpansionStates((prev) => {
+                if (prev[itemId] === 'full') {
+                  return { ...prev, [itemId]: 'preview' };
+                }
+                return prev;
+              });
+            }
           }
         });
       },
@@ -341,14 +345,17 @@ function HomeContent() {
       setTimeout(() => {
         const element = document.getElementById(`article-${itemId}`);
         if (element) {
+          // 首页有两个 sticky 栏：Navbar 和 Category nav
+          // Navbar 高度约 48px/64px, Category nav 高度约 48px
           const headerHeight = window.innerWidth < 640 ? 96 : 112;
           const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+
           window.scrollTo({
-            top: elementPosition - headerHeight,
+            top: elementPosition - headerHeight - 10, // 多留 10px 间距，更美观
             behavior: 'smooth'
           });
         }
-      }, 100);
+      }, 150); // 稍微增加延迟，确保 DOM 展开后高度稳定
     }
   };
 
@@ -380,10 +387,10 @@ function HomeContent() {
           {/* Left fading mask for scrollability hints */}
           <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-slate-900 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
-          <div className="flex items-center overflow-x-auto scrollbar-hide px-4 py-2.5 gap-2 relative">
+          <div className="flex items-center overflow-x-auto scrollbar-hide px-3 py-2 sm:px-4 sm:py-2.5 gap-1 sm:gap-2 relative">
             <button
               onClick={() => setSelectedCategory(null)}
-              className={`flex-shrink-0 px-5 py-1.5 text-[15px] font-black rounded-full transition-all duration-300 ${selectedCategory === null
+              className={`flex-shrink-0 px-4 py-1 sm:px-5 sm:py-1.5 text-[14px] sm:text-[15px] font-black rounded-full transition-all duration-300 ${selectedCategory === null
                 ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-105'
                 : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-white/5'
                 }`}
@@ -394,7 +401,7 @@ function HomeContent() {
             {user && (
               <Link
                 href="/following"
-                className="flex-shrink-0 px-5 py-1.5 text-[15px] font-black rounded-full text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all flex items-center gap-1.5"
+                className="flex-shrink-0 px-4 py-1 sm:px-5 sm:py-1.5 text-[14px] sm:text-[15px] font-black rounded-full text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all flex items-center gap-1.5"
               >
                 <span>关注</span>
               </Link>
@@ -406,7 +413,7 @@ function HomeContent() {
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`flex-shrink-0 px-5 py-1.5 text-[15px] font-black rounded-full transition-all duration-300 ${selectedCategory === category.id
+                  className={`flex-shrink-0 px-4 py-1 sm:px-5 sm:py-1.5 text-[14px] sm:text-[15px] font-black rounded-full transition-all duration-300 ${selectedCategory === category.id
                     ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-105'
                     : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-white/5'
                     }`}
@@ -421,7 +428,7 @@ function HomeContent() {
         </div>
       </nav>
 
-      <main className="max-w-[900px] mx-auto px-4 sm:px-6 pt-4">
+      <main className="max-w-[900px] mx-auto px-2 sm:px-6 pt-2 sm:pt-4">
         {!isLoading || newsBatches.length > 0 ? (
           <div className="space-y-4">
             {newsBatches.map((batch, batchIndex) => (

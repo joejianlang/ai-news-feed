@@ -83,18 +83,20 @@ export default function FollowingPage() {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     } else if (state === 'full') {
-      // 展开时，自动将“正在阅读”栏对齐到导航栏下方
+      // 展开时，自动将条目顶部对齐到导航栏下方
       setTimeout(() => {
-        const element = document.getElementById(`reading-bar-${itemId}`);
+        const element = document.getElementById(`article-${itemId}`);
         if (element) {
-          const headerHeight = window.innerWidth < 640 ? 48 : 64;
+          // Following 页面有两个 sticky 栏：Navbar 和 "我的关注" 标题栏
+          const headerHeight = window.innerWidth < 640 ? 110 : 130;
           const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+
           window.scrollTo({
             top: elementPosition - headerHeight,
             behavior: 'smooth'
           });
         }
-      }, 100);
+      }, 150);
     }
   };
 
@@ -104,13 +106,17 @@ export default function FollowingPage() {
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) {
-            const itemId = entry.target.id.replace('article-', '');
-            setExpansionStates((prev) => {
-              if (prev[itemId] === 'full') {
-                return { ...prev, [itemId]: 'preview' };
-              }
-              return prev;
-            });
+            // 只在内容离开屏幕底部时才收起（即 entry.boundingClientRect.top > 0）
+            // 这样可以防止向下滚动时，上方内容收缩导致页面位置跳动
+            if (entry.boundingClientRect.top > 0) {
+              const itemId = entry.target.id.replace('article-', '');
+              setExpansionStates((prev) => {
+                if (prev[itemId] === 'full') {
+                  return { ...prev, [itemId]: 'preview' };
+                }
+                return prev;
+              });
+            }
           }
         });
       },
