@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
                 if (!user) {
                     // 2. 如果不存在，创建一个
                     const randomPassword = Math.random().toString(36).slice(-10);
-                    user = await createUser(email, username, `oauth_google_${randomPassword}`);
+                    user = await createUser(email, username, `oauth_google_${randomPassword}`, data.user.id);
                 }
 
                 // 3. 生成我们的自定义 JWT Token

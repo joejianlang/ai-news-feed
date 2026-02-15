@@ -195,10 +195,13 @@ export async function getCategories() {
 }
 
 // 用户相关查询
-export async function createUser(email: string, username: string, passwordHash: string) {
+export async function createUser(email: string, username: string, passwordHash: string, id?: string) {
+  const newUser: any = { email, username, password_hash: passwordHash };
+  if (id) newUser.id = id;
+
   const { data, error } = await supabase
     .from('users')
-    .insert([{ email, username, password_hash: passwordHash }])
+    .insert([newUser])
     .select('id, email, username, created_at, updated_at')
     .single();
 

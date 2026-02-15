@@ -531,7 +531,7 @@ function HomeContent() {
                                 <h2 className="text-[16px] font-bold leading-relaxed">
                                   {item.title}
                                   <span className="inline-flex items-center gap-1 ml-2 text-teal-600 dark:text-teal-400 font-black text-[14px]">
-                                    {videoId ? '视频摘要' : isInternal ? '正文详情' : '内容摘要'}
+                                    {videoId ? (item.ai_summary ? '视频摘要' : '查看详情') : isInternal ? '正文详情' : '内容摘要'}
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path d="m6 9 6 6 6-6" /></svg>
                                   </span>
                                 </h2>
@@ -577,16 +577,18 @@ function HomeContent() {
                                 <div className="px-5 py-3">
                                   {videoId ? (
                                     /* Video Summary */
-                                    <>
-                                      <div className="flex items-center gap-2 mb-3 cursor-pointer" onClick={() => toggleVideoSummary(item.id)}>
-                                        <div className="w-1 h-5 bg-teal-500 rounded-full"></div>
-                                        <span className="text-[16px] font-black">视频摘要</span>
-                                        <svg className={`w-4 h-4 text-teal-500 transition-transform ${expandedVideoSummary.has(item.id) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path d="m6 9 6 6 6-6" /></svg>
-                                      </div>
-                                      {expandedVideoSummary.has(item.id) && item.ai_summary && (
-                                        <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 mb-2" dangerouslySetInnerHTML={{ __html: renderMarkdown(item.ai_summary) }} />
-                                      )}
-                                    </>
+                                    item.ai_summary && (
+                                      <>
+                                        <div className="flex items-center gap-2 mb-3 cursor-pointer" onClick={() => toggleVideoSummary(item.id)}>
+                                          <div className="w-1 h-5 bg-teal-500 rounded-full"></div>
+                                          <span className="text-[16px] font-black">视频摘要</span>
+                                          <svg className={`w-4 h-4 text-teal-500 transition-transform ${expandedVideoSummary.has(item.id) ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path d="m6 9 6 6 6-6" /></svg>
+                                        </div>
+                                        {expandedVideoSummary.has(item.id) && (
+                                          <div className="prose prose-slate prose-sm sm:prose-base dark:prose-invert max-w-none text-text-secondary leading-relaxed px-1 mb-2" dangerouslySetInnerHTML={{ __html: renderMarkdown(item.ai_summary) }} />
+                                        )}
+                                      </>
+                                    )
                                   ) : isInternal ? (
                                     /* Internal Article: Paged Flip (Dynamic Height & Immersive) */
                                     <>
