@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { suggestForumTags } from '@/lib/ai/forum';
 
 function getSupabase() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
@@ -78,10 +79,20 @@ export async function POST(request: NextRequest) {
         const supabase = getSupabase();
         const body = await request.json();
 
-        const { userId, title, content, images, videoUrl, tags } = body;
+        const { userId, title, content, images, videoUrl, tags: manualTags } = body;
 
         if (!title || !content) {
             return NextResponse.json({ error: '标题和内容必填' }, { status: 400 });
+        }
+
+        // AI 自动打标签
+        let finalTags = manualTags || [];
+        try {
+            const aiTags = await suggestForumTags(title, content);
+            // 合并标签并去重
+            finalTags = Array.from(new Set([...finalTags, ...aiTags]));
+        } catch (err) {
+            console.error('AI tagging failed, using manual tags only:', err);
         }
 
         const { data, error } = await supabase
@@ -92,7 +103,8 @@ export async function POST(request: NextRequest) {
                 content,
                 images: images || [],
                 video_url: videoUrl,
-                tags: tags || []
+                tags: finalTags,
+                is_ai_generated: false // 标记为用户发布
             })
             .select()
             .single();
