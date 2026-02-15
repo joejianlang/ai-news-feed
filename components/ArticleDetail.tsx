@@ -48,6 +48,16 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
         }
     };
 
+    const handleBack = () => {
+        // 检查是否有历史记录可回退，且来源是本站
+        if (typeof window !== 'undefined' && window.history.length > 1 && document.referrer && document.referrer.includes(window.location.host)) {
+            router.back();
+        } else {
+            // 如果是直接打开的链接（分享进入），则返回首页
+            router.push('/');
+        }
+    };
+
     return (
         <div className="min-h-screen bg-background text-foreground transition-colors duration-300 pb-10">
             <Navbar />
@@ -56,7 +66,7 @@ export default function ArticleDetail({ article }: ArticleDetailProps) {
                 {/* 返回按钮 */}
                 <div className="flex items-center justify-between mb-6">
                     <button
-                        onClick={() => router.back()}
+                        onClick={handleBack}
                         className="flex items-center gap-2 text-text-secondary hover:text-teal-600 transition-colors font-bold group"
                     >
                         <div className="p-2 rounded-full group-hover:bg-teal-50 dark:group-hover:bg-teal-900/20 transition-all">
