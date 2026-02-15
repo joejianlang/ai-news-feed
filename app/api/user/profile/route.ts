@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { createSupabaseAdminClient } from '@/lib/supabase/server';
+import { getAuthUser } from '@/lib/auth/server';
 
 export async function POST(request: NextRequest) {
-    const supabase = await createSupabaseServerClient();
+    const supabase = await createSupabaseAdminClient();
 
     try {
         const { display_name, avatar_url, bio } = await request.json();
+        const user = await getAuthUser(request);
 
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-        if (authError || !user) {
+        if (!user) {
             return NextResponse.json({ error: '未授权' }, { status: 401 });
         }
 

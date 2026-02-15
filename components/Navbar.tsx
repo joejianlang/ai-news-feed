@@ -243,13 +243,22 @@ export default function Navbar() {
 
             {user ? (
               <div className="flex items-center gap-3">
-                <div className="flex flex-col items-end">
-                  <span className="text-[10px] font-black text-white/60 uppercase tracking-tighter leading-none">Welcome</span>
-                  <span className="text-[12px] font-black text-white leading-tight">{user.username}</span>
-                </div>
+                <Link href="/profile" className="flex items-center gap-3 group">
+                  <div className="flex flex-col items-end">
+                    <span className="text-[10px] font-black text-white/60 uppercase tracking-tighter leading-none">Welcome</span>
+                    <span className="text-[12px] font-black text-white leading-tight group-hover:text-teal-100 transition-colors">{user.username}</span>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-white/20 border border-white/30 overflow-hidden flex items-center justify-center">
+                    {user.avatar_url ? (
+                      <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-white font-black text-xs">{user.username?.[0].toUpperCase()}</span>
+                    )}
+                  </div>
+                </Link>
                 <button
                   onClick={handleLogout}
-                  className="p-2 text-white/70 hover:text-white transition-colors"
+                  className="ml-1 p-1 text-white/70 hover:text-white transition-colors"
                   title="退出登录"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>

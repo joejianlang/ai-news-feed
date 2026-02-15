@@ -88,14 +88,18 @@ export default function ProfilePage() {
                 {/* 用户卡片 */}
                 <div className="bg-card rounded-2xl p-6 shadow-sm mb-4 transition-colors">
                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
-                            <span className="text-2xl font-bold text-teal-600 dark:text-teal-400">
-                                {user.email?.substring(0, 2).toUpperCase()}
-                            </span>
+                        <div className="w-16 h-16 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm">
+                            {user.avatar_url ? (
+                                <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-2xl font-bold text-teal-600 dark:text-teal-400">
+                                    {(user.display_name || user.username || user.email)?.[0].toUpperCase()}
+                                </span>
+                            )}
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-foreground">
-                                {user.email?.split('@')[0]}
+                                {user.display_name || user.username || user.email?.split('@')[0]}
                             </h2>
                             <p className="text-text-muted text-sm">{user.email}</p>
                         </div>

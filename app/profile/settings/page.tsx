@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/lib/contexts/UserContext';
 import Toast from '@/components/Toast';
-import { ChevronRight, Camera, Mail, Phone, Lock, Bell, Moon, Trash2, LogOut, X, Loader2 } from 'lucide-react';
+import { ChevronRight, Camera, Mail, Phone, Lock, Bell, Moon, Trash2, LogOut, X, Loader2, RefreshCw } from 'lucide-react';
+import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 
 type ModalType = 'nickname' | 'email' | 'phone' | 'password' | 'delete' | null;
 
@@ -14,7 +15,9 @@ export default function SettingsPage() {
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const [activeModal, setActiveModal] = useState<ModalType>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
     const [timer, setTimer] = useState(0);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Form states
     const [formData, setFormData] = useState({
@@ -80,6 +83,63 @@ export default function SettingsPage() {
             }
         } catch (e) {
             setToast({ message: '网络错误', type: 'error' });
+        }
+    };
+
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // 验证文件类型和大小
+        if (!file.type.startsWith('image/')) {
+            return setToast({ message: '请选择图片文件', type: 'error' });
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            return setToast({ message: '图片大小不能超过 2MB', type: 'error' });
+        }
+
+        setIsUploadingAvatar(true);
+        try {
+            const supabase = createSupabaseBrowserClient();
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${user?.id}/avatar-${Math.random()}.${fileExt}`;
+            const filePath = `avatars/${fileName}`;
+
+            // 上传图片
+            const { error: uploadError } = await supabase.storage
+                .from('ad-images')
+                .upload(filePath, file, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            // 获取公开 URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('ad-images')
+                .getPublicUrl(filePath);
+
+            // 更新用户信息
+            const res = await fetch('/api/user/profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ avatar_url: publicUrl })
+            });
+
+            if (res.ok) {
+                setToast({ message: '头像修改成功', type: 'success' });
+                checkAuth(); // 刷新本地用户信息
+            } else {
+                throw new Error('更新失败');
+            }
+        } catch (error: any) {
+            console.error('Avatar upload error:', error);
+            setToast({ message: error.message || '头像上传失败', type: 'error' });
+        } finally {
+            setIsUploadingAvatar(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
@@ -280,23 +340,42 @@ export default function SettingsPage() {
                 <section className="space-y-3">
                     <h2 className="px-2 text-[11px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest">个人身份</h2>
                     <div className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-800">
-                        <button className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            accept="image/*"
+                            className="hidden"
+                        />
+                        <button
+                            onClick={handleAvatarClick}
+                            disabled={isUploadingAvatar}
+                            className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group disabled:opacity-70"
+                        >
                             <div className="flex items-center gap-4 text-left">
                                 <div className="relative">
                                     <div className="w-14 h-14 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm transition-transform group-hover:scale-105">
-                                        {user.avatar_url ? (
+                                        {isUploadingAvatar ? (
+                                            <RefreshCw className="w-6 h-6 text-indigo-600 animate-spin" />
+                                        ) : user.avatar_url ? (
                                             <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
                                         ) : (
                                             <span className="text-indigo-600 dark:text-indigo-400 font-black text-xl">{user.email?.[0].toUpperCase()}</span>
                                         )}
                                     </div>
                                     <div className="absolute -bottom-1 -right-1 p-1 bg-indigo-600 rounded-full text-white border-2 border-white dark:border-slate-900 shadow-sm">
-                                        <Camera className="w-3 h-3" />
+                                        {isUploadingAvatar ? (
+                                            <RefreshCw className="w-3 h-3 animate-spin" />
+                                        ) : (
+                                            <Camera className="w-3 h-3" />
+                                        )}
                                     </div>
                                 </div>
                                 <div>
                                     <div className="font-black text-[16px]">头像</div>
-                                    <div className="text-[12px] text-slate-400 font-bold">点击上传新头像</div>
+                                    <div className="text-[12px] text-slate-400 font-bold">
+                                        {isUploadingAvatar ? '正在上传...' : '点击上传新头像'}
+                                    </div>
                                 </div>
                             </div>
                             <ChevronRight className="w-5 h-5 text-slate-200 group-hover:text-indigo-500 transition-colors" />
