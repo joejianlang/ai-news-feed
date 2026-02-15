@@ -32,8 +32,13 @@ export default function AdminAdsPage() {
     const [selectedAd, setSelectedAd] = useState<AdItem | null>(null);
     const [rejectReason, setRejectReason] = useState('');
     const [showRejectForm, setShowRejectForm] = useState(false);
-    const [confirmAction, setConfirmAction] = useState<{ id: string; type: 'approve' | 'online' } | null>(null);
+    const [confirmAction, setConfirmAction] = useState<{ id: string; type: 'approve' | 'online' | 'offline' } | null>(null);
+    const [activeTab, setActiveTab] = useState<'pending' | 'active' | 'offline'>('pending');
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    useEffect(() => {
+        fetchAds();
+    }, [activeTab]);
 
     useEffect(() => {
         if (!isUserLoading) {
@@ -48,7 +53,10 @@ export default function AdminAdsPage() {
     const fetchAds = async () => {
         setIsLoading(true);
         try {
-            const res = await fetch('/api/admin/ads/pending');
+            const url = activeTab === 'pending'
+                ? '/api/admin/ads/pending'
+                : `/api/admin/ads/pending?status=${activeTab}`;
+            const res = await fetch(url);
             const data = await res.json();
             if (data.ads) {
                 setAds(data.ads);
@@ -135,6 +143,29 @@ export default function AdminAdsPage() {
         }
     };
 
+    const handleTakedown = async (id: string) => {
+        setIsProcessing(true);
+        try {
+            const res = await fetch('/api/admin/ads/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, status: 'offline' })
+            });
+
+            if (!res.ok) throw new Error('API failed');
+
+            setAds(ads.filter(a => a.id !== id));
+            setToast({ message: '广告已成功下架', type: 'success' });
+            setSelectedAd(null);
+            setConfirmAction(null);
+        } catch (err) {
+            console.error(err);
+            setToast({ message: '下架操作失败，请重试', type: 'error' });
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
     if (isUserLoading || !user || user.role !== 'admin') {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
@@ -149,7 +180,7 @@ export default function AdminAdsPage() {
             {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
             <main className="max-w-6xl mx-auto px-4 py-8">
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
                     <div>
                         <h1 className="text-3xl font-black flex items-center gap-2">
                             <Shield className="text-teal-600" />
@@ -157,13 +188,34 @@ export default function AdminAdsPage() {
                         </h1>
                         <p className="text-text-muted mt-1">审核并管理全站投放的赞助内容</p>
                     </div>
-                    <button
-                        onClick={fetchAds}
-                        className="p-2 hover:bg-card-border rounded-full transition-colors"
-                        title="刷新"
-                    >
-                        <RefreshCw size={20} className={isLoading ? 'animate-spin' : ''} />
-                    </button>
+                    <div className="flex items-center gap-2 bg-card p-1 rounded-xl border border-card-border self-stretch sm:self-auto">
+                        <button
+                            onClick={() => setActiveTab('pending')}
+                            className={`px-4 py-2 rounded-lg text-sm font-black transition-all ${activeTab === 'pending' ? 'bg-teal-600 text-white shadow-lg' : 'hover:bg-card-border text-text-muted'}`}
+                        >
+                            待处理
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('active')}
+                            className={`px-4 py-2 rounded-lg text-sm font-black transition-all ${activeTab === 'active' ? 'bg-blue-600 text-white shadow-lg' : 'hover:bg-card-border text-text-muted'}`}
+                        >
+                            上线中
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('offline')}
+                            className={`px-4 py-2 rounded-lg text-sm font-black transition-all ${activeTab === 'offline' ? 'bg-slate-600 text-white shadow-lg' : 'hover:bg-card-border text-text-muted'}`}
+                        >
+                            已下架
+                        </button>
+                        <div className="w-px h-6 bg-card-border mx-1"></div>
+                        <button
+                            onClick={fetchAds}
+                            className="p-2 hover:bg-card-border rounded-lg transition-colors text-text-muted"
+                            title="刷新"
+                        >
+                            <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
+                        </button>
+                    </div>
                 </div>
 
                 {isLoading ? (
@@ -173,9 +225,13 @@ export default function AdminAdsPage() {
                         ))}
                     </div>
                 ) : ads.length === 0 ? (
-                    <div className="text-center py-20 bg-card border border-dashed border-card-border rounded-3xl">
-                        <AlertCircle className="mx-auto text-text-muted mb-4" size={48} />
-                        <p className="text-text-muted font-bold text-lg">暂无待处理的广告申请</p>
+                    <div className="text-center py-24 bg-card border border-dashed border-card-border rounded-[32px]">
+                        <AlertCircle className="mx-auto text-text-muted/30 mb-4" size={56} />
+                        <p className="text-text-muted font-black text-xl">
+                            {activeTab === 'pending' ? '暂无待处理的广告申请' :
+                                activeTab === 'active' ? '当前没有正在投放的广告' : '暂无已下架的广告记录'}
+                        </p>
+                        <p className="text-text-muted/60 text-sm mt-2 font-bold italic">所有操作都会实时同步到数据库</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -200,11 +256,15 @@ export default function AdminAdsPage() {
                                         <h3 className="font-black text-lg truncate flex-1">{ad.title}</h3>
                                         <span className={`text-[10px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter ${ad.status === 'pending' ? 'bg-teal-100 text-teal-700' :
                                             ad.status === 'verifying_payment' ? 'bg-blue-100 text-blue-700' :
-                                                'bg-slate-100 text-slate-700'
+                                                ad.status === 'active' ? 'bg-green-100 text-green-700' :
+                                                    ad.status === 'offline' ? 'bg-red-100 text-red-700' :
+                                                        'bg-slate-100 text-slate-700'
                                             }`}>
                                             {ad.status === 'pending' ? '待审核' :
                                                 ad.status === 'verifying_payment' ? '打款核对' :
-                                                    ad.status === 'unpaid' ? '待支付' : ad.status}
+                                                    ad.status === 'active' ? '投放中' :
+                                                        ad.status === 'offline' ? '已下架' :
+                                                            ad.status === 'unpaid' ? '待支付' : ad.status}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between text-xs text-text-muted font-bold">
@@ -331,14 +391,20 @@ export default function AdminAdsPage() {
                             {confirmAction && (
                                 <div className="mt-8 p-6 bg-teal-50 dark:bg-teal-900/10 border border-teal-200 dark:border-teal-900/30 rounded-2xl animate-in slide-in-from-top-2">
                                     <p className="font-bold text-teal-900 dark:text-teal-400 mb-4">
-                                        {confirmAction.type === 'approve' ? '确定内容合规，并通知用户进行支付吗？' : '已确认收到客户转账，现在让广告立即上线吗？'}
+                                        {confirmAction.type === 'approve' ? '确定内容合规，并通知用户进行支付吗？' :
+                                            confirmAction.type === 'online' ? '已确认收到客户转账，现在让广告立即上线吗？' :
+                                                '下架后广告将不再在首页展示，确定要执行此操作吗？'}
                                     </p>
                                     <div className="flex justify-end gap-3">
                                         <button disabled={isProcessing} onClick={() => setConfirmAction(null)} className="px-6 py-2 text-sm font-bold text-teal-800 dark:text-teal-400">再想想</button>
                                         <button
                                             disabled={isProcessing}
-                                            onClick={() => confirmAction.type === 'approve' ? handleApproveForPayment(confirmAction.id) : handleConfirmPayment(confirmAction.id)}
-                                            className="px-8 py-2 bg-teal-600 text-white rounded-xl font-bold flex items-center gap-2"
+                                            onClick={() => {
+                                                if (confirmAction.type === 'approve') handleApproveForPayment(confirmAction.id);
+                                                else if (confirmAction.type === 'online') handleConfirmPayment(confirmAction.id);
+                                                else handleTakedown(confirmAction.id);
+                                            }}
+                                            className={`px-8 py-2 ${confirmAction.type === 'offline' ? 'bg-red-600' : 'bg-teal-600'} text-white rounded-xl font-bold flex items-center gap-2`}
                                         >
                                             {isProcessing && <RefreshCw size={16} className="animate-spin" />}
                                             确认执行
@@ -350,30 +416,50 @@ export default function AdminAdsPage() {
 
                         {!showRejectForm && !confirmAction && (
                             <div className="p-8 border-t border-card-border bg-card flex justify-end gap-4">
-                                <button
-                                    disabled={isProcessing}
-                                    onClick={() => setShowRejectForm(true)}
-                                    className="px-10 py-4 border border-red-200 text-red-600 font-black rounded-2xl hover:bg-red-50 transition-all"
-                                >
-                                    拒绝申请
-                                </button>
-                                {selectedAd.status === 'pending' ? (
+                                {selectedAd.status === 'active' ? (
                                     <button
                                         disabled={isProcessing}
-                                        onClick={() => setConfirmAction({ id: selectedAd.id, type: 'approve' })}
-                                        className="px-12 py-4 bg-teal-600 hover:bg-teal-700 text-white font-black rounded-2xl shadow-xl shadow-teal-500/20 transition-all active:scale-95 flex items-center gap-2"
+                                        onClick={() => setConfirmAction({ id: selectedAd.id, type: 'offline' as any })}
+                                        className="px-12 py-4 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl shadow-xl shadow-red-500/20 transition-all active:scale-95 flex items-center gap-2"
                                     >
-                                        <CheckCircle size={20} />
-                                        内容合规，去收费
+                                        <XCircle size={20} />
+                                        立即下架
                                     </button>
+                                ) : selectedAd.status === 'pending' || selectedAd.status === 'verifying_payment' || selectedAd.status === 'unpaid' ? (
+                                    <>
+                                        <button
+                                            disabled={isProcessing}
+                                            onClick={() => setShowRejectForm(true)}
+                                            className="px-10 py-4 border border-red-200 text-red-600 font-black rounded-2xl hover:bg-red-50 transition-all"
+                                        >
+                                            拒绝申请
+                                        </button>
+                                        {selectedAd.status === 'pending' ? (
+                                            <button
+                                                disabled={isProcessing}
+                                                onClick={() => setConfirmAction({ id: selectedAd.id, type: 'approve' })}
+                                                className="px-12 py-4 bg-teal-600 hover:bg-teal-700 text-white font-black rounded-2xl shadow-xl shadow-teal-500/20 transition-all active:scale-95 flex items-center gap-2"
+                                            >
+                                                <CheckCircle size={20} />
+                                                内容合规，去收费
+                                            </button>
+                                        ) : (
+                                            <button
+                                                disabled={isProcessing}
+                                                onClick={() => setConfirmAction({ id: selectedAd.id, type: 'online' })}
+                                                className="px-12 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center gap-2"
+                                            >
+                                                {selectedAd.status === 'verifying_payment' ? <ShieldCheck size={20} /> : <DollarSign size={20} />}
+                                                {selectedAd.status === 'verifying_payment' ? '确认凭证合法，立即上线' : '确认收妥，立即上线'}
+                                            </button>
+                                        )}
+                                    </>
                                 ) : (
                                     <button
-                                        disabled={isProcessing}
-                                        onClick={() => setConfirmAction({ id: selectedAd.id, type: 'online' })}
-                                        className="px-12 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center gap-2"
+                                        onClick={() => setSelectedAd(null)}
+                                        className="px-10 py-4 border border-card-border text-text-muted font-black rounded-2xl"
                                     >
-                                        {selectedAd.status === 'verifying_payment' ? <ShieldCheck size={20} /> : <DollarSign size={20} />}
-                                        {selectedAd.status === 'verifying_payment' ? '确认凭证合法，立即上线' : '确认收妥，立即上线'}
+                                        关闭
                                     </button>
                                 )}
                             </div>

@@ -155,7 +155,7 @@ export interface CommentWithReplies extends Comment {
 
 // 广告相关类型
 export type AdScope = 'local' | 'city' | 'province' | 'national';
-export type AdStatus = 'pending' | 'active' | 'expired' | 'rejected' | 'unpaid' | 'verifying_payment';
+export type AdStatus = 'pending' | 'active' | 'expired' | 'rejected' | 'unpaid' | 'verifying_payment' | 'offline';
 
 export interface AdItem {
   id: string;

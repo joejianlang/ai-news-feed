@@ -19,11 +19,18 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: '权限不足' }, { status: 403 });
         }
 
-        const { data, error } = await supabaseAdmin
+        const statusParam = request.nextUrl.searchParams.get('status');
+        let query = supabaseAdmin
             .from('ads')
-            .select('*')
-            .in('status', ['pending', 'unpaid', 'verifying_payment'])
-            .order('created_at', { ascending: true });
+            .select('*');
+
+        if (statusParam) {
+            query = query.eq('status', statusParam);
+        } else {
+            query = query.in('status', ['pending', 'unpaid', 'verifying_payment']);
+        }
+
+        const { data, error } = await query.order('created_at', { ascending: false });
 
         if (error) {
             console.error('Fetch pending ads error:', error);

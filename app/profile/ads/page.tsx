@@ -146,6 +146,8 @@ export default function UserAdsPage() {
                 return <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-slate-400 bg-slate-400/10 px-2 py-0.5 rounded-full"><Clock className="w-3 h-3" /> 待支付</span>;
             case 'verifying_payment':
                 return <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded-full"><ShieldCheck className="w-3 h-3" /> 打款核对中</span>;
+            case 'offline':
+                return <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full"><AlertCircle className="w-3 h-3" /> 已下架</span>;
             default:
                 return <span className="text-[10px] font-black tracking-wider text-slate-400 bg-slate-400/10 px-2 py-0.5 rounded-full">{status}</span>;
         }
