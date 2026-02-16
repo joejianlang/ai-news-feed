@@ -135,8 +135,13 @@ export async function analyzeContent(
   const categoriesList = dbConfig['classification_categories'] || '本地、热点、政治、科技、财经、文化娱乐、体育、深度';
   const citiesList = dbConfig['canadian_cities'] || 'Toronto, Vancouver, Montreal, Calgary, Edmonton, Ottawa, Winnipeg, Quebec City, Hamilton, Kitchener';
 
+  const today = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
   // 动态生成 Prompt
   const prompt = `分析新闻并输出以下部分（全部使用中文简体，禁止出现任何英文）：
+  
+  **核心环境参数（强制参考）**：
+  - 当前系统日期（今天）：${today}
+  - 请注意：当前已是 2026 年。除明确标记为历史事件回顾外，请确保所有摘要中的年份描述与当前年份保持一致。
   
   **核心语言要求（强制执行）**：
   - 除了指定的"地名和人名需保持原文"外，所有生成的内容（摘要、评论、总结、分类名称）必须全部使用【中文简体】。

@@ -108,7 +108,12 @@ export async function analyzeContentWithGemini(
   const skipCommentaryOnly = contentType === 'video' || skipAllAI;
   const skipSummary = skipAllAI;
 
+  const today = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
   const prompt = `你是一个多功能新闻专家，负责翻译、总结、评论和分类新闻。
+  
+  **核心环境参数（强制参考）**：
+  - 当前系统日期（今天）：${today}
+  - 在编写摘要时，请务必核实原始新闻的时间戳逻辑。除明确标记为历史回顾的新闻外，请默认新闻发生的年份为 2026 年（除非内容明确指出是往年旧闻）。
   
   **核心语言要求（强制执行）**：
   - 除了指定的"地名和人名需保持原文"外，所有生成的内容（摘要、评论、总结、分类名称）必须全部使用【中文简体】。
