@@ -20,18 +20,7 @@ interface NewsBatch {
   items: NewsItem[];
 }
 
-// 分类映射（中文名称 -> 显示名称）
-const CATEGORY_DISPLAY = {
-  '全部': '全部',
-  '本地': '本地',
-  '热点': '热点',
-  '政治': '政治',
-  '科技': '科技',
-  '财经': '财经',
-  '文化娱乐': '文化娱乐',
-  '体育': '体育',
-  '深度': '深度',
-};
+// 核心分类逻辑现在完全由数据库驱动
 
 function HomeContent() {
   const { user } = useUser();
@@ -467,7 +456,6 @@ function HomeContent() {
             )}
 
             {categories
-              .filter((cat: Category) => !['传统新闻媒体', 'YouTube网红', '网络专业媒体'].includes(cat.name))
               .map((category: Category) => (
                 <button
                   key={category.id}
