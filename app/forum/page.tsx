@@ -43,6 +43,7 @@ export default function ForumPage() {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [expandedPostId, setExpandedPostId] = useState<string | null>(null);
     const [expandedCommentPostId, setExpandedCommentPostId] = useState<string | null>(null);
+    const [showReplyModal, setShowReplyModal] = useState<string | null>(null);
     const [comments, setComments] = useState<Record<string, Comment[]>>({});
     const [newComment, setNewComment] = useState('');
     const [isPolishingComment, setIsPolishingComment] = useState<string | null>(null);
@@ -188,7 +189,14 @@ export default function ForumPage() {
                     [postId]: [...(prev[postId] || []), data.comment]
                 }));
                 setNewComment('');
+                setShowReplyModal(null);
+                setAiSuggestion(prev => {
+                    const newState = { ...prev };
+                    delete newState[postId];
+                    return newState;
+                });
 
+                setExpandedCommentPostId(postId);
                 setPosts(prev => prev.map(p => {
                     if (p.id === postId) {
                         return { ...p, comments_count: p.comments_count + 1 };
@@ -424,76 +432,27 @@ export default function ForumPage() {
                                                 <Heart size={20} className={post.likes_count > 0 ? 'fill-red-500 text-red-500' : 'group-hover:scale-110'} />
                                                 <span className="font-black text-sm">{post.likes_count}</span>
                                             </button>
-                                            <button onClick={() => setExpandedCommentPostId(showComments ? null : post.id)} className="flex items-center gap-2 hover:text-blue-500 group transition-all text-teal-600">
+                                            <button onClick={() => {
+                                                if (!user) { alert('请先登录'); return; }
+                                                setShowReplyModal(post.id);
+                                            }} className="flex items-center gap-2 hover:text-blue-500 group transition-all text-teal-600">
                                                 <MessageCircle size={20} className="group-hover:scale-110" />
                                                 <span className="font-black text-sm">{post.comments_count}</span>
                                             </button>
-                                            <button onClick={() => setShowShareId(showShareId === post.id ? null : post.id)} className="flex items-center gap-2 hover:text-teal-500 group transition-all">
-                                                <Share2 size={20} className="group-hover:scale-110" />
-                                                <span className="font-black text-sm uppercase tracking-tighter">分享话题</span>
+                                            <button onClick={() => setShowShareId(showShareId === post.id ? null : post.id)} className="flex items-center gap-2 hover:text-teal-500 group transition-all text-sm font-black uppercase tracking-tighter">
+                                                <Share2 size={20} className="group-hover:scale-110 mr-1" />
+                                                分享
                                             </button>
                                         </div>
 
-                                        {/* 评论区与回复框 */}
+                                        {/* 评论列表区 */}
                                         <div className="space-y-4 pt-4 border-t border-card-border/50">
-                                            {/* 回复输入框 - 始终显示或点击展开 */}
-                                            {showComments && (
-                                                <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                                                    {aiSuggestion[post.id] && (
-                                                        <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-900/30 p-4 rounded-2xl mb-2 animate-in zoom-in-95">
-                                                            <div className="flex items-center gap-2 mb-2 text-teal-600 dark:text-teal-400">
-                                                                <Sparkles size={14} />
-                                                                <span className="text-xs font-black uppercase tracking-widest">AI 深度建议</span>
-                                                            </div>
-                                                            <p className="text-sm text-text-secondary leading-relaxed mb-3 italic">"{aiSuggestion[post.id]}"</p>
-                                                            <div className="flex gap-2">
-                                                                <button
-                                                                    onClick={() => handleAdoptSuggestion(post.id)}
-                                                                    className="px-4 py-2 bg-teal-600 text-white text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg shadow-teal-500/20 active:scale-95"
-                                                                >
-                                                                    立刻采纳并编辑
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => setAiSuggestion(prev => {
-                                                                        const newState = { ...prev };
-                                                                        delete newState[post.id];
-                                                                        return newState;
-                                                                    })}
-                                                                    className="px-4 py-2 bg-slate-200 dark:bg-white/10 text-text-muted text-[10px] font-black rounded-xl uppercase tracking-widest"
-                                                                >
-                                                                    放弃
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    <div className="relative group">
-                                                        <textarea
-                                                            placeholder="发表你的睿见..."
-                                                            value={newComment}
-                                                            onChange={(e) => setNewComment(e.target.value)}
-                                                            className="w-full bg-slate-50 dark:bg-white/5 rounded-2xl px-4 py-4 pr-16 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/50 border border-card-border min-h-[100px] resize-none transition-all"
-                                                        />
-                                                        <div className="absolute right-3 bottom-3 flex flex-col gap-2">
-                                                            <button
-                                                                onClick={() => handleAiPolishComment(post.id)}
-                                                                disabled={isPolishingComment === post.id || !newComment.trim()}
-                                                                className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-card-border shadow-sm text-teal-600 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
-                                                                title="AI 润色"
-                                                            >
-                                                                {isPolishingComment === post.id ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles size={18} />}
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleComment(post.id)}
-                                                                disabled={!newComment.trim()}
-                                                                className="bg-teal-600 text-white p-2.5 rounded-xl shadow-lg shadow-teal-500/20 active:scale-95 transition-all disabled:opacity-50"
-                                                            >
-                                                                <Send size={18} strokeWidth={3} />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
+                                            <button
+                                                onClick={() => setExpandedCommentPostId(showComments ? null : post.id)}
+                                                className="w-full py-2 bg-slate-50 dark:bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:text-teal-600 transition-colors"
+                                            >
+                                                {showComments ? '隐藏深度讨论' : '查看深度讨论'}
+                                            </button>
 
                                             {/* 已有评论列表 */}
                                             {comments[post.id] && comments[post.id].length > 0 && (
@@ -644,6 +603,98 @@ export default function ForumPage() {
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 回复模态框 - 全新跳出式设计 */}
+            {showReplyModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
+                    <div className="bg-card w-full max-w-lg rounded-t-[32px] sm:rounded-[32px] overflow-hidden relative shadow-2xl border-t sm:border border-white/10 animate-in slide-in-from-bottom duration-300">
+                        <div className="p-6 sm:p-8">
+                            <div className="flex justify-between items-center mb-6">
+                                <div className="space-y-1">
+                                    <h2 className="text-[20px] font-black text-foreground leading-none flex items-center gap-2">
+                                        <MessageCircle className="text-teal-600" size={20} />
+                                        参与深度讨论
+                                    </h2>
+                                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">发表你的睿见，开启共鸣</p>
+                                </div>
+                                <button onClick={() => { setShowReplyModal(null); setAiSuggestion({}); }} className="p-2 bg-slate-50 dark:bg-white/5 rounded-xl text-text-muted hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
+                                    <X size={18} strokeWidth={3} />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                {aiSuggestion[showReplyModal] && (
+                                    <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-900/30 p-4 rounded-2xl animate-in zoom-in-95">
+                                        <div className="flex items-center gap-2 mb-2 text-teal-600 dark:text-teal-400">
+                                            <Sparkles size={14} />
+                                            <span className="text-xs font-black uppercase tracking-widest">AI 深度建议已就绪</span>
+                                        </div>
+                                        <p className="text-sm text-text-secondary leading-relaxed mb-4 italic">"{aiSuggestion[showReplyModal]}"</p>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => handleAdoptSuggestion(showReplyModal)}
+                                                className="flex-1 py-3 bg-teal-600 text-white text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg shadow-teal-500/20 active:scale-95 transition-all"
+                                            >
+                                                采纳建议并微调提交
+                                            </button>
+                                            <button
+                                                onClick={() => setAiSuggestion(prev => {
+                                                    const newState = { ...prev };
+                                                    delete newState[showReplyModal];
+                                                    return newState;
+                                                })}
+                                                className="px-4 py-3 bg-slate-200 dark:bg-white/10 text-text-muted text-[10px] font-black rounded-xl uppercase tracking-widest"
+                                            >
+                                                不采纳
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="relative group">
+                                    <textarea
+                                        autoFocus
+                                        placeholder="在这里畅所欲言..."
+                                        value={newComment}
+                                        onChange={(e) => setNewComment(e.target.value)}
+                                        className="w-full bg-slate-50 dark:bg-white/5 rounded-2xl px-5 py-5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal-500/50 border border-card-border min-h-[180px] sm:min-h-[220px] resize-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600 leading-relaxed"
+                                    />
+
+                                    <div className="absolute right-4 bottom-4 flex items-center gap-3">
+                                        <button
+                                            onClick={() => handleAiPolishComment(showReplyModal)}
+                                            disabled={isPolishingComment === showReplyModal || !newComment.trim()}
+                                            className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-card-border rounded-xl shadow-sm text-teal-600 font-black text-[11px] uppercase tracking-wider hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                        >
+                                            {isPolishingComment === showReplyModal ? (
+                                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                            ) : (
+                                                <>
+                                                    <Sparkles size={14} />
+                                                    AI 润色
+                                                </>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={() => handleComment(showReplyModal)}
+                                            disabled={!newComment.trim()}
+                                            className="flex items-center gap-2 px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl shadow-xl shadow-teal-500/30 font-black text-[11px] uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50"
+                                        >
+                                            <Send size={14} strokeWidth={3} />
+                                            提交
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-8 text-center sm:hidden pb-4">
+                                <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest opacity-50">下滑或点击侧边取消</p>
+                            </div>
                         </div>
                     </div>
                 </div>
