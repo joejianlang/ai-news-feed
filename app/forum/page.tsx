@@ -54,6 +54,7 @@ export default function ForumPage() {
         tags: '',
         images: [] as string[],
     });
+    const [isPolishing, setIsPolishing] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
@@ -222,6 +223,33 @@ export default function ForumPage() {
             }
         } catch (error) {
             console.error('Failed to create post:', error);
+        }
+    };
+
+    const handleAiPolish = async () => {
+        if (!formData.content.trim()) return;
+
+        setIsPolishing(true);
+        try {
+            const response = await fetch('/api/ai/polish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: formData.content,
+                    title: formData.title
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.polishedContent) {
+                    setFormData(prev => ({ ...prev, content: data.polishedContent }));
+                }
+            }
+        } catch (error) {
+            console.error('AI Polish failed:', error);
+        } finally {
+            setIsPolishing(false);
         }
     };
 
@@ -471,14 +499,34 @@ export default function ForumPage() {
                                         placeholder="在这里输入话题标题..."
                                     />
 
-                                    <textarea
-                                        required
-                                        value={formData.content}
-                                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                        rows={6}
-                                        className="w-full bg-slate-50 dark:bg-white/5 p-5 rounded-2xl text-[16px] border border-card-border focus:ring-2 focus:ring-teal-500/50 text-foreground resize-none outline-none leading-relaxed"
-                                        placeholder="详细阐述你的想法、证据或疑问..."
-                                    />
+                                    <div className="relative group">
+                                        <textarea
+                                            required
+                                            value={formData.content}
+                                            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                                            rows={6}
+                                            className="w-full bg-slate-50 dark:bg-white/5 p-5 pb-14 rounded-2xl text-[16px] border border-card-border focus:ring-2 focus:ring-teal-500/50 text-foreground resize-none outline-none leading-relaxed transition-all"
+                                            placeholder="详细阐述你的想法、证据或疑问..."
+                                        />
+                                        <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                                            {isPolishing ? (
+                                                <div className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-xl font-black text-[12px] uppercase tracking-wider animate-pulse border border-purple-500/20">
+                                                    <Sparkles size={14} className="animate-spin" />
+                                                    正在智能润色...
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleAiPolish}
+                                                    disabled={!formData.content.trim()}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-400 text-white rounded-xl font-black text-[12px] uppercase tracking-wider shadow-lg shadow-purple-500/30 active:scale-95 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 disabled:opacity-50"
+                                                >
+                                                    <Sparkles size={14} />
+                                                    AI 智能润色
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">

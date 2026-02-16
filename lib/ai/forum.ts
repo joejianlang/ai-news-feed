@@ -45,3 +45,38 @@ export async function suggestForumTags(title: string, content: string): Promise<
         return [];
     }
 }
+
+export async function polishForumContent(content: string, title?: string): Promise<string> {
+    if (!GEMINI_API_KEY || !content) return content;
+
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({
+        model: 'gemini-2.0-flash',
+        generationConfig: {
+            maxOutputTokens: 2048,
+            temperature: 0.7,
+        },
+        safetySettings: [
+            { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+            { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+            { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+            { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+        ],
+    });
+
+    const prompt = `你是一个社区论坛内容助手。请帮我润色以下帖子的内容，使其表达更合理、更有逻辑性、更具吸引力，同时保持原作者的口吻（不要过于官腔或刻意，要自然、真实）。
+    
+    ${title ? `帖子标题：${title}` : ''}
+    原文内容：
+    ${content}
+    
+    请直接返回润色后的正文内容，不要包含任何说明文字或引号。`;
+
+    try {
+        const result = await model.generateContent(prompt);
+        return result.response.text().trim();
+    } catch (error) {
+        console.error('Forum AI Polishing failed:', error);
+        return content;
+    }
+}
