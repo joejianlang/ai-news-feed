@@ -495,7 +495,7 @@ export default function ForumPage() {
                                         type="text"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        className="w-full bg-slate-50 dark:bg-white/5 p-4 rounded-2xl text-[18px] font-black border border-card-border focus:ring-2 focus:ring-teal-500/50 text-foreground outline-none"
+                                        className="w-full bg-slate-100 dark:bg-white/10 p-4 rounded-2xl text-[18px] font-black border border-card-border focus:ring-2 focus:ring-teal-500/50 text-slate-900 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-white/30"
                                         placeholder="在这里输入话题标题..."
                                     />
 
@@ -505,7 +505,7 @@ export default function ForumPage() {
                                             value={formData.content}
                                             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                                             rows={6}
-                                            className="w-full bg-slate-50 dark:bg-white/5 p-5 pb-14 rounded-2xl text-[16px] border border-card-border focus:ring-2 focus:ring-teal-500/50 text-foreground resize-none outline-none leading-relaxed transition-all"
+                                            className="w-full bg-slate-100 dark:bg-white/10 p-5 pb-14 rounded-2xl text-[16px] border border-card-border focus:ring-2 focus:ring-teal-500/50 text-slate-900 dark:text-white resize-none outline-none leading-relaxed transition-all placeholder:text-slate-400 dark:placeholder:text-white/30"
                                             placeholder="详细阐述你的想法、证据或疑问..."
                                         />
                                         <div className="absolute bottom-3 right-3 flex items-center gap-2">
@@ -557,7 +557,7 @@ export default function ForumPage() {
                                     </div>
 
                                     <div className="space-y-3">
-                                        <div className="bg-slate-50 dark:bg-white/5 rounded-2xl p-4 border border-card-border h-full">
+                                        <div className="bg-slate-100 dark:bg-white/10 rounded-2xl p-4 border border-card-border h-full">
                                             <div className="flex items-center gap-2 mb-2 text-teal-600">
                                                 <Tag size={16} />
                                                 <span className="text-[11px] font-black uppercase tracking-widest">分类标签</span>
@@ -566,11 +566,11 @@ export default function ForumPage() {
                                                 type="text"
                                                 value={formData.tags}
                                                 onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                                                className="w-full bg-transparent text-[14px] font-bold outline-none text-foreground placeholder-slate-400"
+                                                className="w-full bg-transparent text-[14px] font-bold outline-none text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/30"
                                                 placeholder="军事, 历史, 科技..."
                                             />
                                             <div className="mt-2 pt-2 border-t border-card-border/50">
-                                                <p className="text-[9px] text-text-muted leading-tight font-bold italic">AI 正在根据内容自动建议标签...</p>
+                                                <p className="text-[9px] text-text-muted dark:text-slate-400 leading-tight font-bold italic">AI 正在根据内容自动建议标签...</p>
                                             </div>
                                         </div>
                                     </div>
