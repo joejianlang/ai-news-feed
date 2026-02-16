@@ -70,6 +70,11 @@ export interface User {
   role?: 'admin' | 'user';
   is_muted?: boolean;
   is_suspended?: boolean;
+  real_name?: string;
+  id_card_number?: string;
+  id_card_scan_url?: string;
+  is_verified?: boolean;
+  phone_verified?: boolean;
   created_at: string;
   updated_at: string;
 }

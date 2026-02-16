@@ -16,13 +16,18 @@ import {
     ExternalLink,
     Smartphone,
     Check,
-    FileText
+    FileText,
+    ShieldCheck,
+    ShieldAlert,
+    IdCard,
+    Lock,
+    RefreshCw
 } from 'lucide-react';
 import AgreementModal from '@/components/AgreementModal';
 
 export default function AdCreatePage() {
     const router = useRouter();
-    const { user, isLoading: isUserLoading } = useUser();
+    const { user, isLoading: isUserLoading, checkAuth } = useUser();
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -39,6 +44,16 @@ export default function AdCreatePage() {
     const [price, setPrice] = useState(0);
     const [agreed, setAgreed] = useState(false);
     const [showModal, setShowModal] = useState(false);
+
+    // Identity Verification State
+    const [realName, setRealName] = useState('');
+    const [idNumber, setIdNumber] = useState('');
+    const [idScanUrl, setIdScanUrl] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [smsCode, setSmsCode] = useState('');
+    const [isSendingSms, setIsSendingSms] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [smsSent, setSmsSent] = useState(false);
 
     // State for pricing (fetched from API)
     const [pricing, setPricing] = useState<{
@@ -141,6 +156,88 @@ export default function AdCreatePage() {
         }
     };
 
+    const handleSendSms = async () => {
+        if (!phoneNumber) return;
+        setIsSendingSms(true);
+        try {
+            const res = await fetch('/api/user/send-sms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phoneNumber })
+            });
+            if (res.ok) {
+                setSmsSent(true);
+                alert('验证码请求成功 (测试环境请使用 123456)');
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsSendingSms(false);
+        }
+    };
+
+    const handleVerifyIdentity = async () => {
+        if (!realName || !idNumber || !idScanUrl || !phoneNumber || !smsCode) {
+            alert('请完整填写实名信息并上传扫描件');
+            return;
+        }
+        setIsVerifying(true);
+        try {
+            const res = await fetch('/api/user/verify-identity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user?.id,
+                    realName,
+                    idCardNumber: idNumber,
+                    idCardScanUrl: idScanUrl,
+                    phone: phoneNumber,
+                    smsCode
+                })
+            });
+            if (res.ok) {
+                await checkAuth(); // 刷新用户信息
+                setStep(1);
+            } else {
+                const data = await res.json();
+                alert(data.error || '验证失败');
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsVerifying(false);
+        }
+    };
+
+    const handleIdScanUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `verify-${user?.id}-${Math.random()}.${fileExt}`;
+            const filePath = `verification/${fileName}`;
+
+            const { data, error } = await supabase.storage
+                .from('ad-images')
+                .upload(filePath, file);
+
+            if (error) throw error;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('ad-images')
+                .getPublicUrl(filePath);
+
+            setIdScanUrl(publicUrl);
+        } catch (err) {
+            console.error('Upload failed:', err);
+            alert('上传失败');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     const handlePublish = async () => {
         if (!user) return;
         if (!agreed) {
@@ -199,21 +296,102 @@ export default function AdCreatePage() {
                     ))}
                 </div>
 
-                {/* Header */}
-                <div className="mb-8">
-                    <button
-                        onClick={() => step > 1 ? setStep(step - 1) : router.back()}
-                        className="flex items-center gap-1 text-text-muted hover:text-foreground mb-4 transition-colors"
-                    >
-                        <ArrowLeft size={16} />
-                        <span className="text-sm font-medium">返回</span>
-                    </button>
-                    <h1 className="text-3xl font-black tracking-tight">发布赞助广告</h1>
-                    <p className="text-text-muted mt-2">让更多人看到您的产品或服务</p>
-                </div>
+                {/* Verification Check / Step 0 */}
+                {!user.is_verified && step === 1 && (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                        <div className="bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-900/30 p-6 rounded-[32px] flex items-start gap-4 mb-8">
+                            <ShieldCheck className="text-teal-600 shrink-0 mt-1" size={24} />
+                            <div>
+                                <h3 className="font-black text-teal-900 dark:text-teal-300 uppercase tracking-tight">身份核实要求</h3>
+                                <p className="text-xs font-bold text-teal-800/70 dark:text-teal-400/80 leading-relaxed mt-1">
+                                    为了保障平台内容质量及合规性，首次发布广告前需要完成身份核实。您的信息将被严格加密存储，仅用于合规审核。
+                                </p>
+                            </div>
+                        </div>
 
-                {/* Step 1: Input */}
-                {step === 1 && (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black mb-1.5 uppercase tracking-widest text-text-muted">真实姓名</label>
+                                    <input
+                                        type="text"
+                                        value={realName}
+                                        onChange={e => setRealName(e.target.value)}
+                                        placeholder="与证件一致"
+                                        className="w-full bg-card border border-card-border rounded-xl p-3 text-sm focus:ring-2 focus:ring-teal-500/50"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black mb-1.5 uppercase tracking-widest text-text-muted">官方证件号码 (驾照/护照)</label>
+                                    <input
+                                        type="text"
+                                        value={idNumber}
+                                        onChange={e => setIdNumber(e.target.value)}
+                                        placeholder="有效证件号码"
+                                        className="w-full bg-card border border-card-border rounded-xl p-3 text-sm focus:ring-2 focus:ring-teal-500/50"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-black mb-1.5 uppercase tracking-widest text-text-muted">证件扫描件/照片</label>
+                                <div
+                                    onClick={() => document.getElementById('id-scan-upload')?.click()}
+                                    className="border-2 border-dashed border-card-border rounded-2xl p-6 text-center cursor-pointer hover:border-teal-500/50 transition-all bg-card/30 overflow-hidden relative min-h-[120px] flex flex-col items-center justify-center"
+                                >
+                                    {idScanUrl ? (
+                                        <img src={idScanUrl} className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <IdCard className="mx-auto text-text-muted" size={32} />
+                                            <p className="text-[10px] font-black text-text-muted uppercase">上传政府颁发的证件照片</p>
+                                        </div>
+                                    )}
+                                    <input id="id-scan-upload" type="file" className="hidden" onChange={handleIdScanUpload} accept="image/*" />
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <label className="block text-[10px] font-black mb-1.5 uppercase tracking-widest text-text-muted">手机号验证</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="tel"
+                                        value={phoneNumber}
+                                        onChange={e => setPhoneNumber(e.target.value)}
+                                        placeholder="例如：647-123-4567"
+                                        className="flex-1 bg-card border border-card-border rounded-xl p-3 text-sm focus:ring-2 focus:ring-teal-500/50"
+                                    />
+                                    <button
+                                        onClick={handleSendSms}
+                                        disabled={isSendingSms || !phoneNumber}
+                                        className="bg-slate-100 dark:bg-white/5 border border-card-border px-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-50"
+                                    >
+                                        {isSendingSms ? '发送中...' : smsSent ? '重新发送' : '获取验证码'}
+                                    </button>
+                                </div>
+                                <input
+                                    type="text"
+                                    value={smsCode}
+                                    onChange={e => setSmsCode(e.target.value)}
+                                    placeholder="输入 6 位验证码"
+                                    className="w-full bg-card border border-card-border rounded-xl p-3 text-sm focus:ring-2 focus:ring-teal-500/50"
+                                />
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleVerifyIdentity}
+                            disabled={isVerifying || !idScanUrl || !smsCode}
+                            className="w-full bg-teal-600 hover:bg-teal-700 text-white font-black py-4 rounded-2xl shadow-xl shadow-teal-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                        >
+                            {isVerifying ? <RefreshCw size={20} className="animate-spin" /> : <ShieldCheck size={20} />}
+                            立即完成认证并继续
+                        </button>
+                    </div>
+                )}
+
+                {/* Step 1: Input (Only if verified) */}
+                {user.is_verified && step === 1 && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
                         <div className="space-y-4">
                             <div>

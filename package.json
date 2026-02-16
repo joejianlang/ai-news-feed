@@ -25,6 +25,7 @@
     "react-dom": "19.2.3",
     "resend": "^6.9.1",
     "rss-parser": "^3.13.0",
+    "twilio": "^5.12.1",
     "youtube-transcript": "^1.2.1"
   },
   "devDependencies": {

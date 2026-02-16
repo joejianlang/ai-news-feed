@@ -35,6 +35,7 @@ export default function UserAdsPage() {
     const [payingAd, setPayingAd] = useState<AdItem | null>(null);
     const [paymentMethod, setPaymentMethod] = useState<'online' | 'manual'>('online');
     const [voucherUrl, setVoucherUrl] = useState('');
+    const [enableOnlinePayment, setEnableOnlinePayment] = useState(true);
 
     const supabase = createSupabaseBrowserClient();
 
@@ -54,6 +55,16 @@ export default function UserAdsPage() {
             const data = await res.json();
             if (data.success) {
                 setAds(data.ads);
+            }
+
+            // 获取支付配置
+            const settingsRes = await fetch('/api/ads/settings');
+            const settingsData = await settingsRes.json();
+            if (settingsData.paymentSettings) {
+                setEnableOnlinePayment(settingsData.paymentSettings.enable_online_payment);
+                if (!settingsData.paymentSettings.enable_online_payment) {
+                    setPaymentMethod('manual');
+                }
             }
         } catch (error) {
             console.error('Failed to fetch ads:', error);
@@ -263,14 +274,16 @@ export default function UserAdsPage() {
 
                             <div className="space-y-3">
                                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest px-1">选择支付方式</label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        onClick={() => setPaymentMethod('online')}
-                                        className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${paymentMethod === 'online' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200'}`}
-                                    >
-                                        <CreditCard size={24} />
-                                        <span className="text-[13px] font-black">在线支付</span>
-                                    </button>
+                                <div className={`grid ${enableOnlinePayment ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
+                                    {enableOnlinePayment && (
+                                        <button
+                                            onClick={() => setPaymentMethod('online')}
+                                            className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${paymentMethod === 'online' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200'}`}
+                                        >
+                                            <CreditCard size={24} />
+                                            <span className="text-[13px] font-black">在线支付</span>
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => setPaymentMethod('manual')}
                                         className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${paymentMethod === 'manual' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200'}`}

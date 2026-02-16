@@ -4,6 +4,7 @@ import { getSystemSetting } from '@/lib/supabase/queries';
 export async function GET() {
     try {
         const pricing = await getSystemSetting('ad_pricing');
+        const paymentSettings = await getSystemSetting('ad_payment_settings');
 
         // Default pricing if not found in DB
         const defaultPricing = {
@@ -12,7 +13,8 @@ export async function GET() {
         };
 
         return NextResponse.json({
-            pricing: pricing || defaultPricing
+            pricing: pricing || defaultPricing,
+            paymentSettings: paymentSettings || { enable_online_payment: true }
         });
     } catch (error) {
         console.error('获取广告配置失败:', error);

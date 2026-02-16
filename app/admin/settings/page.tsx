@@ -6,6 +6,8 @@ import { useUser } from '@/lib/contexts/UserContext';
 import Navbar from '@/components/Navbar';
 import {
     Settings,
+    CheckCircle,
+    CreditCard,
     DollarSign,
     Save,
     Plus,
@@ -40,6 +42,7 @@ export default function AdminSettingsPage() {
         scope: { local: 50, city: 100, province: 200, national: 500 },
         duration: { '1': 10, '3': 25, '7': 50, '14': 80, '30': 150 }
     });
+    const [enableOnlinePayment, setEnableOnlinePayment] = useState(true);
 
     useEffect(() => {
         if (!isUserLoading) {
@@ -58,6 +61,9 @@ export default function AdminSettingsPage() {
             if (data.ad_pricing) {
                 setPricing(data.ad_pricing);
             }
+            if (data.ad_payment_settings) {
+                setEnableOnlinePayment(data.ad_payment_settings.enable_online_payment);
+            }
         } catch (err) {
             console.error('Failed to fetch settings:', err);
         } finally {
@@ -74,6 +80,15 @@ export default function AdminSettingsPage() {
                 body: JSON.stringify({
                     key: 'ad_pricing',
                     value: pricing
+                })
+            });
+
+            await fetch('/api/admin/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    key: 'ad_payment_settings',
+                    value: { enable_online_payment: enableOnlinePayment }
                 })
             });
 
@@ -166,6 +181,32 @@ export default function AdminSettingsPage() {
                                 <p className="text-[9px] text-text-muted font-bold mt-0.5 leading-tight">{item.desc}</p>
                             </button>
                         ))}
+                    </div>
+                </div>
+
+                {/* 广告支付模式设置 */}
+                <div className="mb-12 bg-card border border-card-border rounded-3xl p-6 shadow-sm">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-teal-500/10 rounded-2xl flex items-center justify-center text-teal-600">
+                                <CreditCard size={20} />
+                            </div>
+                            <div>
+                                <h3 className="font-black text-[15px] uppercase tracking-tight">广告支付模式</h3>
+                                <p className="text-[10px] text-text-muted font-bold mt-0.5">控制用户提交广告时是否开启在线支付通道</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <span className={`text-xs font-black uppercase tracking-widest ${enableOnlinePayment ? 'text-teal-600' : 'text-text-muted'}`}>
+                                {enableOnlinePayment ? '在线支付已开启' : '在线支付已禁用'}
+                            </span>
+                            <button
+                                onClick={() => setEnableOnlinePayment(!enableOnlinePayment)}
+                                className={`relative w-14 h-7 rounded-full transition-all duration-300 ${enableOnlinePayment ? 'bg-teal-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+                            >
+                                <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 ${enableOnlinePayment ? 'translate-x-7' : 'translate-x-0'}`} />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
