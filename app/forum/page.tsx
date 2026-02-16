@@ -52,6 +52,16 @@ export default function ForumPage() {
     const [showShareId, setShowShareId] = useState<string | null>(null);
     const [editingPostId, setEditingPostId] = useState<string | null>(null);
 
+    // 记录原始标题以便恢复
+    const originalTitle = typeof document !== 'undefined' ? document.title : '社区论坛';
+
+    // 监控分享弹窗状态，重置标题
+    useEffect(() => {
+        if (!showShareId && typeof document !== 'undefined') {
+            document.title = originalTitle;
+        }
+    }, [showShareId, originalTitle]);
+
     const handleDeletePost = async (postId: string) => {
         if (!user || user.role !== 'admin') return;
         if (!confirm('确定要删除这条帖子吗？此操作不可撤销。')) return;
@@ -815,15 +825,21 @@ export default function ForumPage() {
             {showShareId && (() => {
                 const post = posts.find(p => p.id === showShareId);
                 if (!post) return null;
+
+                // 动态更新页面标题，尝试辅助微信抓取
+                if (typeof document !== 'undefined') {
+                    document.title = `${post.title} | 社区论坛 - 深度讨论`;
+                }
+
                 const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/forum?item=${showShareId}`;
-                const shareMsg = `【社区精选话题】${post.title}\n\n"${post.content.slice(0, 80)}..."\n\n扫码直达讨论：${url}`;
+                const shareMsg = `【社区精选】${post.title}\n\n"${post.content.slice(0, 80)}..."\n\n扫码直达讨论：${url}`;
 
                 const onNativeShare = async () => {
                     if (navigator.share) {
                         try {
                             await navigator.share({
-                                title: post.title,
-                                text: `【热门话题】${post.title}\n\n汇聚全网深度见解，快扫码加入讨论吧！`,
+                                title: post.title,  // 显式指定标题
+                                text: `【热门话题】"${post.title}"\n\n全网深度见解，扫码直达现场！`,
                                 url: url,
                             });
                         } catch (err) { console.log(err); }
