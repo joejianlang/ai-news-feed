@@ -12,6 +12,7 @@ interface ShareModalProps {
     imageUrl?: string;
     source?: string;
     articleId: string;
+    path?: string; // Optional path override
 }
 
 export default function ShareModal({
@@ -21,14 +22,15 @@ export default function ShareModal({
     summary,
     imageUrl,
     source,
-    articleId
+    articleId,
+    path = 'article'
 }: ShareModalProps) {
     const [copySuccess, setCopySuccess] = useState(false);
 
     if (!isOpen) return null;
 
     const detailUrl = typeof window !== 'undefined'
-        ? `${window.location.origin}/article/${articleId}?utm_source=share&utm_medium=social&utm_campaign=poster`
+        ? `${window.location.origin}/${path}${path.includes('?') ? '=' : '/'}${articleId}?utm_source=share&utm_medium=social&utm_campaign=poster`
         : '';
 
     // 生成动态分享图 URL
