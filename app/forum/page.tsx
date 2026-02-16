@@ -649,7 +649,7 @@ export default function ForumPage() {
                                                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:from-slate-400 disabled:to-slate-400 text-white rounded-xl font-black text-[12px] uppercase tracking-wider shadow-lg shadow-purple-500/30 active:scale-95 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 disabled:opacity-50"
                                                 >
                                                     <Sparkles size={14} />
-                                                    AI 智能润色
+                                                    智能润色
                                                 </button>
                                             )}
                                         </div>
@@ -696,7 +696,7 @@ export default function ForumPage() {
                                                 placeholder="军事, 历史, 科技..."
                                             />
                                             <div className="mt-2 pt-2 border-t border-card-border/50">
-                                                <p className="text-[9px] text-text-muted dark:text-slate-400 leading-tight font-bold italic">AI 正在根据内容自动建议标签...</p>
+                                                <p className="text-[9px] text-text-muted dark:text-slate-400 leading-tight font-bold italic">已根据内容自动建议标签...</p>
                                             </div>
                                         </div>
                                     </div>
@@ -746,7 +746,7 @@ export default function ForumPage() {
                                     <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-900/30 p-4 rounded-2xl animate-in zoom-in-95 text-slate-900 dark:text-white">
                                         <div className="flex items-center gap-2 mb-2 text-teal-600 dark:text-teal-400">
                                             <Sparkles size={14} />
-                                            <span className="text-xs font-black uppercase tracking-widest">AI 深度建议已就绪</span>
+                                            <span className="text-xs font-black uppercase tracking-widest">深度讨论建议已就绪</span>
                                         </div>
                                         <p className="text-sm text-text-secondary leading-relaxed mb-4 italic px-2">"{aiSuggestion[showReplyModal]}"</p>
                                         <div className="flex gap-2">
@@ -790,7 +790,7 @@ export default function ForumPage() {
                                             ) : (
                                                 <>
                                                     <Sparkles size={14} />
-                                                    AI 润色
+                                                    智能润色
                                                 </>
                                             )}
                                         </button>
@@ -811,48 +811,79 @@ export default function ForumPage() {
                 </div>
             )}
 
-            {/* 分享模态框 */}
-            {showShareId && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[70] flex items-center justify-center p-4">
-                    <div className="bg-card w-full max-sm:max-w-xs sm:max-w-sm rounded-[32px] overflow-hidden relative shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200">
-                        <div className="p-8 text-center text-slate-900 dark:text-white">
-                            <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xl font-black text-foreground tracking-tight">分享话题</h3>
-                                <button onClick={() => setShowShareId(null)} className="p-2 bg-slate-50 dark:bg-white/5 rounded-xl text-text-muted hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
-                                    <X size={18} strokeWidth={3} />
+            {/* 分享话题卡片 */}
+            {showShareId && (() => {
+                const post = posts.find(p => p.id === showShareId);
+                if (!post) return null;
+                const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/forum?item=${showShareId}`;
+                const shareMsg = `【社区话题】${post.title}\n\n"${post.content.slice(0, 60)}..."\n\n扫码或点击查看详情：${url}`;
+
+                const onNativeShare = async () => {
+                    if (navigator.share) {
+                        try {
+                            await navigator.share({
+                                title: post.title,
+                                text: `我在论坛发现了一个值得讨论的话题：${post.title}`,
+                                url: url,
+                            });
+                        } catch (err) { console.log(err); }
+                    } else {
+                        navigator.clipboard.writeText(shareMsg);
+                        alert('话题内容已复制到剪贴板！');
+                    }
+                };
+
+                return (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
+                        <div className="bg-card w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200">
+                            {/* 卡片头部：精选话题 */}
+                            <div className="p-6 bg-gradient-to-br from-teal-600/10 to-transparent border-b border-card-border relative">
+                                <button onClick={() => setShowShareId(null)} className="absolute top-4 right-4 p-2 bg-background/50 hover:bg-background rounded-full text-text-muted transition-colors">
+                                    <X size={16} strokeWidth={3} />
                                 </button>
+                                <div className="space-y-3 pr-8">
+                                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-teal-600 text-[10px] font-black text-white rounded uppercase tracking-widest">
+                                        <Sparkles size={10} /> Topic
+                                    </div>
+                                    <h3 className="text-xl font-black text-foreground leading-tight line-clamp-2">{post.title}</h3>
+                                    <p className="text-[11px] text-text-muted line-clamp-2 leading-relaxed opacity-80">{post.content}</p>
+                                </div>
                             </div>
 
-                            <div className="bg-white p-6 rounded-3xl shadow-inner inline-block mb-6 border border-slate-100">
-                                <QRCodeCanvas
-                                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/forum?item=${showShareId}`}
-                                    size={200}
-                                    level="H"
-                                />
+                            <div className="p-8 pb-10 text-center">
+                                <div className="bg-white p-4 rounded-3xl shadow-lg inline-block mb-6 border border-slate-100 ring-4 ring-slate-50 dark:ring-white/5">
+                                    <QRCodeCanvas value={url} size={150} level="H" />
+                                </div>
+                                <div className="space-y-6">
+                                    <div className="space-y-1.5">
+                                        <p className="text-[13px] text-foreground font-black uppercase tracking-[0.2em]">扫描二维码阅读</p>
+                                        <p className="text-[11px] text-text-muted font-bold leading-relaxed px-4">
+                                            话题正在持续升温，扫描直达讨论现场<br />与全网智慧碰撞火花
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-4">
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(shareMsg);
+                                                alert('话题内容已复制，现在可以去粘贴分享了！');
+                                            }}
+                                            className="flex-1 py-4 bg-slate-100 dark:bg-white/5 text-foreground rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 transition-all border border-card-border"
+                                        >
+                                            复制摘要链接
+                                        </button>
+                                        <button
+                                            onClick={onNativeShare}
+                                            className="flex-[1.5] py-4 bg-teal-600 text-white rounded-2xl font-black text-[12px] shadow-xl shadow-teal-500/40 uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <Share2 size={16} /> 转发至平台
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-
-                            <div className="space-y-2">
-                                <p className="text-[14px] text-foreground font-black uppercase tracking-widest">扫描二维码分享</p>
-                                <p className="text-[11px] text-text-muted font-bold">
-                                    让深度讨论持续升温<br />
-                                    扫码直达，实时讨论
-                                </p>
-                            </div>
-
-                            <button
-                                onClick={() => {
-                                    const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/forum?item=${showShareId}`;
-                                    navigator.clipboard.writeText(url);
-                                    alert('链接已复制到剪贴板');
-                                }}
-                                className="mt-8 w-full py-4 bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white rounded-2xl font-black text-[13px] uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/20 transition-all active:scale-95"
-                            >
-                                复制分享链接
-                            </button>
                         </div>
                     </div>
-                </div>
-            )}
+                );
+            })()}
         </div>
     );
 }
