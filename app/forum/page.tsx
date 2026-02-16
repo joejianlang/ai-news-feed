@@ -580,7 +580,7 @@ export default function ForumPage() {
 
                                                 <div className="space-y-3">
                                                     {comments[post.id].map(comment => (
-                                                        <div key={comment.id} className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
+                                                        <div key={comment.id} className="bg-slate-100/50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200/50 dark:border-white/5">
                                                             <div className="flex justify-between items-start mb-2">
                                                                 <div className="flex items-center gap-2">
                                                                     <span className="font-black text-[12px] text-teal-600 dark:text-teal-400">@{comment.users?.email?.split('@')[0]}</span>
@@ -596,7 +596,7 @@ export default function ForumPage() {
                                                                     </button>
                                                                 )}
                                                             </div>
-                                                            <p className="text-[13px] text-text-secondary leading-relaxed">{comment.content}</p>
+                                                            <p className="text-[13px] text-slate-800 dark:text-slate-100 leading-relaxed font-medium">{comment.content}</p>
                                                         </div>
                                                     ))}
                                                 </div>
