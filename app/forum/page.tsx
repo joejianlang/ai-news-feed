@@ -816,20 +816,20 @@ export default function ForumPage() {
                 const post = posts.find(p => p.id === showShareId);
                 if (!post) return null;
                 const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/forum?item=${showShareId}`;
-                const shareMsg = `【社区话题】${post.title}\n\n"${post.content.slice(0, 60)}..."\n\n扫码或点击查看详情：${url}`;
+                const shareMsg = `【社区精选话题】${post.title}\n\n"${post.content.slice(0, 80)}..."\n\n扫码直达讨论：${url}`;
 
                 const onNativeShare = async () => {
                     if (navigator.share) {
                         try {
                             await navigator.share({
                                 title: post.title,
-                                text: `我在论坛发现了一个值得讨论的话题：${post.title}`,
+                                text: `【热门话题】${post.title}\n\n汇聚全网深度见解，快扫码加入讨论吧！`,
                                 url: url,
                             });
                         } catch (err) { console.log(err); }
                     } else {
                         navigator.clipboard.writeText(shareMsg);
-                        alert('话题内容已复制到剪贴板！');
+                        alert('话题详情已复制：' + post.title);
                     }
                 };
 
@@ -865,15 +865,15 @@ export default function ForumPage() {
                                         <button
                                             onClick={() => {
                                                 navigator.clipboard.writeText(shareMsg);
-                                                alert('话题内容已复制，现在可以去粘贴分享了！');
+                                                alert('话题摘要已复制，可直接粘贴分享！');
                                             }}
-                                            className="flex-1 py-4 bg-slate-100 dark:bg-white/5 text-foreground rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 transition-all border border-card-border"
+                                            className="flex-1 py-4 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-300 dark:hover:bg-slate-700 transition-all border border-card-border shadow-sm"
                                         >
                                             复制摘要链接
                                         </button>
                                         <button
                                             onClick={onNativeShare}
-                                            className="flex-[1.5] py-4 bg-teal-600 text-white rounded-2xl font-black text-[12px] shadow-xl shadow-teal-500/40 uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2"
+                                            className="flex-[1.5] py-4 bg-teal-600 dark:bg-teal-500 text-white rounded-2xl font-black text-[12px] shadow-xl shadow-teal-500/30 uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2"
                                         >
                                             <Share2 size={16} /> 转发至平台
                                         </button>
