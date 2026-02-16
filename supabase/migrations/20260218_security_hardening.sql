@@ -69,7 +69,19 @@ CREATE POLICY "Admins can manage recommended sources" ON public.recommended_sour
 -- 纯运维数据，不设公网策略，仅管理员通过 Dashboard 或后台查看
 
 -- 4. 解决 Security Definer View 警告 (针对 search_analytics)
--- 如果 search_analytics 是视图，我们需要确保它不会被恶意利用
--- 建议将其改为 SECURITY INVOKER (如果可能)，或者限制它的 SELECT 权限
+-- 彻底修复：重建视图并显式指定使用查询者的权限 (SECURITY INVOKER)
+DROP VIEW IF EXISTS public.search_analytics;
+CREATE VIEW public.search_analytics WITH (security_invoker = true) AS
+SELECT
+  keyword,
+  COUNT(*) as total_searches,
+  SUM(CASE WHEN has_results THEN 1 ELSE 0 END) as searches_with_results,
+  SUM(CASE WHEN NOT has_results THEN 1 ELSE 0 END) as searches_without_results,
+  AVG(results_count) as avg_results_count,
+  MAX(created_at) as last_searched_at
+FROM public.search_logs
+GROUP BY keyword
+ORDER BY total_searches DESC;
+
 GRANT SELECT ON public.search_analytics TO authenticated;
--- 注意：实际操作通常需要在视图定义中修改，这里确保权限受控
+GRANT SELECT ON public.search_analytics TO anon;
