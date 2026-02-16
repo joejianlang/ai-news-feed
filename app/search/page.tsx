@@ -105,14 +105,14 @@ function SearchContent() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
+    <div className="max-w-2xl mx-auto px-4 py-8">
       {/* 搜索标题 */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          搜索结果
+      <div className="mb-8">
+        <h1 className="text-3xl font-black text-foreground mb-2 italic">
+          搜索结果.
         </h1>
-        <p className="text-gray-600">
-          关键字: <span className="font-semibold text-blue-600">"{keyword}"</span>
+        <p className="text-text-muted font-bold text-sm">
+          关键字: <span className="font-black text-teal-600">"{keyword}"</span>
           {!isLoading && (
             <span className="ml-2 text-sm">
               找到 {results.length} 条结果
@@ -147,18 +147,18 @@ function SearchContent() {
               <p className="text-gray-400 text-sm">试试其他关键字吧</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-6">
               {results.map((item) => {
                 const isExpanded = expandedItems.has(item.id);
 
                 return (
-                  <article key={item.id} className="bg-white rounded-lg shadow-sm p-4 sm:p-6 hover:shadow-md transition-shadow">
+                  <article key={item.id} className="bg-card rounded-2xl border border-card-border p-5 sm:p-8 hover:shadow-xl hover:scale-[1.01] transition-all group">
                     {/* 新闻来源 */}
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-6 h-6 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
+                      <div className="w-8 h-8 bg-nav rounded-full flex items-center justify-center text-white font-black text-xs shadow-lg">
                         {item.source?.name.charAt(0) || 'N'}
                       </div>
-                      <span className="text-sm text-gray-600">{item.source?.name || '未知来源'}</span>
+                      <span className="text-sm font-black text-text-primary tracking-tight">{item.source?.name || '未知来源'}</span>
                       {item.categories?.name && (
                         <>
                           <span className="text-gray-400 text-xs">·</span>
@@ -172,7 +172,7 @@ function SearchContent() {
                     </div>
 
                     {/* 标题 */}
-                    <h2 className="text-lg sm:text-xl font-bold mb-3 text-gray-900">
+                    <h2 className="text-xl sm:text-2xl font-black mb-4 text-text-primary leading-tight group-hover:text-teal-600 transition-colors">
                       {item.title}
                     </h2>
 
@@ -180,7 +180,7 @@ function SearchContent() {
                     {item.ai_summary && (
                       <div className="mb-4">
 
-                        <p className={`text-gray-700 text-xs sm:text-sm leading-relaxed ${!isExpanded ? 'line-clamp-2' : ''}`}>
+                        <p className={`text-text-secondary text-sm sm:text-[15px] leading-relaxed font-medium ${!isExpanded ? 'line-clamp-3' : ''}`}>
                           {item.ai_summary}
                         </p>
                       </div>
@@ -320,7 +320,7 @@ function SearchContent() {
 
 export default function SearchPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background transition-colors duration-300">
       <Navbar />
       <Suspense fallback={
         <div className="flex justify-center items-center py-20">

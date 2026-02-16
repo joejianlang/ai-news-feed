@@ -111,25 +111,23 @@ export default function AIConfigPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-100 p-4 sm:p-8">
-                <div className="max-w-4xl mx-auto">
-                    <div className="text-center py-12">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
-                        <p className="mt-4 text-gray-600">加载中...</p>
-                    </div>
+            <div className="min-h-screen bg-background flex items-center justify-center p-4">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-teal-600 mx-auto"></div>
+                    <p className="mt-4 text-text-muted font-black italic">Loading system neural networks...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-100 p-4 sm:p-8">
+        <div className="min-h-screen bg-background text-foreground transition-colors duration-300 p-4 sm:p-8">
             <div className="max-w-4xl mx-auto">
                 {/* 头部 */}
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center justify-between mb-10">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-800">AI 配置管理</h1>
-                        <p className="text-gray-600 text-sm mt-1">配置 AI 内容审查规则和提示词模板</p>
+                        <h1 className="text-4xl font-black text-text-primary italic">AI 配置.</h1>
+                        <p className="text-text-muted text-sm mt-2 font-bold uppercase tracking-wider">系统神经元与逻辑模板配置</p>
                     </div>
                     <Link
                         href="/sources"
@@ -147,80 +145,86 @@ export default function AIConfigPage() {
                 )}
 
                 {/* 配置表单 */}
-                <div className="space-y-6">
+                <div className="space-y-8">
                     {/* 内容过滤规则 */}
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                        <h2 className="text-lg font-semibold text-gray-800 mb-2">🚫 内容过滤规则</h2>
-                        <p className="text-gray-500 text-sm mb-4">
+                    <div className="bg-card rounded-3xl shadow-xl p-8 border border-card-border overflow-hidden">
+                        <h2 className="text-xl font-black text-text-primary mb-2 flex items-center gap-2">
+                            <span className="text-2xl">🚫</span> 内容过滤规则
+                        </h2>
+                        <p className="text-text-muted text-sm mb-6 font-bold uppercase tracking-tight">
                             AI 会自动跳过符合以下规则的内容，每行一条规则
                         </p>
                         <textarea
                             value={filterRules}
                             onChange={(e) => setFilterRules(e.target.value)}
-                            rows={6}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-gray-800"
+                            rows={8}
+                            className="w-full px-5 py-4 bg-slate-50 dark:bg-black/20 border-2 border-gray-100 dark:border-white/5 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-text-primary transition-all font-medium"
                             placeholder="每行一条过滤规则..."
                         />
                     </div>
 
                     {/* 分类设置区域 */}
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                        <h2 className="text-lg font-semibold text-gray-800 mb-4">🏷️ 新闻分类配置</h2>
+                    <div className="bg-card rounded-3xl shadow-xl p-8 border border-card-border">
+                        <h2 className="text-xl font-black text-text-primary mb-6 flex items-center gap-2">
+                            <span className="text-2xl">🏷️</span> 新闻分类配置
+                        </h2>
 
                         {/* 分类类别 */}
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <div className="mb-8">
+                            <label className="block text-sm font-black text-text-muted mb-3 uppercase tracking-widest">
                                 分类类别（每行一个）
                             </label>
                             <textarea
                                 value={classificationCategories}
                                 onChange={(e) => setClassificationCategories(e.target.value)}
                                 rows={4}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-gray-800"
+                                className="w-full px-5 py-4 bg-slate-50 dark:bg-black/20 border-2 border-gray-100 dark:border-white/5 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-text-primary transition-all font-medium"
                                 placeholder="本地&#10;热点&#10;政治&#10;科技..."
                             />
                         </div>
 
                         {/* 分类规则 */}
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <div className="mb-8">
+                            <label className="block text-sm font-black text-text-muted mb-3 uppercase tracking-widest">
                                 分类优先级规则
                             </label>
                             <textarea
                                 value={classificationRules}
                                 onChange={(e) => setClassificationRules(e.target.value)}
                                 rows={6}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-gray-800"
+                                className="w-full px-5 py-4 bg-slate-50 dark:bg-black/20 border-2 border-gray-100 dark:border-white/5 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-text-primary transition-all font-medium"
                                 placeholder="1. 本地：提到加拿大城市...&#10;2. 热点：突发事件..."
                             />
                         </div>
 
                         {/* 加拿大城市 */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-black text-text-muted mb-3 uppercase tracking-widest">
                                 加拿大城市列表（用于本地新闻识别）
                             </label>
                             <textarea
                                 value={canadianCities}
                                 onChange={(e) => setCanadianCities(e.target.value)}
                                 rows={5}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-gray-800"
+                                className="w-full px-5 py-4 bg-slate-50 dark:bg-black/20 border-2 border-gray-100 dark:border-white/5 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-text-primary transition-all font-medium"
                                 placeholder="Ontario: Toronto, Mississauga...&#10;BC: Vancouver, Richmond..."
                             />
                         </div>
                     </div>
 
                     {/* 摘要要求 */}
-                    <div className="bg-white rounded-lg shadow-md p-6">
-                        <h2 className="text-lg font-semibold text-gray-800 mb-2">📝 摘要生成要求</h2>
-                        <p className="text-gray-500 text-sm mb-4">
+                    <div className="bg-card rounded-3xl shadow-xl p-8 border border-card-border">
+                        <h2 className="text-xl font-black text-text-primary mb-2 flex items-center gap-2">
+                            <span className="text-2xl">📝</span> 摘要生成要求
+                        </h2>
+                        <p className="text-text-muted text-sm mb-6 font-bold uppercase tracking-tight">
                             {config.summary_requirements?.description || '定义 AI 如何生成内容摘要'}
                         </p>
                         <input
                             type="text"
                             value={summaryReq}
                             onChange={(e) => setSummaryReq(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-gray-800"
+                            className="w-full px-5 py-4 bg-slate-50 dark:bg-black/20 border-2 border-gray-100 dark:border-white/5 rounded-2xl focus:ring-4 focus:ring-teal-500/10 focus:border-teal-500 text-text-primary transition-all font-medium"
                             placeholder="例如：80-150字，概括核心内容..."
                         />
                     </div>

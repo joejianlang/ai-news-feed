@@ -129,11 +129,11 @@ export default function ServicesPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
             <Navbar />
 
             {/* 搜索和筛选 */}
-            <div className="bg-white sticky top-[60px] z-20 shadow-sm pb-3">
+            <div className="bg-card sticky top-[60px] z-20 shadow-sm pb-3 border-b border-card-border">
                 <div className="max-w-2xl mx-auto px-4 pt-4">
                     <div className="relative mb-4">
                         <input
@@ -141,18 +141,18 @@ export default function ServicesPage() {
                             placeholder="搜索服务、物品..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-gray-100 rounded-xl py-3.5 pl-11 pr-4 text-base font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-800 placeholder-gray-500"
+                            className="w-full bg-slate-50 dark:bg-black/20 rounded-2xl py-4 pl-12 pr-4 text-base font-black border-2 border-gray-100 dark:border-white/5 focus:outline-none focus:border-teal-500 text-text-primary placeholder-gray-500 transition-all"
                         />
-                        <Search className="absolute left-4 top-4 text-gray-500" size={20} strokeWidth={2.5} />
+                        <Search className="absolute left-4 top-4 text-gray-400" size={20} strokeWidth={3} />
                     </div>
 
                     {/* 分类标签 */}
                     <div className="flex overflow-x-auto gap-2 no-scrollbar pb-1">
                         <button
                             onClick={() => setActiveCategory(null)}
-                            className={`px-5 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap border transition-colors ${!activeCategory
-                                    ? 'bg-gray-900 text-white border-gray-900'
-                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-100'
+                            className={`px-5 py-2.5 rounded-xl text-sm font-black whitespace-nowrap border transition-all ${!activeCategory
+                                ? 'bg-text-primary text-background border-text-primary shadow-lg'
+                                : 'bg-card border-card-border text-text-muted hover:bg-slate-50 dark:hover:bg-white/5'
                                 }`}
                         >
                             全部
@@ -162,8 +162,8 @@ export default function ServicesPage() {
                                 key={cat.id}
                                 onClick={() => setActiveCategory(cat.id)}
                                 className={`px-5 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap border transition-colors ${activeCategory === cat.id
-                                        ? 'bg-teal-600 text-white border-teal-600'
-                                        : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-100'
+                                    ? 'bg-teal-600 text-white border-teal-600'
+                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-100'
                                     }`}
                             >
                                 {cat.name}
@@ -186,9 +186,9 @@ export default function ServicesPage() {
                         <p className="text-gray-400">点击右下角按钮发布第一条服务吧！</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {services.map((service) => (
-                            <div key={service.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 group hover:shadow-md transition-shadow">
+                            <div key={service.id} className="bg-card rounded-[32px] overflow-hidden shadow-sm border border-card-border group hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
                                 {/* 图片 */}
                                 <div className="relative h-48 overflow-hidden bg-gray-200">
                                     {service.images && service.images[0] ? (

@@ -139,12 +139,10 @@ export default function FollowingPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-100">
-        <div className="max-w-2xl mx-auto p-4 sm:p-8">
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-teal-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600 text-sm sm:text-base">加载中...</p>
-          </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
+          <p className="mt-4 text-text-muted text-sm font-black italic">Buffing your feed...</p>
         </div>
       </div>
     );
@@ -152,16 +150,17 @@ export default function FollowingPage() {
 
   if (news.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-100">
+      <div className="min-h-screen bg-background">
+        <Navbar />
         <div className="max-w-2xl mx-auto p-4 sm:p-8">
-          <div className="text-center py-12">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">我的关注</h1>
-            <p className="text-gray-600 mb-6 text-sm sm:text-base">你还没有关注任何媒体源</p>
+          <div className="text-center py-24 bg-card border-2 border-dashed border-card-border rounded-[40px] mt-12">
+            <h1 className="text-2xl font-black text-text-primary mb-4 italic">我的关注.</h1>
+            <p className="text-text-muted mb-8 text-sm sm:text-base font-bold">你还没有关注任何媒体源，快去发现新大陆吧！</p>
             <button
               onClick={() => router.push('/')}
-              className="bg-teal-600 text-white px-5 sm:px-6 py-2 rounded-lg hover:bg-teal-700 active:bg-teal-800 text-sm sm:text-base font-medium shadow-md"
+              className="bg-teal-600 text-white px-10 py-4 rounded-2xl hover:bg-teal-700 active:scale-95 transition-all font-black shadow-lg shadow-teal-500/20"
             >
-              返回首页浏览内容
+              去首页逛逛
             </button>
           </div>
         </div>

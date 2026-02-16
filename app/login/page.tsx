@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useUser } from '@/lib/contexts/UserContext';
 import { createSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
+import AgreementModal from '@/components/AgreementModal';
 
 function LoginForm() {
   const router = useRouter();
@@ -19,6 +20,8 @@ function LoginForm() {
   const [error, setError] = useState(urlError || '');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showModal, setShowModal] = useState<{ open: boolean, key: string }>({ open: false, key: '' });
+  const [agreed, setAgreed] = useState(true); // Default true for login to reduce friction, but keep links visible
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,10 +82,10 @@ function LoginForm() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-100 dark:from-slate-900 dark:to-slate-950 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-card rounded-3xl shadow-2xl p-8 w-full max-w-md border border-card-border transition-colors">
         <div className="flex flex-col items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">登录</h1>
+          <h1 className="text-3xl font-black text-gray-800 dark:text-white italic">登录.</h1>
         </div>
 
         {error && (
@@ -93,14 +96,14 @@ function LoginForm() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700">
+            <label className="block text-sm font-black mb-2 text-gray-600 dark:text-slate-400 uppercase tracking-widest">
               邮箱
             </label>
             <input
               type="email"
               value={formData.email}
               onChange={e => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 font-medium placeholder-gray-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
+              className="w-full px-4 py-3 border-2 border-gray-100 dark:border-white/5 rounded-2xl bg-slate-50 dark:bg-black/20 text-gray-900 dark:text-white font-medium placeholder-gray-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all"
               placeholder="your@email.com"
               required
             />
@@ -142,11 +145,26 @@ function LoginForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md"
+            className="w-full bg-teal-600 dark:bg-teal-500 text-white py-4 rounded-2xl font-black shadow-lg shadow-teal-500/20 hover:bg-teal-700 dark:hover:bg-teal-600 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? '登录中...' : '立即登录'}
           </button>
+
+          <div className="text-center px-4">
+            <p className="text-[11px] text-gray-500 dark:text-slate-400 font-bold leading-tight">
+              登录即代表您同意
+              <button type="button" onClick={() => setShowModal({ open: true, key: 'agreement_registration' })} className="text-teal-600 hover:underline mx-1">《用户注册协议》</button>
+              及
+              <button type="button" onClick={() => setShowModal({ open: true, key: 'agreement_privacy' })} className="text-teal-600 hover:underline mx-1">《隐私政策/保密协议》</button>
+            </p>
+          </div>
         </form>
+
+        <AgreementModal
+          isOpen={showModal.open}
+          onClose={() => setShowModal({ ...showModal, open: false })}
+          agreementKey={showModal.key}
+        />
 
         <div className="mt-6">
           <div className="relative mb-6">

@@ -28,6 +28,7 @@ export default function SourcesPage() {
   const [fetchStatus, setFetchStatus] = useState<FetchStatus>({ is_running: false });
   const [isStartingCron, setIsStartingCron] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [aiHealth, setAiHealth] = useState<any>(null);
   const [formData, setFormData] = useState<{
     name: string;
@@ -409,7 +410,11 @@ export default function SourcesPage() {
 
   // 加载中或权限检查中
   if (userLoading || isLoading) {
-    return <div className="p-8">加载中...</div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
   }
 
   // 未登录或非管理员（显示空白，因为会自动跳转）
@@ -418,7 +423,7 @@ export default function SourcesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <Navbar />
       <div className="max-w-6xl mx-auto p-4 sm:p-8">
 
@@ -427,7 +432,8 @@ export default function SourcesPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">新闻源管理</h1>
           <div className="flex flex-wrap gap-2 sm:gap-3">
             {/* Toggle Switch for 定时抓取 */}
-            <div className="flex items-center gap-3 px-3 py-2 bg-white rounded-lg border border-gray-200">
+            {/* Toggle Switch for 定时抓取 */}
+            <div className="flex items-center gap-3 px-3 py-2 bg-card rounded-xl border border-card-border shadow-sm">
               <span className="text-sm font-medium text-gray-700">🕐 定时抓取</span>
               <button
                 type="button"
@@ -494,7 +500,7 @@ export default function SourcesPage() {
 
         {/* AI 健康状态 */}
         {aiHealth && (
-          <div className="mb-4 p-3 rounded-lg bg-white border border-gray-200 shadow-sm">
+          <div className="mb-6 p-4 rounded-2xl bg-card border border-card-border shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-gray-700">🤖 AI 服务状态</span>
               <div className="flex gap-3">
@@ -522,7 +528,7 @@ export default function SourcesPage() {
         )}
 
         {/* 抓取进度条 - 始终显示 */}
-        <div className="mb-6 p-4 rounded-lg bg-white border border-gray-200 shadow-sm">
+        <div className="mb-6 p-6 rounded-2xl bg-card border border-card-border shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
               <span className="font-medium text-gray-700">抓取状态</span>
@@ -679,9 +685,41 @@ export default function SourcesPage() {
           </form>
         )}
 
-        <div className="space-y-4">
-          {sources.map(source => (
-            <div key={source.id} id={`source-${source.id}`} className="bg-white rounded-lg shadow-md overflow-hidden transition-all border border-gray-200">
+        {/* 搜索框 */}
+        <div className="mb-6">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="🔍 搜索名称或 URL..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-5 py-3.5 bg-card border-2 border-card-border rounded-2xl shadow-sm focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all placeholder-gray-400 font-medium"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-all font-black"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          {searchQuery && (
+            <p className="mt-2 text-xs text-gray-500 font-bold px-1 uppercase tracking-widest">
+              找到 {(sources.filter(s =>
+                s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                s.url.toLowerCase().includes(searchQuery.toLowerCase())
+              )).length} 个匹配项
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-6">
+          {sources.filter(source =>
+            source.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            source.url.toLowerCase().includes(searchQuery.toLowerCase())
+          ).map(source => (
+            <div key={source.id} id={`source-${source.id}`} className="bg-card rounded-2xl shadow-sm overflow-hidden transition-all border border-card-border group hover:shadow-xl duration-300">
               {editingId === source.id ? (
                 /* 内联编辑表单 */
                 <form onSubmit={handleSubmit} className="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -872,10 +910,27 @@ export default function SourcesPage() {
             </div>
           ))}
 
-          {sources.length === 0 && (
+          {sources.length === 0 ? (
             <div className="text-center text-gray-500 py-12">
               暂无新闻源，点击上方按钮添加
             </div>
+          ) : (
+            sources.filter(source =>
+              source.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              source.url.toLowerCase().includes(searchQuery.toLowerCase())
+            ).length === 0 && (
+              <div className="text-center text-gray-500 py-12 bg-card rounded-3xl border border-dashed border-card-border">
+                <div className="text-4xl mb-4">🔍</div>
+                <h3 className="text-lg font-black mb-1">未找到匹配的源</h3>
+                <p className="text-sm text-text-muted">尝试换个关键词搜索，或者清除当前的搜索条件</p>
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="mt-4 text-indigo-600 font-black hover:underline"
+                >
+                  清除搜索条件
+                </button>
+              </div>
+            )
           )}
         </div>
       </div>

@@ -18,7 +18,8 @@ import {
     Users,
     Activity,
     Search,
-    Database
+    Database,
+    FileText
 } from 'lucide-react';
 import Toast from '@/components/Toast';
 
@@ -149,6 +150,7 @@ export default function AdminSettingsPage() {
                             { title: '系统维护', icon: Database, href: '/admin/maintenance', desc: '数据清理与保质期管理', color: 'bg-slate-500' },
                             { title: 'AI 实验室', icon: Sparkles, href: '/admin/ai-config', desc: '模型参数与故障切换', color: 'bg-teal-500' },
                             { title: '用户中心', icon: Users, href: '/admin/users', desc: '权限、角色与注册管理', color: 'bg-slate-800' },
+                            { title: '法律协议', icon: FileText, href: '/admin/agreements', desc: '注册、隐私及服务条款', color: 'bg-amber-600' },
                         ].map((item, idx) => (
                             <button
                                 key={idx}

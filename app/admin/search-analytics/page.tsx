@@ -69,15 +69,15 @@ export default function SearchAnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* 头部 */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">搜索统计</h1>
-            <p className="text-gray-600 mt-1">了解用户搜索习惯，优化内容策略</p>
+            <h1 className="text-3xl font-black italic">搜索分析.</h1>
+            <p className="text-text-muted mt-2 font-bold uppercase tracking-tight">了解用户搜索习惯，优化内容策略</p>
           </div>
           <Link
             href="/sources"
@@ -89,44 +89,43 @@ export default function SearchAnalyticsPage() {
 
         {/* 统计卡片 */}
         {analytics && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="text-sm text-gray-600 mb-1">总搜索次数</div>
-              <div className="text-3xl font-bold text-gray-900">{analytics.totalSearches}</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div className="bg-card rounded-2xl shadow-xl p-8 border border-card-border">
+              <div className="text-sm font-black text-text-muted mb-2 uppercase tracking-widest">总搜索次数</div>
+              <div className="text-4xl font-black text-text-primary">{analytics.totalSearches}</div>
             </div>
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="text-sm text-gray-600 mb-1">唯一关键字</div>
-              <div className="text-3xl font-bold text-gray-900">{analytics.totalUniqueKeywords}</div>
+            <div className="bg-card rounded-2xl shadow-xl p-8 border border-card-border">
+              <div className="text-sm font-black text-text-muted mb-2 uppercase tracking-widest">唯一关键字</div>
+              <div className="text-4xl font-black text-text-primary">{analytics.totalUniqueKeywords}</div>
             </div>
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="text-sm text-gray-600 mb-1">高频无结果</div>
-              <div className="text-3xl font-bold text-red-600">{analytics.hotNoResults.length}</div>
-              <div className="text-xs text-gray-500 mt-1">需要添加内容源</div>
+            <div className="bg-card rounded-2xl shadow-xl p-8 border border-card-border overflow-hidden relative">
+              <div className="text-sm font-black text-text-muted mb-2 uppercase tracking-widest">高频无结果</div>
+              <div className="text-4xl font-black text-red-500">{analytics.hotNoResults.length}</div>
+              <div className="text-xs font-bold text-red-500/60 mt-2 uppercase tracking-tighter">需要添加源</div>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-bl-full -mr-8 -mt-8" />
             </div>
           </div>
         )}
 
         {/* 标签页 */}
-        <div className="bg-white rounded-lg shadow-sm">
-          <div className="border-b border-gray-200">
+        <div className="bg-card rounded-3xl shadow-xl border border-card-border overflow-hidden">
+          <div className="border-b border-card-border bg-slate-50 dark:bg-black/10">
             <nav className="flex gap-8 px-6">
               <button
                 onClick={() => setActiveTab('all')}
-                className={`py-4 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'all'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                className={`py-4 border-b-2 font-medium text-sm transition-colors ${activeTab === 'all'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
               >
                 所有搜索
               </button>
               <button
                 onClick={() => setActiveTab('no-results')}
-                className={`py-4 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'no-results'
-                    ? 'border-red-500 text-red-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                className={`py-4 border-b-2 font-medium text-sm transition-colors ${activeTab === 'no-results'
+                  ? 'border-red-500 text-red-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
               >
                 高频无结果 ({analytics?.hotNoResults.length || 0})
               </button>

@@ -6,6 +6,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useUser } from '@/lib/contexts/UserContext';
 import { supabase } from '@/lib/supabase/client';
+import AgreementModal from '@/components/AgreementModal';
+import { ShieldCheck } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -22,6 +24,8 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [agreed, setAgreed] = useState(false);
+  const [showModal, setShowModal] = useState<{ open: boolean, key: string }>({ open: false, key: '' });
 
   const startCountdown = () => {
     setCountdown(60);
@@ -70,6 +74,11 @@ export default function RegisterPage() {
 
     if (!formData.code) {
       setError('请输入验证码');
+      return;
+    }
+
+    if (!agreed) {
+      setError('请阅读并同意相关协议');
       return;
     }
 
@@ -133,14 +142,14 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-100 dark:from-slate-900 dark:to-slate-950 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-card rounded-3xl shadow-2xl p-8 w-full max-w-md border border-card-border transition-colors">
         <div className="flex flex-col items-center mb-6">
-          <Link href="/" className="text-4xl font-extrabold text-teal-800 tracking-[0.4em] mb-2 hover:text-teal-600 transition-colors">
-            智&nbsp;流
+          <Link href="/" className="text-4xl font-black text-teal-800 dark:text-teal-400 tracking-[0.2em] mb-2 hover:opacity-80 transition-all italic">
+            数位 Buffet
           </Link>
-          <h1 className="text-2xl font-bold text-gray-800">注 册</h1>
-          <p className="text-gray-500 italic text-sm mt-2">all you can &quot;see&quot;</p>
+          <h1 className="text-2xl font-black text-gray-800 dark:text-white uppercase tracking-tighter">极速注册</h1>
+          <p className="text-gray-500 dark:text-slate-400 italic text-sm mt-2">discover the hidden depth.</p>
         </div>
 
         {error && (
@@ -157,14 +166,14 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium mb-1.5 text-gray-700">
+            <label className="block text-sm font-black mb-1.5 text-gray-600 dark:text-slate-400 uppercase tracking-widest">
               邮箱
             </label>
             <input
               type="email"
               value={formData.email}
               onChange={e => setFormData({ ...formData, email: e.target.value })}
-              className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg bg-white text-gray-900 font-medium placeholder-gray-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all"
+              className="w-full px-4 py-3 border-2 border-gray-100 dark:border-white/5 rounded-2xl bg-slate-50 dark:bg-black/20 text-gray-900 dark:text-white font-medium placeholder-gray-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all"
               placeholder="your@email.com"
               required
             />
@@ -239,11 +248,35 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-teal-600 text-white py-3 rounded-lg font-semibold hover:bg-teal-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md mt-2"
+            className="w-full bg-teal-600 dark:bg-teal-500 text-white py-4 rounded-2xl font-black shadow-lg shadow-teal-500/20 hover:bg-teal-700 dark:hover:bg-teal-600 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-2"
           >
-            {isLoading ? '注册中...' : '立即注册'}
+            {isLoading ? '正在开启...' : '立即开启 Buff'}
           </button>
+
+          <div className="flex items-start gap-2 px-1">
+            <div className="pt-0.5">
+              <input
+                type="checkbox"
+                id="agreed"
+                checked={agreed}
+                onChange={e => setAgreed(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+              />
+            </div>
+            <label htmlFor="agreed" className="text-[11px] text-gray-500 dark:text-slate-400 font-bold leading-tight">
+              阅读并同意支付
+              <button type="button" onClick={() => setShowModal({ open: true, key: 'agreement_registration' })} className="text-teal-600 hover:underline mx-1">《用户注册协议》</button>
+              及
+              <button type="button" onClick={() => setShowModal({ open: true, key: 'agreement_privacy' })} className="text-teal-600 hover:underline mx-1">《隐私政策/保密协议》</button>
+            </label>
+          </div>
         </form>
+
+        <AgreementModal
+          isOpen={showModal.open}
+          onClose={() => setShowModal({ ...showModal, open: false })}
+          agreementKey={showModal.key}
+        />
 
         <div className="mt-6">
           <div className="relative mb-6">

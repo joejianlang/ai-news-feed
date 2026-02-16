@@ -139,128 +139,126 @@ export default function RecommendationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background transition-colors duration-300">
       <Navbar />
-      <div className="max-w-6xl mx-auto p-8">
+      <div className="max-w-6xl mx-auto p-4 sm:p-8">
         <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">🔍 AI推荐新闻源</h1>
-          <p className="text-gray-600 mt-2">审核并添加AI发现的热门媒体源</p>
+          <div>
+            <h1 className="text-3xl font-bold">🔍 AI推荐新闻源</h1>
+            <p className="text-gray-600 mt-2">审核并添加AI发现的热门媒体源</p>
+          </div>
+          {recommendations.length > 0 && (
+            <button
+              onClick={handleBatchApprove}
+              disabled={selectedIds.size === 0}
+              className={`px-6 py-2 rounded-lg font-semibold ${selectedIds.size > 0
+                  ? 'bg-green-500 text-white hover:bg-green-600'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+            >
+              批量批准 ({selectedIds.size})
+            </button>
+          )}
         </div>
-        {recommendations.length > 0 && (
-          <button
-            onClick={handleBatchApprove}
-            disabled={selectedIds.size === 0}
-            className={`px-6 py-2 rounded-lg font-semibold ${
-              selectedIds.size > 0
-                ? 'bg-green-500 text-white hover:bg-green-600'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
-          >
-            批量批准 ({selectedIds.size})
-          </button>
-        )}
-      </div>
 
-      {recommendations.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <p className="text-gray-500 text-lg">暂无待审核的推荐源</p>
-          <p className="text-gray-400 mt-2 text-sm">运行 `node scripts/discover-hot-sources.js` 生成推荐</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-6 py-3 text-left">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.size === recommendations.length}
-                    onChange={toggleSelectAll}
-                    className="w-4 h-4"
-                  />
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">名称</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">类型</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">分类</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">热度</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">推荐理由</th>
-                <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recommendations.map((rec) => (
-                <tr key={rec.id} className="border-b hover:bg-gray-50">
-                  <td className="px-6 py-4">
+        {recommendations.length === 0 ? (
+          <div className="text-center py-20 bg-card border-2 border-dashed border-card-border rounded-3xl">
+            <p className="text-text-muted text-lg font-black">暂无待审核的推荐源</p>
+            <p className="text-text-muted/60 mt-2 text-sm italic font-bold">运行 `node scripts/discover-hot-sources.js` 生成推荐</p>
+          </div>
+        ) : (
+          <div className="bg-card rounded-3xl border border-card-border overflow-hidden shadow-xl">
+            <table className="w-full">
+              <thead className="bg-slate-50 dark:bg-black/20 border-b border-card-border">
+                <tr>
+                  <th className="px-6 py-3 text-left">
                     <input
                       type="checkbox"
-                      checked={selectedIds.has(rec.id)}
-                      onChange={() => toggleSelection(rec.id)}
+                      checked={selectedIds.size === recommendations.length}
+                      onChange={toggleSelectAll}
                       className="w-4 h-4"
                     />
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="font-medium text-gray-900">{rec.name}</div>
-                    <div className="text-xs text-gray-500 mt-1 truncate max-w-xs">{rec.url}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 text-xs rounded ${
-                      rec.source_type === 'youtube_channel'
-                        ? 'bg-red-100 text-red-700'
-                        : rec.source_type === 'rss'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-gray-100 text-gray-700'
-                    }`}>
-                      {rec.source_type === 'youtube_channel' ? 'YouTube' : rec.source_type.toUpperCase()}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-600">
-                      {rec.category?.name || '-'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="text-2xl">🔥</div>
-                      <div>
-                        <div className="text-sm font-semibold text-orange-600">
-                          {rec.popularity_score || 0}
-                        </div>
-                        {rec.subscriber_count && (
-                          <div className="text-xs text-gray-500">
-                            {(rec.subscriber_count / 10000).toFixed(0)}万订阅
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-600 max-w-md">
-                      {rec.recommended_reason}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => handleApprove(rec.id)}
-                        className="px-4 py-2 bg-green-500 text-white text-sm rounded hover:bg-green-600"
-                      >
-                        ✓ 批准
-                      </button>
-                      <button
-                        onClick={() => handleReject(rec.id)}
-                        className="px-4 py-2 bg-red-500 text-white text-sm rounded hover:bg-red-600"
-                      >
-                        ✗ 拒绝
-                      </button>
-                    </div>
-                  </td>
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">名称</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">类型</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">分类</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">热度</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">推荐理由</th>
+                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">操作</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {recommendations.map((rec) => (
+                  <tr key={rec.id} className="border-b hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(rec.id)}
+                        onChange={() => toggleSelection(rec.id)}
+                        className="w-4 h-4"
+                      />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-gray-900">{rec.name}</div>
+                      <div className="text-xs text-gray-500 mt-1 truncate max-w-xs">{rec.url}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 text-xs rounded ${rec.source_type === 'youtube_channel'
+                          ? 'bg-red-100 text-red-700'
+                          : rec.source_type === 'rss'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}>
+                        {rec.source_type === 'youtube_channel' ? 'YouTube' : rec.source_type.toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-gray-600">
+                        {rec.category?.name || '-'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="text-2xl">🔥</div>
+                        <div>
+                          <div className="text-sm font-semibold text-orange-600">
+                            {rec.popularity_score || 0}
+                          </div>
+                          {rec.subscriber_count && (
+                            <div className="text-xs text-gray-500">
+                              {(rec.subscriber_count / 10000).toFixed(0)}万订阅
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-600 max-w-md">
+                        {rec.recommended_reason}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleApprove(rec.id)}
+                          className="px-4 py-2 bg-green-500 text-white text-sm rounded hover:bg-green-600"
+                        >
+                          ✓ 批准
+                        </button>
+                        <button
+                          onClick={() => handleReject(rec.id)}
+                          className="px-4 py-2 bg-red-500 text-white text-sm rounded hover:bg-red-600"
+                        >
+                          ✗ 拒绝
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

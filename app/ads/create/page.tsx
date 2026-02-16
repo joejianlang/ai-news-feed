@@ -15,8 +15,10 @@ import {
     Layout,
     ExternalLink,
     Smartphone,
-    Check
+    Check,
+    FileText
 } from 'lucide-react';
+import AgreementModal from '@/components/AgreementModal';
 
 export default function AdCreatePage() {
     const router = useRouter();
@@ -35,6 +37,8 @@ export default function AdCreatePage() {
     const [contactInfo, setContactInfo] = useState('');
     const [linkUrl, setLinkUrl] = useState('');
     const [price, setPrice] = useState(0);
+    const [agreed, setAgreed] = useState(false);
+    const [showModal, setShowModal] = useState(false);
 
     // State for pricing (fetched from API)
     const [pricing, setPricing] = useState<{
@@ -139,6 +143,10 @@ export default function AdCreatePage() {
 
     const handlePublish = async () => {
         if (!user) return;
+        if (!agreed) {
+            alert('请先同意广告发布服务协议');
+            return;
+        }
         setIsLoading(true);
         try {
             const res = await fetch('/api/ads/submit', {
@@ -367,8 +375,8 @@ export default function AdCreatePage() {
                                         key={s}
                                         onClick={() => setScope(s as any)}
                                         className={`p-5 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-1.5 ${scope === s
-                                                ? 'border-teal-600 bg-teal-600 text-white shadow-xl shadow-teal-500/20 scale-[1.02]'
-                                                : 'border-card-border bg-card text-text-muted hover:border-teal-500/50'
+                                            ? 'border-teal-600 bg-teal-600 text-white shadow-xl shadow-teal-500/20 scale-[1.02]'
+                                            : 'border-card-border bg-card text-text-muted hover:border-teal-500/50'
                                             }`}
                                     >
                                         <span className={`font-black tracking-tight text-sm uppercase ${scope === s ? 'text-white' : 'text-foreground'}`}>
@@ -395,8 +403,8 @@ export default function AdCreatePage() {
                                         key={d}
                                         onClick={() => setDuration(d)}
                                         className={`min-w-[80px] p-4 rounded-xl border-2 transition-all flex flex-col items-center justify-center gap-1 flex-shrink-0 ${duration === d
-                                                ? 'border-teal-600 bg-teal-600 text-white shadow-lg shadow-teal-500/20'
-                                                : 'border-card-border bg-card text-text-muted hover:border-teal-500/50'
+                                            ? 'border-teal-600 bg-teal-600 text-white shadow-lg shadow-teal-500/20'
+                                            : 'border-card-border bg-card text-text-muted hover:border-teal-500/50'
                                             }`}
                                     >
                                         <span className={`font-black text-sm ${duration === d ? 'text-white' : 'text-foreground'}`}>{d}天</span>
@@ -429,6 +437,23 @@ export default function AdCreatePage() {
                             </div>
                         </div>
 
+                        <div className="flex items-start gap-2 px-1 py-2">
+                            <div className="pt-0.5">
+                                <input
+                                    type="checkbox"
+                                    id="agreed"
+                                    checked={agreed}
+                                    onChange={e => setAgreed(e.target.checked)}
+                                    className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                                />
+                            </div>
+                            <label htmlFor="agreed" className="text-[11px] text-text-muted font-bold leading-tight">
+                                我已阅读并同意
+                                <button type="button" onClick={() => setShowModal(true)} className="text-teal-600 hover:underline mx-1 text-xs">《广告发布服务协议》</button>
+                                的全部条款，并保证广告内容合规。
+                            </label>
+                        </div>
+
                         <div className="bg-foreground text-background dark:bg-foreground dark:text-background p-6 rounded-3xl shadow-xl flex items-center justify-between">
                             <div>
                                 <p className="opacity-60 text-xs font-bold uppercase tracking-widest">预估总费用</p>
@@ -436,7 +461,7 @@ export default function AdCreatePage() {
                             </div>
                             <button
                                 onClick={handlePublish}
-                                disabled={isLoading}
+                                disabled={isLoading || !agreed}
                                 className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-4 rounded-2xl font-black flex items-center gap-2 shadow-lg transition-all active:scale-95"
                             >
                                 {isLoading ? (
@@ -471,6 +496,12 @@ export default function AdCreatePage() {
                     </div>
                 )}
             </main>
+
+            <AgreementModal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                agreementKey="agreement_ad_service"
+            />
         </div>
     );
 }
