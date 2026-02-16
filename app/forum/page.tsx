@@ -608,10 +608,10 @@ export default function ForumPage() {
                 </div>
             )}
 
-            {/* 回复模态框 - 全新跳出式设计 */}
+            {/* 回复模态框 - 中心悬浮设计 */}
             {showReplyModal && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
-                    <div className="bg-card w-full max-w-lg rounded-t-[32px] sm:rounded-[32px] overflow-hidden relative shadow-2xl border-t sm:border border-white/10 animate-in slide-in-from-bottom duration-300">
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[60] flex items-center justify-center p-4">
+                    <div className="bg-card w-full max-w-lg rounded-[32px] overflow-hidden relative shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200">
                         <div className="p-6 sm:p-8">
                             <div className="flex justify-between items-center mb-6">
                                 <div className="space-y-1">
@@ -690,10 +690,6 @@ export default function ForumPage() {
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div className="mt-8 text-center sm:hidden pb-4">
-                                <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest opacity-50">下滑或点击侧边取消</p>
                             </div>
                         </div>
                     </div>
