@@ -194,6 +194,39 @@ export async function getCategories() {
   return data as Category[];
 }
 
+export async function createCategory(category: { name: string; description?: string }) {
+  const { data, error } = await supabase
+    .from('categories')
+    .insert([category])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Category;
+}
+
+export async function updateCategory(id: string, updates: { name?: string; description?: string }) {
+  const { data, error } = await supabase
+    .from('categories')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data as Category;
+}
+
+export async function deleteCategory(id: string) {
+  const { error } = await supabase
+    .from('categories')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+  return true;
+}
+
 // 用户相关查询
 export async function createUser(email: string, username: string, passwordHash: string, id?: string) {
   const newUser: any = { email, username, password_hash: passwordHash };

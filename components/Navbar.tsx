@@ -8,7 +8,7 @@ import { useUser } from '@/lib/contexts/UserContext';
 import { useLocation } from '@/lib/contexts/LocationContext';
 import ThemeToggle from './ThemeToggle';
 import { POPULAR_CITIES } from '@/lib/contexts/LocationContext';
-import { Newspaper, MessageSquare, Store, User, Search, LogOut, ChevronDown, MapPin, Bookmark, PlusCircle, Activity, LayoutDashboard, Share2, Settings, Users, Database } from 'lucide-react';
+import { Newspaper, MessageSquare, Store, User, Search, LogOut, ChevronDown, MapPin, Bookmark, PlusCircle, Activity, LayoutDashboard, Share2, Settings, Users, Database, LayoutGrid } from 'lucide-react';
 
 export default function Navbar() {
   const { user, isLoading } = useUser();
@@ -242,6 +242,9 @@ export default function Navbar() {
                   <Link href="/admin/users" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
                     <Users size={14} /> 用户管理
                   </Link>
+                  <Link href="/admin/categories" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
+                    <LayoutGrid size={14} /> 分类管理
+                  </Link>
                   <Link href="/admin/settings" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-teal-600 bg-teal-50/50 hover:bg-teal-100/50 transition-colors">
                     <Settings size={14} /> 系统设置
                   </Link>
@@ -419,6 +422,13 @@ export default function Navbar() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     用户管理
+                  </Link>
+                  <Link
+                    href="/admin/categories"
+                    className="py-2 text-white hover:text-teal-100 font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    分类管理
                   </Link>
                 </>
               )}
