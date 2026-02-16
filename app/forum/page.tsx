@@ -414,17 +414,6 @@ export default function ForumPage() {
                                             </div>
                                         )}
 
-                                        {/* 分享与二维码区 (按需显示) */}
-                                        {showShareId === post.id && (
-                                            <div className="flex flex-col items-center gap-4 py-4 animate-in zoom-in-95 bg-slate-50 dark:bg-white/5 rounded-2xl border border-card-border">
-                                                <div className="p-4 bg-white rounded-2xl shadow-xl border border-slate-100">
-                                                    <QRCodeCanvas value={postUrl} size={160} />
-                                                </div>
-                                                <p className="text-[11px] text-text-muted font-bold text-center">
-                                                    使用微信或浏览器扫码，<br />立即直达本话题深度讨论
-                                                </p>
-                                            </div>
-                                        )}
 
                                         {/* 交互条 - 提升到内容紧下方 */}
                                         <div className="flex items-center gap-4 text-text-muted justify-around border-t border-card-border/50 pt-4">
@@ -691,6 +680,49 @@ export default function ForumPage() {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 分享模态框 - 中心悬浮设计 */}
+            {showShareId && (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[70] flex items-center justify-center p-4">
+                    <div className="bg-card w-full max-w-sm rounded-[32px] overflow-hidden relative shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200">
+                        <div className="p-8 text-center">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-black text-foreground tracking-tight">分享话题</h3>
+                                <button onClick={() => setShowShareId(null)} className="p-2 bg-slate-50 dark:bg-white/5 rounded-xl text-text-muted hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
+                                    <X size={18} strokeWidth={3} />
+                                </button>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-3xl shadow-inner inline-block mb-6 border border-slate-100">
+                                <QRCodeCanvas
+                                    value={`${typeof window !== 'undefined' ? window.location.origin : ''}/forum?item=${showShareId}`}
+                                    size={200}
+                                    level="H"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <p className="text-[13px] text-foreground font-black uppercase tracking-widest">微信扫一扫分享</p>
+                                <p className="text-[11px] text-text-muted font-bold">
+                                    让深度讨论在朋友圈发酵<br />
+                                    扫描二维码，直达精彩瞬间
+                                </p>
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/forum?item=${showShareId}`;
+                                    navigator.clipboard.writeText(url);
+                                    alert('链接已复制到剪贴板');
+                                }}
+                                className="mt-8 w-full py-4 bg-slate-100 dark:bg-white/10 text-foreground rounded-2xl font-black text-[13px] uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/20 transition-all active:scale-95"
+                            >
+                                复制分享链接
+                            </button>
                         </div>
                     </div>
                 </div>
