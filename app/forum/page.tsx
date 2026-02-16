@@ -4,11 +4,10 @@ import { useState, useEffect, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import { useUser } from '@/lib/contexts/UserContext';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
-import { QRCodeCanvas } from 'qrcode.react';
 import {
     MessageSquare, Plus, TrendingUp, Clock, Users,
     Heart, MessageCircle, Share2, Send, X, ChevronDown, ChevronUp,
-    Upload, QrCode, Image as ImageIcon, Sparkles, Tag, RefreshCw
+    Upload, Image as ImageIcon, Sparkles, Tag, RefreshCw
 } from 'lucide-react';
 import ShareModal from '@/components/ShareModal';
 
@@ -563,22 +562,26 @@ export default function ForumPage() {
                                     </div>
 
                                     {/* 交互条 */}
-                                    <div className="flex items-center gap-4 text-text-muted justify-around border-t border-card-border/50 pt-4">
-                                        <button onClick={(e) => { e.stopPropagation(); handleLike(post.id); }} className="flex items-center gap-2 hover:text-red-500 group transition-all">
-                                            <Heart size={20} className={post.likes_count > 0 ? 'fill-red-500 text-red-500' : 'group-hover:scale-110'} />
-                                            <span className="font-black text-sm">{post.likes_count}</span>
-                                        </button>
-                                        <button onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (!user) { alert('请先登录'); return; }
-                                            setShowReplyModal(post.id);
-                                        }} className="flex items-center gap-2 hover:text-blue-500 group transition-all text-teal-600">
-                                            <MessageCircle size={20} className="group-hover:scale-110" />
-                                            <span className="font-black text-sm">{post.comments_count}</span>
-                                        </button>
-                                        <button onClick={(e) => { e.stopPropagation(); handleShare(post); }} className="flex items-center gap-2 hover:text-teal-500 group transition-all text-sm font-black uppercase tracking-tighter">
-                                            <Share2 size={20} className="group-hover:scale-110 mr-1" />
-                                            分享
+                                    <div className="flex items-center justify-between border-t border-card-border/50 pt-4 mt-2 px-1">
+                                        <div className="flex items-center gap-6">
+                                            <button onClick={(e) => { e.stopPropagation(); handleLike(post.id); }} className="flex items-center gap-2 text-text-muted hover:text-red-500 group transition-all">
+                                                <Heart size={20} className={post.likes_count > 0 ? 'fill-red-500 text-red-500' : 'group-hover:scale-110'} />
+                                                <span className="font-black text-sm">{post.likes_count}</span>
+                                            </button>
+                                            <button onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (!user) { alert('请先登录'); return; }
+                                                setShowReplyModal(post.id);
+                                            }} className="flex items-center gap-2 text-teal-600 hover:text-blue-500 group transition-all">
+                                                <MessageCircle size={20} className="group-hover:scale-110" />
+                                                <span className="font-black text-sm">{post.comments_count}</span>
+                                            </button>
+                                        </div>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleShare(post); }}
+                                            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-white/10 text-teal-600 dark:text-teal-400 transition-all"
+                                        >
+                                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" /></svg>
                                         </button>
                                     </div>
 

@@ -30,7 +30,11 @@ export default function ShareModal({
     if (!isOpen) return null;
 
     const detailUrl = typeof window !== 'undefined'
-        ? `${window.location.origin}/${path}${path.includes('?') ? '=' : '/'}${articleId}?utm_source=share&utm_medium=social&utm_campaign=poster`
+        ? (() => {
+            const base = `${window.location.origin}/${path}${path.includes('?') ? '=' : '/'}${articleId}`;
+            const separator = base.includes('?') ? '&' : '?';
+            return `${base}${separator}utm_source=share&utm_medium=social&utm_campaign=poster`;
+        })()
         : '';
 
     // 生成动态分享图 URL
