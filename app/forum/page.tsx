@@ -313,10 +313,10 @@ export default function ForumPage() {
         <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
             <Navbar />
 
-            <header className="bg-card sticky top-[60px] z-20 border-b border-card-border shadow-sm pt-4 pb-2 transition-colors">
+            <header className="bg-card sticky top-[56px] z-20 border-b border-card-border shadow-sm pt-2 pb-1 transition-colors">
                 <div className="max-w-2xl mx-auto px-4">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-2xl font-black text-foreground tracking-tight">社区论坛</h2>
+                    <div className="flex justify-between items-center mb-2">
+                        <h2 className="text-xl font-black text-foreground tracking-tight">社区论坛</h2>
                         <button
                             onClick={() => user ? setShowCreateModal(true) : alert('请先登录')}
                             className="bg-teal-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg active:scale-95 transition-all flex items-center"
