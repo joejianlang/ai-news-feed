@@ -85,7 +85,8 @@ export async function analyzeContent(
   title: string,
   commentaryStyle: string,
   contentType: string = 'article',
-  isDeepDive: boolean = false
+  isDeepDive: boolean = false,
+  newsDate: string | null = null
 ): Promise<AnalysisResult> {
   // 如果 AI 被禁用，返回基础信息
   if (!CURRENT_AI_CONFIG.enableAI) {
@@ -140,8 +141,9 @@ export async function analyzeContent(
   const prompt = `分析新闻并输出以下部分（全部使用中文简体，禁止出现任何英文）：
   
   **核心环境参数（强制参考）**：
-  - 当前系统日期（今天）：${today}
-  - 请注意：当前已是 2026 年。除明确标记为历史事件回顾外，请确保所有摘要中的年份描述与当前年份保持一致。
+  - 新闻原文发布日期：${newsDate || '未知'}
+  - 当前系统日期：${today}
+  - 请注意：当前已是 2026 年。编写摘要时，请以【新闻原文发布日期】为准。如果原文日期缩写为 2月16日，请结合上下文（通常为 2026 年）进行标注，除非内容明确显示它是往年旧闻。
   
   **核心语言要求（强制执行）**：
   - 除了指定的"地名和人名需保持原文"外，所有生成的内容（摘要、评论、总结、分类名称）必须全部使用【中文简体】。

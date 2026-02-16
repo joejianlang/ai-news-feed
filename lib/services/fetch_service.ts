@@ -226,7 +226,9 @@ export async function runFetchPipeline(specificSourceId?: string) {
                     news.content,
                     news.title,
                     news.source?.commentary_style || '',
-                    news.content_type || 'article'
+                    news.content_type || 'article',
+                    false, // isDeepDive
+                    news.published_at // Pass the actual news date
                 );
 
                 if (analysis.isError) {

@@ -61,10 +61,14 @@ export async function analyzeContentWithFailover(
   title: string,
   commentaryStyle: string,
   contentType: string = 'article',
-  isDeepDive: boolean = false
+  isDeepDive: boolean = false,
+  publishedAt?: string
 ): Promise<AnalysisResult> {
   const primaryProvider = CURRENT_AI_CONFIG.provider;
   const backupProvider = primaryProvider === 'gemini' ? 'claude' : 'gemini';
+
+  // 转换日期以便 AI 更好理解
+  const newsDate = publishedAt ? new Date(publishedAt).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' }) : null;
 
   // 尝试主 AI
   try {
@@ -72,9 +76,9 @@ export async function analyzeContentWithFailover(
 
     let result: AnalysisResult;
     if (primaryProvider === 'gemini') {
-      result = await analyzeContentWithGemini(content, title, commentaryStyle, contentType, isDeepDive);
+      result = await analyzeContentWithGemini(content, title, commentaryStyle, contentType, isDeepDive, newsDate);
     } else {
-      result = await analyzeWithClaude(content, title, commentaryStyle, contentType, isDeepDive);
+      result = await analyzeWithClaude(content, title, commentaryStyle, contentType, isDeepDive, newsDate);
     }
 
     // 成功，重置失败计数
@@ -102,9 +106,9 @@ export async function analyzeContentWithFailover(
 
       let result: AnalysisResult;
       if (backupProvider === 'gemini') {
-        result = await analyzeContentWithGemini(content, title, commentaryStyle, contentType, isDeepDive);
+        result = await analyzeContentWithGemini(content, title, commentaryStyle, contentType, isDeepDive, newsDate);
       } else {
-        result = await analyzeWithClaude(content, title, commentaryStyle, contentType, isDeepDive);
+        result = await analyzeWithClaude(content, title, commentaryStyle, contentType, isDeepDive, newsDate);
       }
 
       console.log(`[Failover] ✅ ${backupProvider} 成功`);

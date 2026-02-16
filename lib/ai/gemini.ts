@@ -77,7 +77,8 @@ export async function analyzeContentWithGemini(
   title: string,
   commentaryStyle: string,
   contentType: string = 'article',
-  isDeepDive: boolean = false
+  isDeepDive: boolean = false,
+  newsDate: string | null = null
 ): Promise<AnalysisResult> {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
@@ -112,8 +113,9 @@ export async function analyzeContentWithGemini(
   const prompt = `你是一个多功能新闻专家，负责翻译、总结、评论和分类新闻。
   
   **核心环境参数（强制参考）**：
-  - 当前系统日期（今天）：${today}
-  - 在编写摘要时，请务必核实原始新闻的时间戳逻辑。除明确标记为历史回顾的新闻外，请默认新闻发生的年份为 2026 年（除非内容明确指出是往年旧闻）。
+  - 新闻原文发布日期：${newsDate || '未知（请根据内容推断）'}
+  - 当前系统日期：${today}
+  - 在编写摘要时，请务必以【新闻原文发布日期】为第一准则。如果原文日期标注为 2月16日 且未说明年份，请结合当前已是 2026 年的背景，推断其为 2026 年。除非内容明确显示它是往年（如 2024 年）的旧闻。
   
   **核心语言要求（强制执行）**：
   - 除了指定的"地名和人名需保持原文"外，所有生成的内容（摘要、评论、总结、分类名称）必须全部使用【中文简体】。
