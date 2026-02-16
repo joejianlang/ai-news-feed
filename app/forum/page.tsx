@@ -706,10 +706,10 @@ export default function ForumPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <p className="text-[13px] text-foreground font-black uppercase tracking-widest">微信扫一扫分享</p>
+                                <p className="text-[14px] text-foreground font-black uppercase tracking-widest">扫描二维码分享</p>
                                 <p className="text-[11px] text-text-muted font-bold">
-                                    让深度讨论在朋友圈发酵<br />
-                                    扫描二维码，直达精彩瞬间
+                                    让深度讨论持续升温<br />
+                                    扫码直达，实时讨论
                                 </p>
                             </div>
 
@@ -719,7 +719,7 @@ export default function ForumPage() {
                                     navigator.clipboard.writeText(url);
                                     alert('链接已复制到剪贴板');
                                 }}
-                                className="mt-8 w-full py-4 bg-slate-100 dark:bg-white/10 text-foreground rounded-2xl font-black text-[13px] uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/20 transition-all active:scale-95"
+                                className="mt-8 w-full py-4 bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white rounded-2xl font-black text-[13px] uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-white/20 transition-all active:scale-95"
                             >
                                 复制分享链接
                             </button>
