@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
             .from('forum_posts')
             .select(`
         *,
-        users:user_id(id, email)
+        users!forum_posts_user_id_fkey(id, email)
       `, { count: 'exact' })
             .eq('status', 'active');
 
@@ -59,7 +59,10 @@ export async function GET(request: NextRequest) {
 
         const { data, error, count } = await query;
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase error fetching posts:', error);
+            throw error;
+        }
 
         return NextResponse.json({
             posts: data || [],
@@ -67,9 +70,12 @@ export async function GET(request: NextRequest) {
             page,
             limit
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching posts:', error);
-        return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Failed to fetch posts',
+            details: error.message
+        }, { status: 500 });
     }
 }
 
@@ -89,10 +95,9 @@ export async function POST(request: NextRequest) {
         let finalTags = manualTags || [];
         try {
             const aiTags = await suggestForumTags(title, content);
-            // 合并标签并去重
             finalTags = Array.from(new Set([...finalTags, ...aiTags]));
         } catch (err) {
-            console.error('AI tagging failed, using manual tags only:', err);
+            console.error('AI tagging failed:', err);
         }
 
         const { data, error } = await supabase
@@ -104,16 +109,22 @@ export async function POST(request: NextRequest) {
                 images: images || [],
                 video_url: videoUrl,
                 tags: finalTags,
-                is_ai_generated: false // 标记为用户发布
+                is_ai_generated: false
             })
             .select()
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase error creating post:', error);
+            throw error;
+        }
 
         return NextResponse.json({ post: data });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating post:', error);
-        return NextResponse.json({ error: 'Failed to create post' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Failed to create post',
+            details: error.message
+        }, { status: 500 });
     }
 }

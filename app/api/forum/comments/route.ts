@@ -22,17 +22,23 @@ export async function GET(request: NextRequest) {
             .from('forum_comments')
             .select(`
         *,
-        users:user_id(id, email)
+        users!forum_comments_user_id_fkey(id, email)
       `)
             .eq('post_id', postId)
             .order('created_at', { ascending: true });
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase error fetching comments:', error);
+            throw error;
+        }
 
         return NextResponse.json({ comments: data || [] });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching comments:', error);
-        return NextResponse.json({ error: 'Failed to fetch comments' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Failed to fetch comments',
+            details: error.message
+        }, { status: 500 });
     }
 }
 
@@ -73,15 +79,21 @@ export async function POST(request: NextRequest) {
             })
             .select(`
         *,
-        users:user_id(id, email)
+        users!forum_comments_user_id_fkey(id, email)
       `)
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase error creating comment:', error);
+            throw error;
+        }
 
         return NextResponse.json({ comment: data });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error creating comment:', error);
-        return NextResponse.json({ error: 'Failed to create comment' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Failed to create comment',
+            details: error.message
+        }, { status: 500 });
     }
 }
