@@ -661,7 +661,7 @@ export default function ForumPage() {
                                         placeholder="在这里畅所欲言..."
                                         value={newComment}
                                         onChange={(e) => setNewComment(e.target.value)}
-                                        className="w-full bg-slate-50 dark:bg-white/5 rounded-2xl px-5 py-5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal-500/50 border border-card-border min-h-[180px] sm:min-h-[220px] resize-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600 leading-relaxed"
+                                        className="w-full bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white rounded-2xl px-5 py-5 text-[15px] focus:outline-none focus:ring-2 focus:ring-teal-500/50 border border-card-border min-h-[180px] sm:min-h-[220px] resize-none transition-all placeholder:text-slate-400 dark:placeholder:text-white/30 leading-relaxed"
                                     />
 
                                     <div className="absolute right-4 bottom-4 flex items-center gap-3">
