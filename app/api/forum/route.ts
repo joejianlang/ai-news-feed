@@ -128,3 +128,84 @@ export async function POST(request: NextRequest) {
         }, { status: 500 });
     }
 }
+
+// DELETE: 删除帖子 (仅限管理员 admin)
+export async function DELETE(request: NextRequest) {
+    try {
+        const supabase = getSupabase();
+        const { searchParams } = new URL(request.url);
+        const postId = searchParams.get('id');
+        const userId = searchParams.get('userId'); // 这里的 userId 应该从服务端 session/token 获取更安全，目前保持一致
+
+        if (!postId || !userId) {
+            return NextResponse.json({ error: '缺少必要参数' }, { status: 400 });
+        }
+
+        // 验证用户角色
+        const { data: user } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', userId)
+            .single();
+
+        if (user?.role !== 'admin') {
+            return NextResponse.json({ error: '权限不足，仅管理员可删帖' }, { status: 403 });
+        }
+
+        const { error } = await supabase
+            .from('forum_posts')
+            .delete()
+            .eq('id', postId);
+
+        if (error) throw error;
+
+        return NextResponse.json({ success: true });
+    } catch (error: any) {
+        console.error('Error deleting post:', error);
+        return NextResponse.json({ error: '删除失败', details: error.message }, { status: 500 });
+    }
+}
+
+// PATCH: 编辑帖子 (仅限发帖人本人)
+export async function PATCH(request: NextRequest) {
+    try {
+        const supabase = getSupabase();
+        const body = await request.json();
+        const { id, userId, title, content, images, tags } = body;
+
+        if (!id || !userId) {
+            return NextResponse.json({ error: '缺少必要参数' }, { status: 400 });
+        }
+
+        // 验证所有权
+        const { data: post } = await supabase
+            .from('forum_posts')
+            .select('user_id')
+            .eq('id', id)
+            .single();
+
+        if (post?.user_id !== userId) {
+            return NextResponse.json({ error: '权限不足，仅发帖人可编辑' }, { status: 403 });
+        }
+
+        const { data, error } = await supabase
+            .from('forum_posts')
+            .update({
+                title,
+                content,
+                images,
+                tags,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        return NextResponse.json({ post: data });
+    } catch (error: any) {
+        console.error('Error updating post:', error);
+        return NextResponse.json({ error: '更新失败', details: error.message }, { status: 500 });
+    }
+}

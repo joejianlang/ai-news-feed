@@ -97,3 +97,40 @@ export async function POST(request: NextRequest) {
         }, { status: 500 });
     }
 }
+
+// DELETE: 删除回复 (仅限回复人本人)
+export async function DELETE(request: NextRequest) {
+    try {
+        const supabase = getSupabase();
+        const { searchParams } = new URL(request.url);
+        const commentId = searchParams.get('id');
+        const userId = searchParams.get('userId');
+
+        if (!commentId || !userId) {
+            return NextResponse.json({ error: '缺少必要参数' }, { status: 400 });
+        }
+
+        // 验证所有权
+        const { data: comment } = await supabase
+            .from('forum_comments')
+            .select('user_id')
+            .eq('id', commentId)
+            .single();
+
+        if (comment?.user_id !== userId) {
+            return NextResponse.json({ error: '权限不足，仅回复本人可删除' }, { status: 403 });
+        }
+
+        const { error } = await supabase
+            .from('forum_comments')
+            .delete()
+            .eq('id', commentId);
+
+        if (error) throw error;
+
+        return NextResponse.json({ success: true });
+    } catch (error: any) {
+        console.error('Error deleting comment:', error);
+        return NextResponse.json({ error: '删除失败', details: error.message }, { status: 500 });
+    }
+}

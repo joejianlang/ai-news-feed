@@ -30,6 +30,7 @@ interface Comment {
     id: string;
     content: string;
     images: string[];
+    user_id: string;
     created_at: string;
     users: { id: string; email: string } | null;
 }
@@ -49,6 +50,50 @@ export default function ForumPage() {
     const [isPolishingComment, setIsPolishingComment] = useState<string | null>(null);
     const [aiSuggestion, setAiSuggestion] = useState<{ [key: string]: string }>({});
     const [showShareId, setShowShareId] = useState<string | null>(null);
+    const [editingPostId, setEditingPostId] = useState<string | null>(null);
+
+    const handleDeletePost = async (postId: string) => {
+        if (!user || user.role !== 'admin') return;
+        if (!confirm('确定要删除这条帖子吗？此操作不可撤销。')) return;
+
+        try {
+            const response = await fetch(`/api/forum?id=${postId}&userId=${user.id}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                setPosts(prev => prev.filter(p => p.id !== postId));
+            } else {
+                const data = await response.json();
+                alert(data.error || '删除失败');
+            }
+        } catch (error) {
+            console.error('Failed to delete post:', error);
+        }
+    };
+
+    const handleDeleteComment = async (postId: string, commentId: string) => {
+        if (!user) return;
+        if (!confirm('确定要删除这条回复吗？')) return;
+
+        try {
+            const response = await fetch(`/api/forum/comments?id=${commentId}&userId=${user.id}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                setComments(prev => ({
+                    ...prev,
+                    [postId]: prev[postId].filter(c => c.id !== commentId)
+                }));
+                // 更新评论数
+                setPosts(prev => prev.map(p => {
+                    if (p.id === postId) return { ...p, comments_count: p.comments_count - 1 };
+                    return p;
+                }));
+            }
+        } catch (error) {
+            console.error('Failed to delete comment:', error);
+        }
+    };
 
     // 表单状态
     const [formData, setFormData] = useState({
@@ -209,15 +254,30 @@ export default function ForumPage() {
         }
     };
 
+    const handleEditPost = (post: ForumPost) => {
+        setFormData({
+            title: post.title,
+            content: post.content,
+            tags: post.tags?.join(', ') || '',
+            images: post.images || [],
+        });
+        setEditingPostId(post.id);
+        setShowCreateModal(true);
+    };
+
     const handleSubmitPost = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) return;
 
+        const isEditing = !!editingPostId;
+        const method = isEditing ? 'PATCH' : 'POST';
+
         try {
             const response = await fetch('/api/forum', {
-                method: 'POST',
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    id: editingPostId,
                     userId: user.id,
                     title: formData.title,
                     content: formData.content,
@@ -228,11 +288,12 @@ export default function ForumPage() {
 
             if (response.ok) {
                 setShowCreateModal(false);
+                setEditingPostId(null);
                 setFormData({ title: '', content: '', tags: '', images: [] });
                 loadPosts();
             }
         } catch (error) {
-            console.error('Failed to create post:', error);
+            console.error(`Failed to ${isEditing ? 'update' : 'create'} post:`, error);
         }
     };
 
@@ -385,12 +446,38 @@ export default function ForumPage() {
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-wrap gap-1.5 justify-end">
-                                            {post.tags?.map(tag => (
-                                                <span key={tag} className="text-[10px] font-black bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 px-2 py-1 rounded-lg border border-slate-200/50 dark:border-white/5 uppercase tracking-tighter">
-                                                    #{tag}
-                                                </span>
-                                            ))}
+                                        <div className="flex flex-col items-end gap-2">
+                                            <div className="flex flex-wrap gap-1.5 justify-end">
+                                                {post.tags?.map(tag => (
+                                                    <span key={tag} className="text-[10px] font-black bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 px-2 py-1 rounded-lg border border-slate-200/50 dark:border-white/5 uppercase tracking-tighter">
+                                                        #{tag}
+                                                    </span>
+                                                ))}
+                                            </div>
+
+                                            {/* 管理操作逻辑 */}
+                                            <div className="flex items-center gap-2">
+                                                {user?.id === post.user_id && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleEditPost(post); }}
+                                                        className="p-1.5 text-text-muted hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-lg transition-colors"
+                                                        title="编辑帖子"
+                                                    >
+                                                        <Clock size={14} className="rotate-45" />
+                                                        <span className="text-[10px] font-bold ml-1">编辑</span>
+                                                    </button>
+                                                )}
+                                                {user?.role === 'admin' && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }}
+                                                        className="p-1.5 text-text-muted hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                        title="删除帖子"
+                                                    >
+                                                        <X size={14} />
+                                                        <span className="text-[10px] font-bold ml-1">删除</span>
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -484,9 +571,20 @@ export default function ForumPage() {
                                                 <div className="space-y-3">
                                                     {comments[post.id].map(comment => (
                                                         <div key={comment.id} className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
-                                                            <div className="flex justify-between items-center mb-2">
-                                                                <span className="font-black text-[12px] text-teal-600 dark:text-teal-400">@{comment.users?.email?.split('@')[0]}</span>
-                                                                <span className="text-[10px] text-text-muted font-bold">{getTimeDiff(comment.created_at)}</span>
+                                                            <div className="flex justify-between items-start mb-2">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="font-black text-[12px] text-teal-600 dark:text-teal-400">@{comment.users?.email?.split('@')[0]}</span>
+                                                                    <span className="text-[10px] text-text-muted font-bold">{getTimeDiff(comment.created_at)}</span>
+                                                                </div>
+                                                                {(user?.id === comment.user_id || user?.role === 'admin') && (
+                                                                    <button
+                                                                        onClick={() => handleDeleteComment(post.id, comment.id)}
+                                                                        className="p-1 text-text-muted hover:text-red-500 transition-colors"
+                                                                        title="删除回复"
+                                                                    >
+                                                                        <X size={12} />
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                             <p className="text-[13px] text-text-secondary leading-relaxed">{comment.content}</p>
                                                         </div>
