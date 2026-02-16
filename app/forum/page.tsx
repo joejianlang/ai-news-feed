@@ -362,8 +362,8 @@ export default function ForumPage() {
                 ) : (
                     posts.map(post => {
                         const showComments = expandedCommentPostId === post.id;
+                        const isExpanded = expandedPostId === post.id;
                         const authorName = post.users?.email?.split('@')[0] || '匿名用户';
-                        const postUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/forum?item=${post.id}`;
 
                         return (
                             <div key={post.id} className="bg-card rounded-3xl shadow-sm border border-card-border overflow-hidden transition-all duration-500">
@@ -394,77 +394,106 @@ export default function ForumPage() {
                                         </div>
                                     </div>
 
-                                    {/* 核心内容区 */}
-                                    <div className="space-y-4">
-                                        <h3 className="text-[20px] font-black text-foreground leading-tight tracking-tight">
-                                            {post.title}
-                                        </h3>
-                                        <div className="text-[15px] text-text-secondary leading-relaxed">
-                                            <p className="whitespace-pre-wrap">{post.content}</p>
-                                        </div>
-
-                                        {/* 图片显示 */}
-                                        {post.images && post.images.length > 0 && (
-                                            <div className="grid grid-cols-2 gap-3 pb-2">
-                                                {post.images.map((img, idx) => (
-                                                    <div key={idx} className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-inner border border-card-border">
-                                                        <img src={img} alt="" className="w-full h-full object-cover select-none" />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-
-
-                                        {/* 交互条 - 提升到内容紧下方 */}
-                                        <div className="flex items-center gap-4 text-text-muted justify-around border-t border-card-border/50 pt-4">
-                                            <button onClick={() => handleLike(post.id)} className="flex items-center gap-2 hover:text-red-500 group transition-all">
-                                                <Heart size={20} className={post.likes_count > 0 ? 'fill-red-500 text-red-500' : 'group-hover:scale-110'} />
-                                                <span className="font-black text-sm">{post.likes_count}</span>
-                                            </button>
-                                            <button onClick={() => {
-                                                if (!user) { alert('请先登录'); return; }
-                                                setShowReplyModal(post.id);
-                                            }} className="flex items-center gap-2 hover:text-blue-500 group transition-all text-teal-600">
-                                                <MessageCircle size={20} className="group-hover:scale-110" />
-                                                <span className="font-black text-sm">{post.comments_count}</span>
-                                            </button>
-                                            <button onClick={() => setShowShareId(showShareId === post.id ? null : post.id)} className="flex items-center gap-2 hover:text-teal-500 group transition-all text-sm font-black uppercase tracking-tighter">
-                                                <Share2 size={20} className="group-hover:scale-110 mr-1" />
-                                                分享
-                                            </button>
-                                        </div>
-
-                                        {/* 评论列表区 */}
-                                        <div className="space-y-4 pt-4 border-t border-card-border/50">
-                                            <button
-                                                onClick={() => setExpandedCommentPostId(showComments ? null : post.id)}
-                                                className="w-full py-2 bg-slate-50 dark:bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:text-teal-600 transition-colors"
-                                            >
-                                                {showComments ? '隐藏深度讨论' : '查看深度讨论'}
-                                            </button>
-
-                                            {/* 已有评论列表 */}
-                                            {comments[post.id] && comments[post.id].length > 0 && (
-                                                <div className="space-y-4">
-                                                    <h4 className="font-black text-[12px] text-text-muted flex items-center gap-2 uppercase tracking-widest">
-                                                        <MessageSquare size={14} />
-                                                        全网讨论汇聚 ({comments[post.id].length})
-                                                    </h4>
-
-                                                    <div className="space-y-3">
-                                                        {comments[post.id].map(comment => (
-                                                            <div key={comment.id} className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5 animate-in fade-in">
-                                                                <div className="flex justify-between items-center mb-2">
-                                                                    <span className="font-black text-[12px] text-teal-600 dark:text-teal-400">@{comment.users?.email?.split('@')[0]}</span>
-                                                                    <span className="text-[10px] text-text-muted font-bold">{getTimeDiff(comment.created_at)}</span>
-                                                                </div>
-                                                                <p className="text-[13px] text-text-secondary leading-relaxed">{comment.content}</p>
+                                    {/* 核心内容区 - 折叠展开逻辑 */}
+                                    <div
+                                        className="cursor-pointer group/content mb-6"
+                                        onClick={() => setExpandedPostId(isExpanded ? null : post.id)}
+                                    >
+                                        {isExpanded ? (
+                                            /* 展开状态：完整内容展示 */
+                                            <div className="space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                <h3 className="text-[20px] font-black text-foreground leading-tight tracking-tight px-1">
+                                                    {post.title}
+                                                </h3>
+                                                <div className="text-[15px] text-text-secondary leading-relaxed px-1">
+                                                    <p className="whitespace-pre-wrap">{post.content}</p>
+                                                </div>
+                                                {post.images && post.images.length > 0 && (
+                                                    <div className="grid grid-cols-2 gap-3 pb-2">
+                                                        {post.images.map((img, idx) => (
+                                                            <div key={idx} className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-inner border border-card-border">
+                                                                <img src={img} alt="" className="w-full h-full object-cover select-none" />
                                                             </div>
                                                         ))}
                                                     </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            /* 折叠状态 - 左图右文布局 */
+                                            <div className="flex gap-4 sm:gap-6">
+                                                {post.images && post.images.length > 0 && (
+                                                    <div className="w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 rounded-2xl overflow-hidden border border-card-border shadow-sm bg-slate-50 dark:bg-white/5">
+                                                        <img src={post.images[0]} alt="" className="w-full h-full object-cover group-hover/content:scale-105 transition-transform duration-500" />
+                                                    </div>
+                                                )}
+                                                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                    <h3 className="text-[17px] sm:text-[18px] font-black text-foreground leading-tight mb-2 line-clamp-1 group-hover/content:text-teal-600 transition-colors">
+                                                        {post.title}
+                                                    </h3>
+                                                    <p className="text-[14px] text-text-muted leading-relaxed line-clamp-2">
+                                                        {post.content}
+                                                    </p>
+                                                    <div className="mt-2 text-[9px] font-black text-teal-600/60 uppercase tracking-widest flex items-center gap-1.5">
+                                                        <span className="w-4 h-[1px] bg-teal-600/30"></span>
+                                                        阅读全文
+                                                    </div>
                                                 </div>
-                                            )}
-                                        </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* 交互条 */}
+                                    <div className="flex items-center gap-4 text-text-muted justify-around border-t border-card-border/50 pt-4">
+                                        <button onClick={(e) => { e.stopPropagation(); handleLike(post.id); }} className="flex items-center gap-2 hover:text-red-500 group transition-all">
+                                            <Heart size={20} className={post.likes_count > 0 ? 'fill-red-500 text-red-500' : 'group-hover:scale-110'} />
+                                            <span className="font-black text-sm">{post.likes_count}</span>
+                                        </button>
+                                        <button onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (!user) { alert('请先登录'); return; }
+                                            setShowReplyModal(post.id);
+                                        }} className="flex items-center gap-2 hover:text-blue-500 group transition-all text-teal-600">
+                                            <MessageCircle size={20} className="group-hover:scale-110" />
+                                            <span className="font-black text-sm">{post.comments_count}</span>
+                                        </button>
+                                        <button onClick={(e) => { e.stopPropagation(); setShowShareId(showShareId === post.id ? null : post.id); }} className="flex items-center gap-2 hover:text-teal-500 group transition-all text-sm font-black uppercase tracking-tighter">
+                                            <Share2 size={20} className="group-hover:scale-110 mr-1" />
+                                            分享
+                                        </button>
+                                    </div>
+
+                                    {/* 评论列表区 */}
+                                    <div className="space-y-4 pt-4 border-t border-card-border/50">
+                                        <button
+                                            onClick={() => {
+                                                if (!showComments) loadComments(post.id);
+                                                setExpandedCommentPostId(showComments ? null : post.id);
+                                            }}
+                                            className="w-full py-2 bg-slate-50 dark:bg-white/5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:text-teal-600 transition-colors"
+                                        >
+                                            {showComments ? '隐藏深度讨论' : '查看深度讨论'}
+                                        </button>
+
+                                        {showComments && comments[post.id] && comments[post.id].length > 0 && (
+                                            <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                                                <h4 className="font-black text-[12px] text-text-muted flex items-center gap-2 uppercase tracking-widest">
+                                                    <MessageSquare size={14} />
+                                                    全网讨论汇聚 ({comments[post.id].length})
+                                                </h4>
+
+                                                <div className="space-y-3">
+                                                    {comments[post.id].map(comment => (
+                                                        <div key={comment.id} className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
+                                                            <div className="flex justify-between items-center mb-2">
+                                                                <span className="font-black text-[12px] text-teal-600 dark:text-teal-400">@{comment.users?.email?.split('@')[0]}</span>
+                                                                <span className="text-[10px] text-text-muted font-bold">{getTimeDiff(comment.created_at)}</span>
+                                                            </div>
+                                                            <p className="text-[13px] text-text-secondary leading-relaxed">{comment.content}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -473,10 +502,10 @@ export default function ForumPage() {
                 )}
             </div>
 
-            {/* 发帖模态框 - 全彩重塑 */}
+            {/* 发帖模态框 */}
             {showCreateModal && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-                    <div className="bg-card w-full max-w-lg rounded-[32px] overflow-hidden relative shadow-2xl border border-white/10">
+                    <div className="bg-card w-full max-w-lg rounded-[32px] overflow-hidden relative shadow-2xl border border-white/10 animate-in zoom-in-95">
                         <div className="p-8 pb-4">
                             <div className="flex justify-between items-center mb-6">
                                 <div className="space-y-1">
@@ -506,7 +535,7 @@ export default function ForumPage() {
                                             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                                             rows={6}
                                             className="w-full bg-slate-100 dark:bg-white/10 p-5 pb-14 rounded-2xl text-[16px] border border-card-border focus:ring-2 focus:ring-teal-500/50 text-slate-900 dark:text-white resize-none outline-none leading-relaxed transition-all placeholder:text-slate-400 dark:placeholder:text-white/30"
-                                            placeholder="详细阐述你的想法、证据或疑问..."
+                                            placeholder="详细阐述你的想法、证据 or 疑问..."
                                         />
                                         <div className="absolute bottom-3 right-3 flex items-center gap-2">
                                             {isPolishing ? (
@@ -530,7 +559,6 @@ export default function ForumPage() {
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
-                                    {/* 图片上传区域 */}
                                     <div
                                         onClick={() => document.getElementById('forum-img-upload')?.click()}
                                         className="flex flex-col items-center justify-center aspect-square rounded-2xl border-2 border-dashed border-card-border bg-slate-50 dark:bg-white/5 cursor-pointer hover:border-teal-500/50 transition-all group overflow-hidden relative"
@@ -597,7 +625,7 @@ export default function ForumPage() {
                 </div>
             )}
 
-            {/* 回复模态框 - 中心悬浮设计 */}
+            {/* 回复模态框 */}
             {showReplyModal && (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[60] flex items-center justify-center p-4">
                     <div className="bg-card w-full max-w-lg rounded-[32px] overflow-hidden relative shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200">
@@ -617,12 +645,12 @@ export default function ForumPage() {
 
                             <div className="space-y-4">
                                 {aiSuggestion[showReplyModal] && (
-                                    <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-900/30 p-4 rounded-2xl animate-in zoom-in-95">
+                                    <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-900/30 p-4 rounded-2xl animate-in zoom-in-95 text-slate-900 dark:text-white">
                                         <div className="flex items-center gap-2 mb-2 text-teal-600 dark:text-teal-400">
                                             <Sparkles size={14} />
                                             <span className="text-xs font-black uppercase tracking-widest">AI 深度建议已就绪</span>
                                         </div>
-                                        <p className="text-sm text-text-secondary leading-relaxed mb-4 italic">"{aiSuggestion[showReplyModal]}"</p>
+                                        <p className="text-sm text-text-secondary leading-relaxed mb-4 italic px-2">"{aiSuggestion[showReplyModal]}"</p>
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => handleAdoptSuggestion(showReplyModal)}
@@ -685,11 +713,11 @@ export default function ForumPage() {
                 </div>
             )}
 
-            {/* 分享模态框 - 中心悬浮设计 */}
+            {/* 分享模态框 */}
             {showShareId && (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[70] flex items-center justify-center p-4">
-                    <div className="bg-card w-full max-w-sm rounded-[32px] overflow-hidden relative shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200">
-                        <div className="p-8 text-center">
+                    <div className="bg-card w-full max-sm:max-w-xs sm:max-w-sm rounded-[32px] overflow-hidden relative shadow-2xl border border-white/10 animate-in zoom-in-95 duration-200">
+                        <div className="p-8 text-center text-slate-900 dark:text-white">
                             <div className="flex justify-between items-center mb-6">
                                 <h3 className="text-xl font-black text-foreground tracking-tight">分享话题</h3>
                                 <button onClick={() => setShowShareId(null)} className="p-2 bg-slate-50 dark:bg-white/5 rounded-xl text-text-muted hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
