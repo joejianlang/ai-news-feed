@@ -13,13 +13,28 @@ ALTER TABLE IF EXISTS public.fetch_logs ENABLE ROW LEVEL SECURITY;
 -- 2. 清除可能冲突的旧策略 (采用幂等性处理)
 DO $$ 
 BEGIN
+    -- users
     DROP POLICY IF EXISTS "Users can view all profiles" ON public.users;
     DROP POLICY IF EXISTS "Users can update own profile" ON public.users;
+    -- verification_codes
     DROP POLICY IF EXISTS "System can manage verification codes" ON public.verification_codes;
+    -- ai_config
     DROP POLICY IF EXISTS "Anyone can view AI config" ON public.ai_config;
     DROP POLICY IF EXISTS "Admins can manage AI config" ON public.ai_config;
+    -- user_follows
+    DROP POLICY IF EXISTS "Users can view own follows" ON public.user_follows;
+    DROP POLICY IF EXISTS "Users can create own follows" ON public.user_follows;
+    DROP POLICY IF EXISTS "Users can delete own follows" ON public.user_follows;
     DROP POLICY IF EXISTS "Users can manage own follows" ON public.user_follows;
+    -- user_source_follows
+    DROP POLICY IF EXISTS "Users can view own source follows" ON public.user_source_follows;
+    DROP POLICY IF EXISTS "Users can create own source follows" ON public.user_source_follows;
+    DROP POLICY IF EXISTS "Users can delete own source follows" ON public.user_source_follows;
     DROP POLICY IF EXISTS "Users can manage own source follows" ON public.user_source_follows;
+    -- recommended_sources
+    DROP POLICY IF EXISTS "Anyone can view recommended sources" ON public.recommended_sources;
+    DROP POLICY IF EXISTS "Admins can manage recommended sources" ON public.recommended_sources;
+    -- fetch_logs
     DROP POLICY IF EXISTS "Logs are restricted" ON public.fetch_logs;
 EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
