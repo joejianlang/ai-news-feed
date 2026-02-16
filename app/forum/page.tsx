@@ -8,7 +8,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import {
     MessageSquare, Plus, TrendingUp, Clock, Users,
     Heart, MessageCircle, Share2, Send, X, ChevronDown, ChevronUp,
-    Upload, QrCode, Image as ImageIcon, Sparkles, Tag
+    Upload, QrCode, Image as ImageIcon, Sparkles, Tag, RefreshCw
 } from 'lucide-react';
 
 interface ForumPost {
@@ -45,6 +45,8 @@ export default function ForumPage() {
     const [expandedCommentPostId, setExpandedCommentPostId] = useState<string | null>(null);
     const [comments, setComments] = useState<Record<string, Comment[]>>({});
     const [newComment, setNewComment] = useState('');
+    const [isPolishingComment, setIsPolishingComment] = useState<string | null>(null);
+    const [aiSuggestion, setAiSuggestion] = useState<{ [key: string]: string }>({});
     const [showShareId, setShowShareId] = useState<string | null>(null);
 
     // 表单状态
@@ -253,6 +255,43 @@ export default function ForumPage() {
         }
     };
 
+    const handleAiPolishComment = async (postId: string) => {
+        if (!newComment.trim()) return;
+
+        setIsPolishingComment(postId);
+        try {
+            const response = await fetch('/api/ai/polish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: newComment
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.polishedContent) {
+                    setAiSuggestion(prev => ({ ...prev, [postId]: data.polishedContent }));
+                }
+            }
+        } catch (error) {
+            console.error('AI Polish comment failed:', error);
+        } finally {
+            setIsPolishingComment(null);
+        }
+    };
+
+    const handleAdoptSuggestion = (postId: string) => {
+        if (aiSuggestion[postId]) {
+            setNewComment(aiSuggestion[postId]);
+            setAiSuggestion(prev => {
+                const newState = { ...prev };
+                delete newState[postId];
+                return newState;
+            });
+        }
+    };
+
     const getTimeDiff = (dateStr: string) => {
         const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
         if (mins < 60) return `${mins}分钟前`;
@@ -314,7 +353,6 @@ export default function ForumPage() {
                     </div>
                 ) : (
                     posts.map(post => {
-                        const isExpanded = expandedPostId === post.id;
                         const showComments = expandedCommentPostId === post.id;
                         const authorName = post.users?.email?.split('@')[0] || '匿名用户';
                         const postUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/forum?item=${post.id}`;
@@ -349,94 +387,125 @@ export default function ForumPage() {
                                     </div>
 
                                     {/* 核心内容区 */}
-                                    <div className="space-y-3">
-                                        <h3 className="text-[18px] sm:text-[20px] font-black text-foreground leading-tight tracking-tight">
+                                    <div className="space-y-4">
+                                        <h3 className="text-[20px] font-black text-foreground leading-tight tracking-tight">
                                             {post.title}
                                         </h3>
-                                        <div className={`text-[15px] text-text-secondary leading-relaxed transition-all duration-500 ${isExpanded ? '' : 'line-clamp-2 opacity-80'}`}>
+                                        <div className="text-[15px] text-text-secondary leading-relaxed">
                                             <p className="whitespace-pre-wrap">{post.content}</p>
                                         </div>
 
-                                        {/* 展开控制 */}
-                                        <button
-                                            onClick={() => setExpandedPostId(isExpanded ? null : post.id)}
-                                            className="w-full mt-2 py-2 bg-slate-50 dark:bg-white/5 rounded-xl border border-dashed border-slate-200 dark:border-white/10 text-teal-600 dark:text-teal-400 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-teal-50 dark:hover:bg-teal-900/10 transition-colors"
-                                        >
-                                            {isExpanded ? (
-                                                <>收起详细讨论 <ChevronUp size={14} strokeWidth={3} /></>
-                                            ) : (
-                                                <>展开完整话题 <ChevronDown size={14} strokeWidth={3} /></>
-                                            )}
-                                        </button>
-                                    </div>
-
-                                    {/* 扩展详情：图片、分享、二维码 */}
-                                    {isExpanded && (
-                                        <div className="mt-6 space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                                            {/* 图片显示 */}
-                                            {post.images && post.images.length > 0 && (
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    {post.images.map((img, idx) => (
-                                                        <div key={idx} className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-inner border border-card-border">
-                                                            <img src={img} alt="" className="w-full h-full object-cover select-none" />
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {/* 分享与互动面板 */}
-                                            <div className="bg-slate-50 dark:bg-white/5 rounded-2xl p-4 border border-card-border">
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <Users size={16} className="text-teal-600" />
-                                                        <span className="text-[12px] font-black text-foreground uppercase tracking-wider">邀请他人加入讨论</span>
+                                        {/* 图片显示 */}
+                                        {post.images && post.images.length > 0 && (
+                                            <div className="grid grid-cols-2 gap-3 pb-2">
+                                                {post.images.map((img, idx) => (
+                                                    <div key={idx} className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-inner border border-card-border">
+                                                        <img src={img} alt="" className="w-full h-full object-cover select-none" />
                                                     </div>
-                                                    <button
-                                                        onClick={() => setShowShareId(showShareId === post.id ? null : post.id)}
-                                                        className="text-teal-600 font-black text-[10px] uppercase underline underline-offset-4"
-                                                    >
-                                                        {showShareId === post.id ? '隐藏分享码' : '生成分享卡片'}
-                                                    </button>
-                                                </div>
-
-                                                {showShareId === post.id && (
-                                                    <div className="flex flex-col items-center gap-4 py-4 animate-in zoom-in-95">
-                                                        <div className="p-4 bg-white rounded-2xl shadow-xl border border-slate-100">
-                                                            <QRCodeCanvas value={postUrl} size={160} />
-                                                        </div>
-                                                        <p className="text-[11px] text-text-muted font-bold text-center max-w-[200px]">
-                                                            使用微信或浏览器扫码，<br />立即直达本话题深度讨论
-                                                        </p>
-                                                    </div>
-                                                )}
-
-                                                <div className="flex items-center gap-4 text-text-muted justify-around border-t border-card-border/50 pt-4">
-                                                    <button onClick={() => handleLike(post.id)} className="flex items-center gap-2 hover:text-red-500 group transition-all">
-                                                        <Heart size={20} className={post.likes_count > 0 ? 'fill-red-500 text-red-500' : 'group-hover:scale-110'} />
-                                                        <span className="font-black text-sm">{post.likes_count}</span>
-                                                    </button>
-                                                    <button onClick={() => setExpandedCommentPostId(showComments ? null : post.id)} className="flex items-center gap-2 hover:text-blue-500 group transition-all">
-                                                        <MessageCircle size={20} className="group-hover:scale-110" />
-                                                        <span className="font-black text-sm">{post.comments_count}</span>
-                                                    </button>
-                                                    <button className="flex items-center gap-2 hover:text-teal-500 group transition-all">
-                                                        <Share2 size={20} className="group-hover:scale-110" />
-                                                        <span className="font-black text-sm uppercase tracking-tighter">转发话题</span>
-                                                    </button>
-                                                </div>
+                                                ))}
                                             </div>
+                                        )}
 
-                                            {/* 评论展开逻辑 */}
+                                        {/* 分享与二维码区 (按需显示) */}
+                                        {showShareId === post.id && (
+                                            <div className="flex flex-col items-center gap-4 py-4 animate-in zoom-in-95 bg-slate-50 dark:bg-white/5 rounded-2xl border border-card-border">
+                                                <div className="p-4 bg-white rounded-2xl shadow-xl border border-slate-100">
+                                                    <QRCodeCanvas value={postUrl} size={160} />
+                                                </div>
+                                                <p className="text-[11px] text-text-muted font-bold text-center">
+                                                    使用微信或浏览器扫码，<br />立即直达本话题深度讨论
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {/* 交互条 - 提升到内容紧下方 */}
+                                        <div className="flex items-center gap-4 text-text-muted justify-around border-t border-card-border/50 pt-4">
+                                            <button onClick={() => handleLike(post.id)} className="flex items-center gap-2 hover:text-red-500 group transition-all">
+                                                <Heart size={20} className={post.likes_count > 0 ? 'fill-red-500 text-red-500' : 'group-hover:scale-110'} />
+                                                <span className="font-black text-sm">{post.likes_count}</span>
+                                            </button>
+                                            <button onClick={() => setExpandedCommentPostId(showComments ? null : post.id)} className="flex items-center gap-2 hover:text-blue-500 group transition-all text-teal-600">
+                                                <MessageCircle size={20} className="group-hover:scale-110" />
+                                                <span className="font-black text-sm">{post.comments_count}</span>
+                                            </button>
+                                            <button onClick={() => setShowShareId(showShareId === post.id ? null : post.id)} className="flex items-center gap-2 hover:text-teal-500 group transition-all">
+                                                <Share2 size={20} className="group-hover:scale-110" />
+                                                <span className="font-black text-sm uppercase tracking-tighter">分享话题</span>
+                                            </button>
+                                        </div>
+
+                                        {/* 评论区与回复框 */}
+                                        <div className="space-y-4 pt-4 border-t border-card-border/50">
+                                            {/* 回复输入框 - 始终显示或点击展开 */}
                                             {showComments && (
-                                                <div className="space-y-4 pt-4 border-t border-card-border/50">
-                                                    <h4 className="font-black text-[14px] text-foreground flex items-center gap-2 uppercase">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
-                                                        全网评论汇聚
+                                                <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                                                    {aiSuggestion[post.id] && (
+                                                        <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-900/30 p-4 rounded-2xl mb-2 animate-in zoom-in-95">
+                                                            <div className="flex items-center gap-2 mb-2 text-teal-600 dark:text-teal-400">
+                                                                <Sparkles size={14} />
+                                                                <span className="text-xs font-black uppercase tracking-widest">AI 深度建议</span>
+                                                            </div>
+                                                            <p className="text-sm text-text-secondary leading-relaxed mb-3 italic">"{aiSuggestion[post.id]}"</p>
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    onClick={() => handleAdoptSuggestion(post.id)}
+                                                                    className="px-4 py-2 bg-teal-600 text-white text-[10px] font-black rounded-xl uppercase tracking-widest shadow-lg shadow-teal-500/20 active:scale-95"
+                                                                >
+                                                                    立刻采纳并编辑
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => setAiSuggestion(prev => {
+                                                                        const newState = { ...prev };
+                                                                        delete newState[post.id];
+                                                                        return newState;
+                                                                    })}
+                                                                    className="px-4 py-2 bg-slate-200 dark:bg-white/10 text-text-muted text-[10px] font-black rounded-xl uppercase tracking-widest"
+                                                                >
+                                                                    放弃
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="relative group">
+                                                        <textarea
+                                                            placeholder="发表你的睿见..."
+                                                            value={newComment}
+                                                            onChange={(e) => setNewComment(e.target.value)}
+                                                            className="w-full bg-slate-50 dark:bg-white/5 rounded-2xl px-4 py-4 pr-16 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/50 border border-card-border min-h-[100px] resize-none transition-all"
+                                                        />
+                                                        <div className="absolute right-3 bottom-3 flex flex-col gap-2">
+                                                            <button
+                                                                onClick={() => handleAiPolishComment(post.id)}
+                                                                disabled={isPolishingComment === post.id || !newComment.trim()}
+                                                                className="bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-card-border shadow-sm text-teal-600 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                                                title="AI 润色"
+                                                            >
+                                                                {isPolishingComment === post.id ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles size={18} />}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleComment(post.id)}
+                                                                disabled={!newComment.trim()}
+                                                                className="bg-teal-600 text-white p-2.5 rounded-xl shadow-lg shadow-teal-500/20 active:scale-95 transition-all disabled:opacity-50"
+                                                            >
+                                                                <Send size={18} strokeWidth={3} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* 已有评论列表 */}
+                                            {comments[post.id] && comments[post.id].length > 0 && (
+                                                <div className="space-y-4">
+                                                    <h4 className="font-black text-[12px] text-text-muted flex items-center gap-2 uppercase tracking-widest">
+                                                        <MessageSquare size={14} />
+                                                        全网讨论汇聚 ({comments[post.id].length})
                                                     </h4>
 
                                                     <div className="space-y-3">
-                                                        {comments[post.id]?.map(comment => (
-                                                            <div key={comment.id} className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
+                                                        {comments[post.id].map(comment => (
+                                                            <div key={comment.id} className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5 animate-in fade-in">
                                                                 <div className="flex justify-between items-center mb-2">
                                                                     <span className="font-black text-[12px] text-teal-600 dark:text-teal-400">@{comment.users?.email?.split('@')[0]}</span>
                                                                     <span className="text-[10px] text-text-muted font-bold">{getTimeDiff(comment.created_at)}</span>
@@ -445,27 +514,10 @@ export default function ForumPage() {
                                                             </div>
                                                         ))}
                                                     </div>
-
-                                                    <div className="flex gap-2">
-                                                        <input
-                                                            type="text"
-                                                            placeholder="发表你的睿见..."
-                                                            value={newComment}
-                                                            onChange={(e) => setNewComment(e.target.value)}
-                                                            className="flex-1 bg-slate-50 dark:bg-white/5 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/50 border border-card-border"
-                                                            onKeyPress={e => e.key === 'Enter' && handleComment(post.id)}
-                                                        />
-                                                        <button
-                                                            onClick={() => handleComment(post.id)}
-                                                            className="bg-teal-600 text-white p-3 rounded-2xl active:scale-95 shadow-lg shadow-teal-500/20"
-                                                        >
-                                                            <Send size={18} strokeWidth={3} />
-                                                        </button>
-                                                    </div>
                                                 </div>
                                             )}
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             </div>
                         );
