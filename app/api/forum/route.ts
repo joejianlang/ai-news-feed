@@ -13,12 +13,27 @@ export async function GET(request: NextRequest) {
     try {
         const supabase = getSupabase();
         const { searchParams } = new URL(request.url);
+        const postId = searchParams.get('id');
         const sort = searchParams.get('sort') || 'latest'; // 'latest' | 'trending'
         const userId = searchParams.get('userId');
         const followingUserId = searchParams.get('followingUserId');
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '20');
         const offset = (page - 1) * limit;
+
+        if (postId) {
+            const { data: post, error } = await supabase
+                .from('forum_posts')
+                .select(`
+                    *,
+                    users!forum_posts_user_id_fkey(id, email)
+                `)
+                .eq('id', postId)
+                .single();
+
+            if (error) throw error;
+            return NextResponse.json({ posts: post ? [post] : [], total: post ? 1 : 0 });
+        }
 
         let query = supabase
             .from('forum_posts')
