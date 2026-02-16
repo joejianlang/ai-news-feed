@@ -427,7 +427,7 @@ function HomeContent() {
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       <Navbar />
 
-      <nav className="sticky top-[52px] sm:top-[72px] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 z-40 shadow-sm transition-all duration-300">
+      <nav className="sticky top-[44px] sm:top-[64px] bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 z-40 shadow-sm transition-all duration-300">
         <div className="max-w-[1200px] mx-auto relative group">
           {/* Left fading mask for scrollability hints */}
           <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white dark:from-slate-900 to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity"></div>

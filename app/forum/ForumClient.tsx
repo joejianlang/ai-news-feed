@@ -446,7 +446,7 @@ export default function ForumClient() {
         <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
             <Navbar />
 
-            <header className="bg-card sticky top-[56px] z-20 border-b border-card-border shadow-sm pt-0 pb-2 transition-colors">
+            <header className="bg-card sticky top-[44px] sm:top-[64px] z-20 border-b border-card-border shadow-sm pt-0 pb-2 transition-colors">
                 <div className="max-w-2xl mx-auto px-4">
                     <div className="flex justify-between items-center mb-3">
                         <h2 className="text-xl font-black text-foreground tracking-tight">社区论坛</h2>
