@@ -186,3 +186,30 @@ export interface AdItem {
   start_date?: string;
   end_date?: string;
 }
+
+export interface UserAddress {
+  id: string;
+  user_id: string;
+  name: string;
+  phone: string;
+  address_line1: string;
+  address_line2?: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserPaymentMethod {
+  id: string;
+  user_id: string;
+  stripe_payment_method_id: string;
+  brand: string;
+  last4: string;
+  exp_month: number;
+  exp_year: number;
+  is_default: boolean;
+  created_at: string;
+}
