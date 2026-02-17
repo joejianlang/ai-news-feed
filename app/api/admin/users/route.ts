@@ -1,21 +1,15 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { getAllUsers, updateUserRole, deleteUser, updateUserStatus, getUserById } from '@/lib/supabase/queries';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { verifyToken } from '@/lib/auth/jwt';
+import { getAuthUser } from '@/lib/auth/server';
 
 export async function GET(request: NextRequest) {
     try {
-        const token = request.cookies.get('auth_token')?.value;
-        if (!token) {
+        const authUser = await getAuthUser(request);
+        if (!authUser) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const payload = verifyToken(token);
-        if (!payload) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const userData = await getUserById(payload.userId);
+        const userData = await getUserById(authUser.id);
         if (!userData || userData.role !== 'admin') {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
@@ -30,17 +24,12 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
     try {
-        const token = request.cookies.get('auth_token')?.value;
-        if (!token) {
+        const authUser = await getAuthUser(request);
+        if (!authUser) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const payload = verifyToken(token);
-        if (!payload) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const userData = await getUserById(payload.userId);
+        const userData = await getUserById(authUser.id);
         if (!userData || userData.role !== 'admin') {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
@@ -69,17 +58,12 @@ export async function PATCH(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
     try {
-        const token = request.cookies.get('auth_token')?.value;
-        if (!token) {
+        const authUser = await getAuthUser(request);
+        if (!authUser) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const payload = verifyToken(token);
-        if (!payload) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const userData = await getUserById(payload.userId);
+        const userData = await getUserById(authUser.id);
         if (!userData || userData.role !== 'admin') {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
@@ -92,7 +76,7 @@ export async function DELETE(request: NextRequest) {
         }
 
         // Prevent self-deletion
-        if (userId === payload.userId) {
+        if (userId === authUser.id) {
             return NextResponse.json({ error: 'Cannot delete yourself' }, { status: 400 });
         }
 

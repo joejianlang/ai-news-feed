@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
+import { getAuthUser } from '@/lib/auth/server';
 import { getCommentById, updateComment, deleteComment } from '@/lib/supabase/queries';
 
 export async function PUT(
@@ -7,14 +7,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = request.cookies.get('auth_token')?.value;
-    if (!token) {
+    const authUser = await getAuthUser(request);
+    if (!authUser) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
-    }
-
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json({ error: 'Token无效' }, { status: 401 });
     }
 
     const { id } = await params;
@@ -28,7 +23,7 @@ export async function PUT(
     if (!existingComment) {
       return NextResponse.json({ error: '评论不存在' }, { status: 404 });
     }
-    if (existingComment.user_id !== payload.userId) {
+    if (existingComment.user_id !== authUser.id) {
       return NextResponse.json({ error: '无权限修改此评论' }, { status: 403 });
     }
 
@@ -45,14 +40,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = request.cookies.get('auth_token')?.value;
-    if (!token) {
+    const authUser = await getAuthUser(request);
+    if (!authUser) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
-    }
-
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json({ error: 'Token无效' }, { status: 401 });
     }
 
     const { id } = await params;
@@ -61,7 +51,7 @@ export async function DELETE(
     if (!existingComment) {
       return NextResponse.json({ error: '评论不存在' }, { status: 404 });
     }
-    if (existingComment.user_id !== payload.userId) {
+    if (existingComment.user_id !== authUser.id) {
       return NextResponse.json({ error: '无权限删除此评论' }, { status: 403 });
     }
 

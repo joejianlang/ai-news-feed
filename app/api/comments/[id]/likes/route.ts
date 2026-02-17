@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
+import { getAuthUser } from '@/lib/auth/server';
 import { likeComment, unlikeComment } from '@/lib/supabase/queries';
 
 export async function POST(
@@ -7,18 +7,13 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = request.cookies.get('auth_token')?.value;
-    if (!token) {
+    const authUser = await getAuthUser(request);
+    if (!authUser) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json({ error: 'Token无效' }, { status: 401 });
-    }
-
     const { id } = await params;
-    await likeComment(id, payload.userId);
+    await likeComment(id, authUser.id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('点赞失败:', error);
@@ -31,18 +26,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const token = request.cookies.get('auth_token')?.value;
-    if (!token) {
+    const authUser = await getAuthUser(request);
+    if (!authUser) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json({ error: 'Token无效' }, { status: 401 });
-    }
-
     const { id } = await params;
-    await unlikeComment(id, payload.userId);
+    await unlikeComment(id, authUser.id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('取消点赞失败:', error);

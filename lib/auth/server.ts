@@ -1,11 +1,22 @@
 import { NextRequest } from 'next/server';
+import { cookies } from 'next/headers';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { verifyToken } from './jwt';
 
-export async function getAuthUser(request: NextRequest) {
-    // 1. 优先尝试本地业务 Token (最可靠的业务身份)
-    // 这是为了确保 Google 登录用户始终能拿到与其业务数据(广告、个人资料)匹配的本地 UUID
-    const token = request.cookies.get('auth_token')?.value;
+/**
+ * 获取当前登录用户（通用版，支持 API Route 和 Server Component）
+ */
+export async function getAuthUser(request?: NextRequest) {
+    // 1. 优先尝试本地业务 Token
+    let token: string | undefined;
+
+    if (request) {
+        token = request.cookies.get('auth_token')?.value;
+    } else {
+        const cookieStore = await cookies();
+        token = cookieStore.get('auth_token')?.value;
+    }
+
     if (token) {
         const payload = verifyToken(token);
         if (payload) {
@@ -26,6 +37,7 @@ export async function getAuthUser(request: NextRequest) {
         return {
             id: sbUser.id,
             email: sbUser.email,
+            username: (sbUser as any).username || sbUser.email?.split('@')[0] || 'User',
             source: 'supabase'
         };
     }

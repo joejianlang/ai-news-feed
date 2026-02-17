@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getNewsItemsByBatch, getUserFollows } from '@/lib/supabase/queries';
-import { verifyToken } from '@/lib/auth/jwt';
 import type { NewsItem } from '@/types';
 
 // 按批次分组新闻

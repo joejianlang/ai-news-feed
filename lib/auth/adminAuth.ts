@@ -1,5 +1,4 @@
-import { cookies } from 'next/headers';
-import { verifyToken } from './jwt';
+import { getAuthUser } from './server';
 import { supabase } from '../supabase/client';
 
 /**
@@ -8,28 +7,21 @@ import { supabase } from '../supabase/client';
  */
 export async function verifyAdmin(): Promise<{ isAdmin: boolean; userId?: string; error?: string }> {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
+    const authUser = await getAuthUser();
 
-    if (!token) {
-      return { isAdmin: false, error: 'No authentication token' };
-    }
-
-    // 验证JWT token
-    const payload = verifyToken(token);
-    if (!payload) {
-      return { isAdmin: false, error: 'Invalid token' };
+    if (!authUser) {
+      return { isAdmin: false, error: 'No authentication user found' };
     }
 
     // 从数据库获取用户信息（包含role）
     const { data: user, error } = await supabase
       .from('users')
       .select('id, email, username, role')
-      .eq('id', payload.userId)
+      .eq('id', authUser.id)
       .single();
 
     if (error || !user) {
-      return { isAdmin: false, error: 'User not found' };
+      return { isAdmin: false, error: 'User profile not found in database' };
     }
 
     // 检查是否为管理员

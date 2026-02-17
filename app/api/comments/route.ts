@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
+import { getAuthUser } from '@/lib/auth/server';
 import { getCommentsByNewsItem, createComment } from '@/lib/supabase/queries';
 
 export async function GET(request: NextRequest) {
@@ -11,9 +11,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '缺少newsItemId参数' }, { status: 400 });
     }
 
-    const token = request.cookies.get('auth_token')?.value;
-    const payload = token ? verifyToken(token) : null;
-    const currentUserId = payload?.userId;
+    const authUser = await getAuthUser(request);
+    const currentUserId = authUser?.id;
 
     const comments = await getCommentsByNewsItem(newsItemId, currentUserId);
     return NextResponse.json({ comments });
@@ -25,18 +24,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.cookies.get('auth_token')?.value;
-    if (!token) {
+    const authUser = await getAuthUser(request);
+    if (!authUser) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    const payload = verifyToken(token);
-    if (!payload) {
-      return NextResponse.json({ error: 'Token无效' }, { status: 401 });
-    }
-
     const { getUserById } = await import('@/lib/supabase/queries');
-    const user = await getUserById(payload.userId);
+    const user = await getUserById(authUser.id);
 
     if (user?.is_suspended) {
       return NextResponse.json({ error: '账号已被封禁' }, { status: 403 });
@@ -58,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     const comment = await createComment({
       news_item_id: newsItemId,
-      user_id: payload.userId,
+      user_id: authUser.id,
       parent_id: parentId || null,
       content: content.trim(),
     });
