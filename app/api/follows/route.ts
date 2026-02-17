@@ -14,10 +14,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ follows });
   } catch (error: any) {
     console.error('获取关注列表失败:', error);
-    const details = error instanceof Error ? error.message : JSON.stringify(error);
     return NextResponse.json({
       error: '获取关注列表失败',
-      details: details || '未知错误'
+      details: error?.message || String(error),
+      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
     }, { status: 500 });
   }
 }
@@ -30,10 +30,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '未登录' }, { status: 401 });
     }
 
-    const { sourceId } = await request.json();
+    const body = await request.json();
+    const { sourceId } = body;
+
     if (!sourceId) {
       return NextResponse.json({ error: '缺少sourceId' }, { status: 400 });
     }
+
+    console.log(`User ${authUser.id} attempting to follow source ${sourceId}`);
 
     // 检查是否已关注
     const alreadyFollowing = await isFollowing(authUser.id, sourceId);
@@ -45,10 +49,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ follow, success: true });
   } catch (error: any) {
     console.error('关注失败:', error);
-    const details = error instanceof Error ? error.message : JSON.stringify(error);
     return NextResponse.json({
       error: '关注失败',
-      details: details || '未知错误'
+      details: error?.message || String(error),
+      code: error?.code,
+      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
     }, { status: 500 });
   }
 }
@@ -70,10 +75,11 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('取消关注失败:', error);
-    const details = error instanceof Error ? error.message : JSON.stringify(error);
     return NextResponse.json({
       error: '取消关注失败',
-      details: details || '未知错误'
+      details: error?.message || String(error),
+      code: error?.code,
+      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
     }, { status: 500 });
   }
 }

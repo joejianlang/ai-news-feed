@@ -35,8 +35,14 @@ let _legacySupabase: SupabaseClient | null = null;
  */
 export function getSupabaseClient(): SupabaseClient {
     if (!_legacySupabase) {
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-        const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+        // 在服务器端优先使用 SERVICE_ROLE_KEY 以绕过 RLS
+        // 在客户端则只能使用 ANON_KEY
+        const isServer = typeof window === 'undefined';
+        const key = isServer
+            ? (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+            : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
         if (!url || !key) {
             const isBrowser = typeof window !== 'undefined';
