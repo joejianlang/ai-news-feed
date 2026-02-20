@@ -1,22 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdmin } from '@/lib/auth/adminAuth';
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseAdminClient, createSupabaseServerClient } from '@/lib/supabase/server';
+import { getAuthUser } from '@/lib/auth/server';
 
-function getSupabaseAdmin() {
-    return createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-        process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    );
+async function checkAdmin(authUser: any) {
+    const supabase = authUser.source === 'legacy'
+        ? await createSupabaseAdminClient()
+        : await createSupabaseServerClient();
+    const { data } = await supabase.from('users').select('role').eq('id', authUser.id).single();
+    return data?.role === 'admin';
 }
 
 // GET - 获取清理配置和系统统计
 export async function GET(request: NextRequest) {
-    const { isAdmin } = await verifyAdmin();
-    if (!isAdmin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    const authUser = await getAuthUser(request);
+    if (!authUser || !(await checkAdmin(authUser))) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = getSupabaseAdmin();
+    const supabase = await createSupabaseAdminClient();
 
     try {
         // 获取自动清理配置
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
             .select('*', { count: 'exact', head: true });
 
         return NextResponse.json({
-            settings: settings?.value || { auto_enabled: false, retention_hours: 168 }, // 默认 1 周
+            settings: settings?.value || { auto_enabled: false, retention_hours: 168 },
             stats: { totalNews: totalNews || 0 }
         });
     } catch (error) {
@@ -42,12 +43,12 @@ export async function GET(request: NextRequest) {
 
 // POST - 执行手动清理 或 更新自动清理配置
 export async function POST(request: NextRequest) {
-    const { isAdmin } = await verifyAdmin();
-    if (!isAdmin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    const authUser = await getAuthUser(request);
+    if (!authUser || !(await checkAdmin(authUser))) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = getSupabaseAdmin();
+    const supabase = await createSupabaseAdminClient();
     const body = await request.json();
     const { action } = body;
 

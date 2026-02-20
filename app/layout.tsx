@@ -19,32 +19,32 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "数位 Buffet - 智能资讯，随心而阅",
-    template: "%s | 数位 Buffet"
+    default: "优服佳 AI News - 智能资讯，随心而阅",
+    template: "%s | 优服佳 AI News"
   },
-  description: "数位 Buffet 是一家专注于 AI 智能分析、深度原创内容的资讯平台。通过 AI 总结与专业解读，为您提供最高质量的科技、财经与文化热点。",
-  keywords: ["AI新闻", "深度解读", "数位Buffet", "科技资讯", "智能摘要"],
-  authors: [{ name: "数位 Buffet 团队" }],
-  creator: "数位 Buffet",
+  description: "优服佳是一家专注于 AI 智能分析、深度原创内容的资讯平台。通过 AI 总结与专业解读，为您提供最高质量的科技、财经与文化热点。",
+  keywords: ["AI新闻", "深度解读", "优服佳", "科技资讯", "智能摘要", "PWA"],
+  authors: [{ name: "优服佳团队" }],
+  creator: "优服佳",
   openGraph: {
     type: "website",
     locale: "zh_CN",
     url: "https://ai-news-feed-rose.vercel.app",
-    siteName: "数位 Buffet",
-    title: "数位 Buffet - 智能资讯，随心而阅",
+    siteName: "优服佳",
+    title: "优服佳 AI News - 智能资讯，随心而阅",
     description: "发现更有深度的资讯。AI 智能总结，专家深度点评，助你快速洞察世界。",
     images: [
       {
-        url: "/og-image.jpg", // 建议用户上传一张默认的分享图
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "数位 Buffet",
+        alt: "优服佳",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "数位 Buffet - 智能资讯，随心而阅",
+    title: "优服佳 AI News - 智能资讯，随心而阅",
     description: "发现更有深度的资讯。AI 智能总结，专家深度点评。",
     images: ["/og-image.jpg"],
   },
@@ -60,18 +60,14 @@ export const metadata: Metadata = {
     },
   },
   manifest: "/manifest.ts",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
-  ],
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "数位 Buffet",
+    title: "优服佳",
   },
   icons: {
     icon: "/favicon.ico",
-    apple: "/logo.png",
+    apple: "/icons/icon-192x192.png",
   },
 };
 

@@ -30,17 +30,24 @@ function groupNewsByBatch(news: NewsItem[]) {
 
 // GET - 获取新闻列表（按批次分组）
 export async function GET(request: Request) {
+  console.log('[API] /api/news called');
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '300');
     const categoryId = searchParams.get('categoryId') || undefined;
     const cityTag = searchParams.get('city') || undefined;
 
+    console.log('[API] fetching news with params:', { limit, categoryId, cityTag });
     const news = await getNewsItemsByBatch(limit, categoryId, cityTag);
+    console.log('[API] fetched news count:', news?.length);
     const groupedNews = groupNewsByBatch(news);
 
     return NextResponse.json(groupedNews);
   } catch (error) {
+    console.error('[API] /api/news error:', error);
+    if (error instanceof Error) {
+      console.error('Error stack:', error.stack);
+    }
     return NextResponse.json({
       error: 'Failed to fetch news',
       details: error instanceof Error ? error.message : 'Unknown error'

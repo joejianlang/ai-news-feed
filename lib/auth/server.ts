@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase/server';
 import { verifyToken } from './jwt';
 
 /**
@@ -12,6 +12,12 @@ export async function getAuthUser(request?: NextRequest) {
 
     if (request) {
         token = request.cookies.get('auth_token')?.value;
+        if (!token) {
+            const authHeader = request.headers.get('Authorization');
+            if (authHeader?.startsWith('Bearer ')) {
+                token = authHeader.substring(7);
+            }
+        }
     } else {
         const cookieStore = await cookies();
         token = cookieStore.get('auth_token')?.value;
@@ -43,4 +49,18 @@ export async function getAuthUser(request?: NextRequest) {
     }
 
     return null;
+}
+
+/**
+ * 检查指定 userId 是否是管理员（admin 角色）
+ * 可从所有 API 路由中统一引用，避免重复定义
+ */
+export async function checkAdmin(userId: string): Promise<boolean> {
+    const supabase = await createSupabaseAdminClient();
+    const { data } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', userId)
+        .single();
+    return data?.role === 'admin';
 }

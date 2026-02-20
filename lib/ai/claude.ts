@@ -1,6 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import path from 'path';
 import { CURRENT_AI_CONFIG, estimateCost } from './config';
+
+// Ensure env vars are loaded when running as a standalone script
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 // 创建 Supabase 客户端用于读取配置
 const supabaseAdmin = createClient(

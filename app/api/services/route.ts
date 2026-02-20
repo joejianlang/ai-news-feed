@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseAdminClient } from '@/lib/supabase/server';
 
-// 延迟初始化 Supabase
-function getSupabase() {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-    return createClient(supabaseUrl, supabaseKey);
-}
-
-// GET: 获取服务列表
+// GET: 获取标准服务列表（来自 provider_services 表，status = approved）
 export async function GET(request: NextRequest) {
     try {
-        const supabase = getSupabase();
+        const supabase = await createSupabaseAdminClient();
         const { searchParams } = new URL(request.url);
         const categoryId = searchParams.get('categoryId');
         const search = searchParams.get('search');
@@ -20,13 +13,18 @@ export async function GET(request: NextRequest) {
         const offset = (page - 1) * limit;
 
         let query = supabase
-            .from('services')
+            .from('provider_services')
             .select(`
-        *,
-        service_categories(id, name, name_en, icon),
-        users:user_id(email)
-      `, { count: 'exact' })
-            .eq('status', 'active')
+                id, title, description, price, price_unit, category, category_id,
+                service_mode, service_city, service_area, images,
+                deposit_ratio, duration, advance_booking,
+                is_licensed, has_insurance, tax_included,
+                cancellation_policy, client_requirements,
+                inclusions, exclusions, extra_fees, add_ons,
+                status, created_at, updated_at,
+                service_identity_id, provider_id
+            `, { count: 'exact' })
+            .eq('status', 'approved')
             .order('created_at', { ascending: false })
             .range(offset, offset + limit - 1);
 
@@ -35,18 +33,28 @@ export async function GET(request: NextRequest) {
         }
 
         if (search) {
-            query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+            query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%,category.ilike.%${search}%`);
         }
 
         const { data, error, count } = await query;
 
         if (error) throw error;
 
+        // 过滤掉 base64 图片，只保留 http/https URL
+        const services = (data || []).map((s: any) => ({
+            ...s,
+            images: Array.isArray(s.images)
+                ? s.images.filter((img: string) => typeof img === 'string' && img.startsWith('http'))
+                : [],
+            // 前端 ServiceCard 使用的字段别名
+            service_categories: { name: s.category || '其他' },
+        }));
+
         return NextResponse.json({
-            services: data || [],
+            services,
             total: count || 0,
             page,
-            limit
+            limit,
         });
     } catch (error) {
         console.error('Error fetching services:', error);
@@ -54,46 +62,34 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// POST: 创建新服务
+// POST: 服务商发布新标准服务（draft 状态，待管理员审核）
 export async function POST(request: NextRequest) {
     try {
-        const supabase = getSupabase();
+        const supabase = await createSupabaseAdminClient();
         const body = await request.json();
 
-        const {
-            userId,
-            categoryId,
-            title,
-            description,
-            price,
-            priceUnit,
-            location,
-            contactName,
-            contactPhone,
-            contactWechat,
-            images
-        } = body;
+        const { userId, categoryId, category, title, description, price, priceUnit, serviceMode, serviceCity, images } = body;
 
         if (!title || !categoryId) {
             return NextResponse.json({ error: '标题和分类必填' }, { status: 400 });
         }
 
         const { data, error } = await supabase
-            .from('services')
+            .from('provider_services')
             .insert({
-                user_id: userId,
+                provider_id: userId,
                 category_id: categoryId,
+                category: category || '',
                 title,
                 description,
                 price,
-                price_unit: priceUnit || '月',
-                location,
-                contact_name: contactName,
-                contact_phone: contactPhone,
-                contact_wechat: contactWechat,
-                images: images || []
+                price_unit: priceUnit || 'per_service',
+                service_mode: serviceMode || 'offline',
+                service_city: serviceCity || '',
+                images: images || [],
+                status: 'draft',
             })
-            .select()
+            .select('id, title, status')
             .single();
 
         if (error) throw error;

@@ -1,0 +1,432 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Variables — Light Mode ───────────────────────────────── */
+:root {
+  --background:      #f8fafc;
+  --foreground:      #171717;
+  --card-bg:         #ffffff;
+  --card-border:     #f1f5f9;
+  --nav-bg:          #1e293b;
+  --nav-text:        #ffffff;
+  --text-primary:    #111827;
+  --text-secondary:  #4b5563;
+  --text-muted:      #9ca3af;
+  --text-accent:     #0d9488;
+  --border-primary:  #e5e7eb;
+  --header-bg:       #ffffff;
+  --header-border:   #f1f5f9;
+  --input-bg:        #ffffff;
+  --input-border:    #e5e7eb;
+  --shadow-sm:       0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+  --shadow-md:       0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --el-color-primary: #0d9488;
+  --el-color-primary-light-3: #14b8a6;
+  --el-color-primary-light-5: #2dd4bf;
+  --el-color-primary-light-7: #99f6e4;
+  --el-color-primary-light-8: #ccfbf1;
+  --el-color-primary-light-9: #f0fdfa;
+  --el-color-primary-dark-2:  #0f766e;
+}
+
+/* ─── CSS Variables — Dark Mode ────────────────────────────────── */
+.dark {
+  --background:     #121212;
+  --foreground:     #ffffff;
+  --card-bg:        #2d2d30;
+  --card-border:    #3f3f42;
+  --nav-bg:         #1a1a1e;
+  --nav-text:       #ffffff;
+  --text-primary:   #ffffff;
+  --text-secondary: #cbd5e1;
+  --text-muted:     #888888;
+  --text-accent:    #3b82f6;
+  --border-primary: #333333;
+  --header-bg:      #1e1e21;
+  --header-border:  #333333;
+  --input-bg:       #2d2d30;
+  --input-border:   #3f3f42;
+  --shadow-sm:      0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.2);
+  --shadow-md:      0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --el-color-primary: #0d9488;
+  --el-color-primary-light-3: #14b8a6;
+  --el-color-primary-dark-2:  #0f766e;
+}
+
+/* ─── Base ──────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'PingFang SC',
+    'Hiragino Sans GB',
+    'Microsoft YaHei',
+    '微软雅黑',
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  /* iOS safe area */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+#app {
+  height: 100%;
+}
+
+/* ─── Typography helpers ────────────────────────────────────────── */
+strong, b {
+  font-weight: 900;
+  color: var(--text-primary);
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--card-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-muted);
+}
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #3f3f42;
+}
+
+/* ─── Element Plus — Global Color Override ──────────────────────── */
+:root {
+  --el-color-primary:         #0d9488;
+  --el-color-primary-light-3: #14b8a6;
+  --el-color-primary-light-5: #2dd4bf;
+  --el-color-primary-light-7: #99f6e4;
+  --el-color-primary-light-8: #ccfbf1;
+  --el-color-primary-light-9: #f0fdfa;
+  --el-color-primary-dark-2:  #0f766e;
+  --el-border-radius-base:    10px;
+  --el-border-radius-small:   8px;
+  --el-border-radius-round:   24px;
+  --el-font-size-base:        14px;
+}
+
+/* ─── Element Plus — Dark Mode Overrides ───────────────────────── */
+.dark {
+  /* Card / Box */
+  --el-bg-color:              var(--card-bg);
+  --el-bg-color-overlay:      var(--card-bg);
+  --el-fill-color-blank:      var(--card-bg);
+  --el-fill-color:            #383838;
+  --el-fill-color-light:      #3d3d40;
+  --el-fill-color-lighter:    #424246;
+  --el-fill-color-extra-light:#474749;
+
+  /* Text */
+  --el-text-color-primary:    var(--text-primary);
+  --el-text-color-regular:    var(--text-secondary);
+  --el-text-color-secondary:  var(--text-muted);
+  --el-text-color-placeholder:var(--text-muted);
+  --el-text-color-disabled:   #555;
+
+  /* Border */
+  --el-border-color:          var(--card-border);
+  --el-border-color-light:    #3a3a3d;
+  --el-border-color-lighter:  #333;
+  --el-border-color-extra-light:#2d2d2f;
+  --el-border-color-dark:     #4a4a4d;
+  --el-border-color-darker:   #555;
+
+  /* Mask / Overlay */
+  --el-mask-color:            rgba(0, 0, 0, 0.8);
+  --el-overlay-color:         rgba(0, 0, 0, 0.8);
+  --el-overlay-color-light:   rgba(0, 0, 0, 0.6);
+  --el-overlay-color-lighter: rgba(0, 0, 0, 0.3);
+
+  /* Box shadow */
+  --el-box-shadow:            0 4px 12px rgba(0,0,0,0.5);
+  --el-box-shadow-light:      0 2px 8px rgba(0,0,0,0.4);
+  --el-box-shadow-lighter:    0 1px 4px rgba(0,0,0,0.3);
+  --el-box-shadow-dark:       0 6px 16px rgba(0,0,0,0.6);
+
+  /* Disabled */
+  --el-disabled-bg-color:     #2a2a2d;
+  --el-disabled-text-color:   #555;
+  --el-disabled-border-color: #383838;
+}
+
+/* ─── El-Card dark ──────────────────────────────────────────────── */
+.dark .el-card {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+  color: var(--text-primary);
+}
+.dark .el-card__header {
+  border-bottom-color: var(--card-border);
+}
+
+/* ─── El-Table dark ─────────────────────────────────────────────── */
+.dark .el-table {
+  --el-table-bg-color:          var(--card-bg);
+  --el-table-tr-bg-color:       var(--card-bg);
+  --el-table-expanded-cell-bg-color: var(--card-bg);
+  --el-table-border-color:      var(--card-border);
+  --el-table-text-color:        var(--text-primary);
+  --el-table-header-bg-color:   #252528;
+  --el-table-header-text-color: var(--text-secondary);
+  --el-table-row-hover-bg-color:#353538;
+  --el-table-fixed-box-shadow:  none;
+}
+.dark .el-table th.el-table__cell {
+  background-color: #252528;
+}
+
+/* ─── El-Input dark ─────────────────────────────────────────────── */
+.dark .el-input__wrapper,
+.dark .el-textarea__inner {
+  background-color: var(--input-bg) !important;
+  box-shadow: 0 0 0 1px var(--input-border) inset !important;
+  color: var(--text-primary) !important;
+}
+.dark .el-input__inner,
+.dark .el-textarea__inner {
+  color: var(--text-primary) !important;
+  background-color: transparent !important;
+}
+.dark .el-input__inner::placeholder,
+.dark .el-textarea__inner::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* ─── El-Select dark ────────────────────────────────────────────── */
+.dark .el-select-dropdown {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+}
+.dark .el-select-dropdown__item {
+  color: var(--text-primary);
+}
+.dark .el-select-dropdown__item.hover,
+.dark .el-select-dropdown__item:hover {
+  background-color: #353538;
+}
+
+/* ─── El-Menu dark ──────────────────────────────────────────────── */
+.dark .el-menu {
+  background-color: var(--nav-bg) !important;
+  border-right: none !important;
+}
+.dark .el-menu-item,
+.dark .el-sub-menu__title {
+  color: #94a3b8 !important;
+}
+.dark .el-menu-item.is-active {
+  color: #fff !important;
+  background-color: rgba(13, 148, 136, 0.2) !important;
+}
+.dark .el-menu-item:hover,
+.dark .el-sub-menu__title:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+.dark .el-sub-menu .el-menu {
+  background-color: rgba(0,0,0,0.15) !important;
+}
+
+/* ─── El-Button overrides ───────────────────────────────────────── */
+.el-button--primary {
+  --el-button-bg-color:     #0d9488;
+  --el-button-border-color: #0d9488;
+  --el-button-hover-bg-color:     #0f766e;
+  --el-button-hover-border-color: #0f766e;
+  --el-button-active-bg-color:    #115e59;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.dark .el-button--default {
+  background-color: #383838;
+  border-color: var(--card-border);
+  color: var(--text-primary);
+}
+.dark .el-button--default:hover {
+  background-color: #454548;
+  border-color: #0d9488;
+  color: #0d9488;
+}
+
+/* ─── El-Tag dark ───────────────────────────────────────────────── */
+.dark .el-tag {
+  border-color: var(--card-border);
+}
+
+/* ─── El-Alert dark ─────────────────────────────────────────────── */
+.dark .el-alert {
+  background-color: #1e1e21;
+}
+
+/* ─── El-Dialog dark ────────────────────────────────────────────── */
+.dark .el-dialog {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+}
+.dark .el-dialog__header {
+  border-bottom: 1px solid var(--card-border);
+}
+.dark .el-dialog__title {
+  color: var(--text-primary);
+}
+
+/* ─── El-Dropdown dark ──────────────────────────────────────────── */
+.dark .el-dropdown-menu {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+}
+.dark .el-dropdown-menu__item {
+  color: var(--text-primary);
+}
+.dark .el-dropdown-menu__item:hover {
+  background-color: #353538;
+}
+
+/* ─── El-Pagination dark ────────────────────────────────────────── */
+.dark .el-pagination {
+  --el-pagination-bg-color: transparent;
+  --el-pagination-text-color: var(--text-secondary);
+  --el-pagination-border-radius: 8px;
+  --el-pagination-button-color: var(--text-secondary);
+  --el-pagination-hover-color: #0d9488;
+}
+.dark .el-pager li {
+  background-color: var(--card-bg) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+}
+.dark .el-pager li.is-active {
+  background-color: #0d9488 !important;
+  color: #fff !important;
+  border-color: #0d9488;
+}
+.dark .el-pagination .btn-next,
+.dark .el-pagination .btn-prev {
+  background-color: var(--card-bg) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+}
+
+/* ─── El-Tabs dark ──────────────────────────────────────────────── */
+.dark .el-tabs__nav-wrap::after {
+  background-color: var(--card-border) !important;
+}
+.dark .el-tabs__item {
+  color: var(--text-muted) !important;
+}
+.dark .el-tabs__item.is-active {
+  color: #0d9488 !important;
+}
+.dark .el-tabs__active-bar {
+  background-color: #0d9488 !important;
+}
+
+/* ─── El-Form dark ──────────────────────────────────────────────── */
+.dark .el-form-item__label {
+  color: var(--text-secondary) !important;
+}
+
+/* ─── El-Switch ─────────────────────────────────────────────────── */
+.el-switch.is-checked .el-switch__core {
+  background-color: #0d9488 !important;
+  border-color: #0d9488 !important;
+}
+
+/* ─── El-Loading dark ───────────────────────────────────────────── */
+.dark .el-loading-mask {
+  background-color: rgba(18, 18, 18, 0.8) !important;
+}
+
+/* ─── El-Empty dark ─────────────────────────────────────────────── */
+.dark .el-empty__description {
+  color: var(--text-muted);
+}
+
+/* ─── El-Popover / Tooltip dark ─────────────────────────────────── */
+.dark .el-popover,
+.dark .el-tooltip__trigger {
+  background-color: var(--card-bg) !important;
+  border-color: var(--card-border) !important;
+  color: var(--text-primary) !important;
+}
+.dark .el-popper.is-dark {
+  background-color: #1a1a1e !important;
+  border-color: #333 !important;
+}
+
+/* ─── El-Input-Number dark ──────────────────────────────────────── */
+.dark .el-input-number__decrease,
+.dark .el-input-number__increase {
+  background-color: #383838 !important;
+  border-color: var(--card-border) !important;
+  color: var(--text-secondary) !important;
+}
+.dark .el-input-number__decrease:hover,
+.dark .el-input-number__increase:hover {
+  color: #0d9488 !important;
+}
+
+/* ─── El-Header / Main light/dark auto ──────────────────────────── */
+.dark .el-header {
+  background-color: var(--header-bg) !important;
+  border-bottom-color: var(--header-border) !important;
+}
+.dark .el-main {
+  background-color: var(--background) !important;
+}
+.dark .el-aside {
+  background-color: var(--nav-bg) !important;
+}
+
+/* ─── Utility: scrollbar-hide ───────────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ─── Responsive helpers ────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .el-dialog {
+    width: 95% !important;
+    margin: 0 auto !important;
+  }
+  .el-message-box {
+    width: 90% !important;
+  }
+}

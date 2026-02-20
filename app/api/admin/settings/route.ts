@@ -1,32 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdmin } from '@/lib/auth/adminAuth';
-import { createClient } from '@supabase/supabase-js';
-
-function getSupabaseAdmin() {
-    return createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-        process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    );
-}
+import { getAuthUser, checkAdmin } from '@/lib/auth/server';
+import { createSupabaseAdminClient } from '@/lib/supabase/server';
 
 // GET - 获取所有系统配置
 export async function GET(request: NextRequest) {
-    const { isAdmin } = await verifyAdmin();
-    if (!isAdmin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
+    const authUser = await getAuthUser(request);
+    if (!authUser) return NextResponse.json({ error: '未授权' }, { status: 401 });
+    const isAdmin = await checkAdmin(authUser.id);
+    if (!isAdmin) return NextResponse.json({ error: '权限不足' }, { status: 403 });
 
+    const supabase = await createSupabaseAdminClient();
     try {
-        const { data, error } = await getSupabaseAdmin()
-            .from('system_settings')
-            .select('*');
-
+        const { data, error } = await supabase.from('system_settings').select('*');
         if (error) throw error;
 
         const settings: Record<string, any> = {};
-        data?.forEach(item => {
-            settings[item.key] = item.value;
-        });
+        data?.forEach(item => { settings[item.key] = item.value; });
 
         return NextResponse.json(settings);
     } catch (error) {
@@ -37,23 +26,18 @@ export async function GET(request: NextRequest) {
 
 // POST - 更新系统配置
 export async function POST(request: NextRequest) {
-    const { isAdmin } = await verifyAdmin();
-    if (!isAdmin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
+    const authUser = await getAuthUser(request);
+    if (!authUser) return NextResponse.json({ error: '未授权' }, { status: 401 });
+    const isAdmin = await checkAdmin(authUser.id);
+    if (!isAdmin) return NextResponse.json({ error: '权限不足' }, { status: 403 });
 
+    const supabase = await createSupabaseAdminClient();
     try {
         const { key, value } = await request.json();
 
-        const { error } = await getSupabaseAdmin()
+        const { error } = await supabase
             .from('system_settings')
-            .upsert({
-                key,
-                value,
-                updated_at: new Date().toISOString()
-            }, {
-                onConflict: 'key'
-            });
+            .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
 
         if (error) throw error;
 

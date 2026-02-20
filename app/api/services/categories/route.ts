@@ -1,20 +1,16 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseAdminClient } from '@/lib/supabase/server';
 
-function getSupabase() {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-    return createClient(supabaseUrl, supabaseKey);
-}
-
-// GET: 获取所有服务分类
+// GET: 获取标准服务分类（只返回 standard_enabled = true 的分类）
 export async function GET() {
     try {
-        const supabase = getSupabase();
+        const supabase = await createSupabaseAdminClient();
 
         const { data, error } = await supabase
             .from('service_categories')
-            .select('*')
+            .select('id, name, icon, sort_order')
+            .eq('is_active', true)
+            .eq('standard_enabled', true)
             .order('sort_order', { ascending: true });
 
         if (error) throw error;

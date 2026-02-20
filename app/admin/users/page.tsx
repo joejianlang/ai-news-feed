@@ -138,8 +138,8 @@ export default function AdminUsersPage() {
     };
 
     const filteredUsers = users.filter(u =>
-        u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchTerm.toLowerCase())
+        (u.username || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (u.email || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (isUserLoading || !currentUser || currentUser.role !== 'admin') {
@@ -216,7 +216,7 @@ export default function AdminUsersPage() {
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-black text-lg ${u.is_suspended ? 'bg-slate-400' : 'bg-teal-600'}`}>
-                                                        {u.username.substring(0, 1).toUpperCase()}
+                                                        {(u.username || '?').substring(0, 1).toUpperCase()}
                                                     </div>
                                                     <div>
                                                         <div className="font-black text-sm flex items-center gap-2">
@@ -257,8 +257,8 @@ export default function AdminUsersPage() {
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center">
                                                     <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${u.role === 'admin'
-                                                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
-                                                            : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                                                        ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
+                                                        : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
                                                         }`}>
                                                         {u.role === 'admin' ? <Shield size={12} /> : <UserCircle size={12} />}
                                                         {u.role === 'admin' ? '管理员' : '普通用户'}

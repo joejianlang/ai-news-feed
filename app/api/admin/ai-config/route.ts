@@ -1,31 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdmin } from '@/lib/auth/adminAuth';
-import { createClient } from '@supabase/supabase-js';
-
-// 延迟初始化 Supabase 客户端，避免构建时错误
-function getSupabaseAdmin() {
-    return createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '',
-        process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    );
-}
+import { getAuthUser, checkAdmin } from '@/lib/auth/server';
+import { createSupabaseAdminClient } from '@/lib/supabase/server';
 
 // GET - 获取所有 AI 配置
 export async function GET(request: NextRequest) {
-    const { isAdmin } = await verifyAdmin();
-    if (!isAdmin) {
-        return NextResponse.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
-    }
+    const authUser = await getAuthUser(request);
+    if (!authUser) return NextResponse.json({ error: '未授权' }, { status: 401 });
+    const isAdmin = await checkAdmin(authUser.id);
+    if (!isAdmin) return NextResponse.json({ error: '权限不足' }, { status: 403 });
 
+    const supabase = await createSupabaseAdminClient();
     try {
-        const { data, error } = await getSupabaseAdmin()
+        const { data, error } = await supabase
             .from('ai_config')
             .select('*')
             .order('config_key');
 
         if (error) throw error;
 
-        // 转换为键值对格式
         const config: Record<string, { value: string; description: string; updated_at: string }> = {};
         for (const item of data || []) {
             config[item.config_key] = {
@@ -44,30 +36,25 @@ export async function GET(request: NextRequest) {
 
 // PUT - 更新 AI 配置
 export async function PUT(request: NextRequest) {
-    const { isAdmin } = await verifyAdmin();
-    if (!isAdmin) {
-        return NextResponse.json({ error: 'Unauthorized - Admin only' }, { status: 403 });
-    }
+    const authUser = await getAuthUser(request);
+    if (!authUser) return NextResponse.json({ error: '未授权' }, { status: 401 });
+    const isAdmin = await checkAdmin(authUser.id);
+    if (!isAdmin) return NextResponse.json({ error: '权限不足' }, { status: 403 });
 
+    const supabase = await createSupabaseAdminClient();
     try {
         const updates = await request.json();
 
-        // 批量更新
         for (const [key, value] of Object.entries(updates)) {
-            const { error } = await getSupabaseAdmin()
+            const { error } = await supabase
                 .from('ai_config')
                 .upsert({
                     config_key: key,
                     config_value: value as string,
                     updated_at: new Date().toISOString(),
-                }, {
-                    onConflict: 'config_key'
-                });
+                }, { onConflict: 'config_key' });
 
-            if (error) {
-                console.error(`Error updating ${key}:`, error);
-                throw error;
-            }
+            if (error) throw error;
         }
 
         return NextResponse.json({ success: true, message: '配置已更新' });

@@ -215,50 +215,26 @@ export default function Navbar() {
           {/* 桌面端右侧功能区 */}
           <div className="hidden md:flex items-center gap-3 flex-shrink-0">
             {user?.role === 'admin' ? (
-              <div className="relative group flex-shrink-0">
-                <button className="flex items-center gap-1.5 text-[11px] font-black text-white/70 hover:text-white uppercase tracking-tighter border border-white/20 px-2 py-1 rounded transition-colors whitespace-nowrap">
-                  <LayoutDashboard size={12} />
-                  管理后台
-                </button>
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-800 py-2 z-[60] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                  <Link href="/publish" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
-                    <Newspaper size={14} /> 文章管理
-                  </Link>
-                  <Link href="/admin/ads" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
-                    <Share2 size={14} /> 广告审核
-                  </Link>
-                  <Link href="/sources" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
-                    <Database size={14} /> 源管理
-                  </Link>
-                  <Link href="/admin/fetch-stats" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
-                    <Activity size={14} /> 抓取记录
-                  </Link>
-                  <Link href="/admin/search-analytics" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
-                    <Search size={14} /> 搜索分析
-                  </Link>
-                  <Link href="/admin/maintenance" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
-                    <Database size={14} /> 系统维护
-                  </Link>
-                  <Link href="/admin/users" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
-                    <Users size={14} /> 用户管理
-                  </Link>
-                  <Link href="/admin/categories" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5">
-                    <LayoutGrid size={14} /> 分类管理
-                  </Link>
-                  <Link href="/admin/settings" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-teal-600 bg-teal-50/50 hover:bg-teal-100/50 transition-colors">
-                    <Settings size={14} /> 系统设置
-                  </Link>
-                </div>
-              </div>
-            ) : user && (
               <Link
-                href="/ads/create"
-                className="hidden xl:flex items-center gap-1.5 text-[11px] font-black text-white hover:bg-white/20 border border-white/30 px-3 py-1.5 rounded-full transition-all uppercase tracking-widest whitespace-nowrap flex-shrink-0"
+                href="/admin"
+                className={`flex items-center gap-1.5 text-[11px] font-black uppercase tracking-tighter border px-2 py-1 rounded transition-colors whitespace-nowrap ${pathname.startsWith('/admin')
+                  ? 'bg-white text-teal-600 border-white'
+                  : 'text-white/70 hover:text-white border-white/20'
+                  }`}
               >
-                <PlusCircle size={14} />
-                投放广告
+                <LayoutDashboard size={12} />
+                管理中心
               </Link>
-            )}
+            ) :
+              user && (
+                <Link
+                  href="/ads/create"
+                  className="hidden xl:flex items-center gap-1.5 text-[11px] font-black text-white hover:bg-white/20 border border-white/30 px-3 py-1.5 rounded-full transition-all uppercase tracking-widest whitespace-nowrap flex-shrink-0"
+                >
+                  <PlusCircle size={14} />
+                  投放广告
+                </Link>
+              )}
 
             <div className="h-6 w-px bg-white/10 mx-1 flex-shrink-0"></div>
 
@@ -373,64 +349,17 @@ export default function Navbar() {
                 </Link>
               )}
               {user?.role === 'admin' && (
-                <>
-                  <Link
-                    href="/recommendations"
-                    className="py-2 text-white hover:text-teal-100 font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    推荐源
-                  </Link>
-                  <Link
-                    href="/sources"
-                    className="py-2 text-white hover:text-teal-100 font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    管理源
-                  </Link>
-                  <Link
-                    href="/admin/fetch-stats"
-                    className="py-2 text-white hover:text-teal-100 font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    抓取统计
-                  </Link>
-                  <Link
-                    href="/publish"
-                    className="py-2 text-white hover:text-teal-100 font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    文章管理
-                  </Link>
-                  <Link
-                    href="/admin/maintenance"
-                    className="py-2 text-white hover:text-teal-100 font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    库维护
-                  </Link>
-                  <Link
-                    href="/admin/settings"
-                    className="py-2 text-white hover:text-teal-100 font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    系统设置
-                  </Link>
-                  <Link
-                    href="/admin/users"
-                    className="py-2 text-white hover:text-teal-100 font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    用户管理
-                  </Link>
-                  <Link
-                    href="/admin/categories"
-                    className="py-2 text-white hover:text-teal-100 font-medium"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    分类管理
-                  </Link>
-                </>
+                <Link
+                  href="/admin"
+                  className={`flex items-center gap-2 py-3 px-4 rounded-xl font-bold transition-all ${pathname === '/admin'
+                      ? 'bg-teal-600 text-white'
+                      : 'text-white hover:bg-white/10'
+                    }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <LayoutDashboard size={20} />
+                  管理中心
+                </Link>
               )}
 
               <div className="pt-3 border-t border-teal-500">

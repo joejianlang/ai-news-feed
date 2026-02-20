@@ -259,7 +259,7 @@ export async function getUserByEmail(email: string) {
 export async function getUserById(id: string) {
   const { data, error } = await supabase
     .from('users')
-    .select('id, email, username, display_name, avatar_url, phone, bio, role, is_muted, is_suspended, created_at, updated_at')
+    .select('*')
     .eq('id', id)
     .single();
 

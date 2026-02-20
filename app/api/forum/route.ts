@@ -24,10 +24,7 @@ export async function GET(request: NextRequest) {
         if (postId) {
             const { data: post, error } = await supabase
                 .from('forum_posts')
-                .select(`
-                    *,
-                    users!forum_posts_user_id_fkey(id, email)
-                `)
+                .select('*')
                 .eq('id', postId)
                 .single();
 
@@ -37,10 +34,7 @@ export async function GET(request: NextRequest) {
 
         let query = supabase
             .from('forum_posts')
-            .select(`
-        *,
-        users!forum_posts_user_id_fkey(id, email)
-      `, { count: 'exact' })
+            .select('*', { count: 'exact' })
             .eq('status', 'active');
 
         // 如果是查看关注的人的帖子
@@ -79,8 +73,25 @@ export async function GET(request: NextRequest) {
             throw error;
         }
 
+        // 批量查询作者信息（forum_posts 无正式外键到 users，不能用 join）
+        const posts = data || [];
+        const userIds = [...new Set(posts.map((p: any) => p.user_id).filter(Boolean))];
+        let userMap: Record<string, any> = {};
+        if (userIds.length > 0) {
+            const { data: usersData } = await supabase
+                .from('users')
+                .select('id, email, name, avatar_url')
+                .in('id', userIds);
+            (usersData || []).forEach((u: any) => { userMap[u.id] = u; });
+        }
+        const enrichedPosts = posts.map((p: any) => ({
+            ...p,
+            users: userMap[p.user_id] || null,
+            author_name: p.author_name || userMap[p.user_id]?.name || userMap[p.user_id]?.email || '匿名',
+        }));
+
         return NextResponse.json({
-            posts: data || [],
+            posts: enrichedPosts,
             total: count || 0,
             page,
             limit
