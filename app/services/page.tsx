@@ -261,20 +261,23 @@ export default function ServicesPage() {
         if (!user || !selectedTemplate || !selectedCat) return;
         setSubmitting(true);
         try {
-            await fetch('/api/services', {
+            // 写入优服佳共享 submissions 表（用户定制需求）
+            const res = await fetch('/api/submissions/user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    userId: user.id,
-                    categoryId: selectedCat.id,
+                    templateId: selectedTemplate.id || null,
+                    categoryName: selectedCat.name,
                     title: selectedTemplate.name,
-                    description: JSON.stringify(fieldValues),
-                    price: '面议', priceUnit: '起',
-                    location: fieldValues['address'] || fieldValues['location'] || '',
+                    formData: fieldValues,
                     contactName: fieldValues['contact_name'] || fieldValues['联系人'] || fieldValues['联系人姓名'] || '',
                     contactPhone: fieldValues['contact_phone'] || fieldValues['手机'] || fieldValues['联系电话'] || fieldValues['联系人手机'] || '',
                 }),
             });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                console.error('Submit error:', err);
+            }
         } catch (e) { console.error(e); }
         setSubmitting(false);
         setModalStep('done');

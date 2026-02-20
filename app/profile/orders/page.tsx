@@ -18,9 +18,11 @@ interface Order {
 
 const statusTabs = [
     { key: 'all', label: '全部' },
-    { key: 'pending_payment', label: '待付款' },
+    { key: 'created', label: '待确认' },
+    { key: 'auth_hold', label: '待付款' },
     { key: 'in_progress', label: '服务中' },
     { key: 'completed', label: '已完成' },
+    { key: 'cancelled', label: '已取消' },
 ];
 
 export default function MyOrdersPage() {
@@ -34,14 +36,16 @@ export default function MyOrdersPage() {
         if (!isUserLoading && !user) {
             router.push('/login');
         } else if (user) {
-            loadMyOrders();
+            loadMyOrders(activeTab);
         }
-    }, [user, isUserLoading]);
+    }, [user, isUserLoading, activeTab]);
 
-    const loadMyOrders = async () => {
+    const loadMyOrders = async (tab = 'all') => {
         try {
             setLoading(true);
-            const response = await fetch(`/api/user/orders?userId=${user?.id}`);
+            const params = new URLSearchParams();
+            if (tab !== 'all') params.append('status', tab);
+            const response = await fetch(`/api/user/orders?${params}`);
             const data = await response.json();
 
             if (data.orders && data.orders.length > 0) {
@@ -78,13 +82,37 @@ export default function MyOrdersPage() {
     };
 
     const getStatusLabel = (status: string) => {
-        const map: any = {
-            'pending_payment': '待付款',
+        const map: Record<string, string> = {
+            'created': '待确认',
+            'auth_hold': '待付款',
+            'captured': '已付款',
             'in_progress': '服务中',
+            'pending_verification': '待验收',
+            'verified': '已验收',
+            'rated': '已评价',
             'completed': '已完成',
-            'cancelled': '已取消'
+            'cancelled': '已取消',
+            'cancelled_by_provider': '服务商取消',
+            'cancelled_forfeit': '已取消（扣款）',
         };
         return map[status] || status;
+    };
+
+    const getStatusColor = (status: string) => {
+        const colorMap: Record<string, string> = {
+            'created': '#f59e0b',
+            'auth_hold': '#f59e0b',
+            'captured': '#3b82f6',
+            'in_progress': '#0d9488',
+            'pending_verification': '#8b5cf6',
+            'verified': '#10b981',
+            'rated': '#10b981',
+            'completed': '#6b7280',
+            'cancelled': '#ef4444',
+            'cancelled_by_provider': '#ef4444',
+            'cancelled_forfeit': '#ef4444',
+        };
+        return colorMap[status] || '#6b7280';
     };
 
     if (isUserLoading || loading) {
@@ -144,8 +172,8 @@ export default function MyOrdersPage() {
                                 <div className="p-6">
                                     <div className="flex justify-between items-center mb-6">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></div>
-                                            <span className="text-[10px] font-black text-teal-500 uppercase tracking-widest">{getStatusLabel(order.status)}</span>
+                                            <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: getStatusColor(order.status) }}></div>
+                                            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: getStatusColor(order.status) }}>{getStatusLabel(order.status)}</span>
                                         </div>
                                         <span className="text-[10px] font-black text-slate-500 tracking-widest uppercase">单号: {order.order_no}</span>
                                     </div>
@@ -175,7 +203,7 @@ export default function MyOrdersPage() {
                                     </div>
 
                                     <div className="mt-8 flex gap-3">
-                                        {order.status === 'pending_payment' ? (
+                                        {(order.status === 'created' || order.status === 'auth_hold') ? (
                                             <button className="flex-1 bg-emerald-600 text-white h-14 rounded-2xl font-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-all">立即付款</button>
                                         ) : (
                                             <button className="flex-1 bg-white/5 border border-white/10 text-white h-14 rounded-2xl font-black hover:bg-white/10 transition-all flex items-center justify-center gap-2">

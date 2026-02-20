@@ -1,23 +1,32 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseAdminClient } from '@/lib/supabase/server';
 
-// GET: 获取标准服务分类（只返回 standard_enabled = true 的分类）
+// GET: 获取标准服务分类（共用优服佳数据库 service_categories 表）
 export async function GET() {
     try {
         const supabase = await createSupabaseAdminClient();
 
-        const { data, error } = await supabase
+        // 优先只取 is_active=true 的分类（standard_enabled 字段可能不存在，不强制过滤）
+        let { data, error } = await supabase
             .from('service_categories')
-            .select('id, name, icon, sort_order')
+            .select('id, name, name_en, icon, sort_order')
             .eq('is_active', true)
-            .eq('standard_enabled', true)
             .order('sort_order', { ascending: true });
 
-        if (error) throw error;
+        // 如果报错（字段不存在等），降级为不加过滤
+        if (error) {
+            console.warn('service_categories filtered query failed, falling back:', error.message);
+            const fallback = await supabase
+                .from('service_categories')
+                .select('id, name, name_en, icon, sort_order')
+                .order('sort_order', { ascending: true });
+            data = fallback.data;
+            if (fallback.error) throw fallback.error;
+        }
 
         return NextResponse.json({ categories: data || [] });
     } catch (error) {
         console.error('Error fetching service categories:', error);
-        return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 });
+        return NextResponse.json({ categories: [], error: 'Failed to fetch categories' });
     }
 }
