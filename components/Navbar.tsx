@@ -68,7 +68,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 bg-nav border-b border-teal-700 dark:border-white/10 z-50 shadow-md transition-colors">
+    <nav className="sticky top-0 bg-black border-b border-zinc-900 z-50 shadow-md transition-colors">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-1 sm:py-2">
         <div className="flex items-center justify-between gap-4 sm:gap-6 lg:gap-8">
           {/* Logo & Location Container */}
@@ -128,7 +128,7 @@ export default function Navbar() {
                           setIsCityMenuOpen(false);
                           navigateToLocalNews();
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-indigo-600 dark:text-indigo-400 font-bold hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-teal-600 dark:text-teal-400 font-bold hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors"
                       >
                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
                         自动重新定位
@@ -146,7 +146,7 @@ export default function Navbar() {
                                 setIsCityMenuOpen(false);
                                 navigateToLocalNews();
                               }}
-                              className={`w-full text-left px-5 py-2 text-sm font-medium transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${city === cityItem.name ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/10' : 'text-slate-600 dark:text-slate-300'
+                              className={`w-full text-left px-5 py-2 text-sm font-medium transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${city === cityItem.name ? 'text-teal-600 dark:text-teal-400 bg-teal-50/50 dark:bg-teal-900/10' : 'text-slate-600 dark:text-slate-300'
                                 }`}
                             >
                               {cityItem.name}
@@ -352,8 +352,8 @@ export default function Navbar() {
                 <Link
                   href="/admin"
                   className={`flex items-center gap-2 py-3 px-4 rounded-xl font-bold transition-all ${pathname === '/admin'
-                      ? 'bg-teal-600 text-white'
-                      : 'text-white hover:bg-white/10'
+                    ? 'bg-teal-600 text-white'
+                    : 'text-white hover:bg-white/10'
                     }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
